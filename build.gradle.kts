@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
     alias(libs.plugins.ktlint) // Kotlin Linter
+
 }
 
 group = providers.gradleProperty("pluginGroup").get()
@@ -39,6 +40,9 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
+
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.apache5)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension
     intellijPlatform {
@@ -173,5 +177,12 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
 
     reporters {
         reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
+        force("org.jetbrains.kotlin:kotlin-reflect:2.2.21")
     }
 }
