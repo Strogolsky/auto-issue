@@ -9,9 +9,9 @@ import com.intellij.openapi.startup.ProjectActivity
 
 class MyProjectActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
-        val agent = createAgent();
+        val agent = createAgent()
 
-        val result = agent.run("Hello! Could you tell me about yourself?");
+        val result = agent.run("Hello! Could you tell me about yourself?")
         thisLogger().info("Custom AI agent say: $result")
 
         thisLogger().warn(
@@ -22,10 +22,11 @@ class MyProjectActivity : ProjectActivity {
     fun createAgent(): AIAgent<String, String> {
         val apiKey = ""
 
-        val agent = AIAgent(
-            promptExecutor = simpleGoogleAIExecutor(apiKey),
-            llmModel = GoogleModels.Gemini2_5Flash
-        )
+        val agent =
+            AIAgent(
+                promptExecutor = simpleGoogleAIExecutor(apiKey),
+                llmModel = GoogleModels.Gemini2_5Flash,
+            )
 
         return agent
     }
