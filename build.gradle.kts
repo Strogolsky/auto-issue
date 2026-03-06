@@ -34,7 +34,8 @@ repositories {
 dependencies {
     // Koog dependencies
     implementation(libs.koog.agents)
-    implementation(libs.kotlinx.coroutines.core)
+    compileOnly(libs.kotlinx.coroutines.core)
+//    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.core)
 
     testImplementation(libs.junit)
@@ -184,4 +185,10 @@ configurations.all {
         force("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
         force("org.jetbrains.kotlin:kotlin-reflect:2.2.21")
     }
+}
+
+configurations.testRuntimeClasspath {
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-jdk8")
 }
