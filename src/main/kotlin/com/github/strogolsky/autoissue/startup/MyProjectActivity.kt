@@ -36,7 +36,7 @@ class MyProjectActivity : ProjectActivity {
         val apiKey = ""
         val systemPrompt =
             "\"You are a developer assistant. Return ONLY a valid JSON object with 'title' and" +
-                    " 'description' fields based on the user instruction. Do not include markdown formatting.\""
+                " 'description' fields based on the user instruction. Do not include markdown formatting.\""
 
         val strategy = TestIssueStrategyFactory().createStrategy()
 

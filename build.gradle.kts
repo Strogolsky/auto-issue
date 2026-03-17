@@ -187,8 +187,8 @@ configurations.all {
     }
 }
 
- configurations.testRuntimeClasspath {
+configurations.testRuntimeClasspath {
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-jdk8")
- }
+}
