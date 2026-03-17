@@ -34,15 +34,15 @@ repositories {
 dependencies {
     // Koog dependencies
     implementation(libs.koog.agents)
-    compileOnly(libs.kotlinx.coroutines.core)
-//    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.core)
-
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.apache5)
+
+    runtimeOnly("org.slf4j:slf4j-simple:2.0.12")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension
     intellijPlatform {
@@ -187,8 +187,8 @@ configurations.all {
     }
 }
 
-configurations.testRuntimeClasspath {
+ configurations.testRuntimeClasspath {
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-jdk8")
-}
+ }
