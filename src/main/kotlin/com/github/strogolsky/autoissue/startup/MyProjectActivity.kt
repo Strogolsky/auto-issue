@@ -1,33 +1,52 @@
 package com.github.strogolsky.autoissue.startup
 
-import ai.koog.agents.core.agent.AIAgent
-import ai.koog.prompt.executor.clients.google.GoogleModels
-import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
+import com.github.strogolsky.autoissue.context.TestEnvironment
+import com.github.strogolsky.autoissue.services.JiraTaskGenerationService
+import com.github.strogolsky.autoissue.settings.AgentConfigService
+import com.github.strogolsky.autoissue.settings.AgentState
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
+import kotlin.coroutines.cancellation.CancellationException
 
 class MyProjectActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
-        val agent = createAgent()
+        thisLogger().info("Initializing test through the Orchestrator...")
 
-        val result = agent.run("Hello! Could you tell me about yourself?")
-        thisLogger().info("Custom AI agent say: $result")
+        val generationService = project.service<JiraTaskGenerationService>()
+        val agentConfigService = project.service<AgentConfigService>()
 
-        thisLogger().warn(
-            "Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.",
-        )
-    }
+        val testState =
+            AgentState().apply {
+                provider = "GOOGLE"
+                modelName = "gemini-2.5-flash"
+                systemPrompt = "You are an expert developer assistant. Analyze the context and generate a Jira task."
+                strategyId = "prod-jira-strategy"
+                temperature = 0.0
+                maxIterations = 5
+            }
 
-    fun createAgent(): AIAgent<String, String> {
-        val apiKey = ""
+        agentConfigService.updateSettings(testState, newKey = "")
 
-        val agent =
-            AIAgent(
-                promptExecutor = simpleGoogleAIExecutor(apiKey),
-                llmModel = GoogleModels.Gemini2_5Flash,
+        val testEnv =
+            TestEnvironment(
+                mockFileName = "Test.java",
+                mockSelectedCode = "// TODO: Write instruction for printing Hello World in Java",
             )
 
-        return agent
+        try {
+            thisLogger().info("Executing generation service...")
+
+            val result = generationService.generateTask("Write instruction for printing Hello World in Java", testEnv)
+
+            thisLogger().info("Success! Parsed Output -> Title: '${result.title}', Description: '${result.description}'")
+            println("Success! Parsed Output -> Title: '${result.title}', Description: '${result.description}'")
+        } catch (e: CancellationException) {
+            thisLogger().warn("Task was cancelled")
+            throw e
+        } catch (e: Exception) {
+            thisLogger().error("Exception during task generation", e)
+        }
     }
 }
