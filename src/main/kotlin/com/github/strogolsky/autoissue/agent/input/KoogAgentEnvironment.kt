@@ -1,4 +1,4 @@
-package com.github.strogolsky.autoissue.services.agent.input
+package com.github.strogolsky.autoissue.agent.input
 
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.prompt.executor.model.PromptExecutor

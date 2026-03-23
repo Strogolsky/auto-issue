@@ -1,4 +1,4 @@
-package com.github.strogolsky.autoissue.services.agent
+package com.github.strogolsky.autoissue.agent
 
 import ai.koog.agents.core.agent.AIAgent
 

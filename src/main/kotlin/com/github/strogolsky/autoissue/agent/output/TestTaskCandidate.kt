@@ -1,4 +1,4 @@
-package com.github.strogolsky.autoissue.services.agent.output
+package com.github.strogolsky.autoissue.agent.output
 
 import kotlinx.serialization.Serializable
 

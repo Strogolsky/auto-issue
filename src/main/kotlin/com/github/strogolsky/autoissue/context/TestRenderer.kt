@@ -1,4 +1,4 @@
-package com.github.strogolsky.autoissue.services.agent.input
+package com.github.strogolsky.autoissue.context
 
 class TestRenderer : ContextRenderer {
     override fun render(component: ContextComponent): String {

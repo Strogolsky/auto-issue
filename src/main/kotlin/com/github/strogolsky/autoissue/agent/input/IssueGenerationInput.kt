@@ -1,4 +1,8 @@
-package com.github.strogolsky.autoissue.services.agent.input
+package com.github.strogolsky.autoissue.agent.input
+
+import com.github.strogolsky.autoissue.context.ContextComponent
+import com.github.strogolsky.autoissue.context.ContextRenderer
+import com.github.strogolsky.autoissue.context.TaskInstruction
 
 data class IssueGenerationInput(
     private val instruction: TaskInstruction,
