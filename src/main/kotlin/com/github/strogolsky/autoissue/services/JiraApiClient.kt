@@ -1,6 +1,6 @@
 package com.github.strogolsky.autoissue.services
 
-import com.github.strogolsky.autoissue.agent.JiraProjectMetadata
+import com.github.strogolsky.autoissue.context.JiraProjectMetadata
 import com.github.strogolsky.autoissue.settings.JiraConfigService
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service

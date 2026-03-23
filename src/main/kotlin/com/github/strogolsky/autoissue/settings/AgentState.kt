@@ -6,5 +6,5 @@ class AgentState {
     var systemPrompt: String = "You are a developer assistant..."
     var temperature: Double = 0.0
     var maxIterations: Int = 5
-    var strategyId: String = "default-test-strategy"
+    var strategyId: String = "prod-jira-strategy"
 }

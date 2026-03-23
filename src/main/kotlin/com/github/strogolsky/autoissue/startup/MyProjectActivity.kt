@@ -13,11 +13,6 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class MyProjectActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
-        println("Start Activity")
-        runTestAgent(project)
-    }
-
-    private suspend fun runTestAgent(project: Project) {
         thisLogger().info("Initializing test through the Orchestrator...")
 
         val generationService = project.service<JiraTaskGenerationService>()
@@ -29,7 +24,7 @@ class MyProjectActivity : ProjectActivity {
             provider = "GOOGLE"
             modelName = "gemini-2.5-flash"
             systemPrompt = "You are a developer assistant. Return ONLY a valid JSON object with 'title' and 'description'."
-            strategyId = "test-jira-strategy"
+            strategyId = "prod-jira-strategy"
             temperature = 0.0
             maxIterations = 5
         }
@@ -54,8 +49,8 @@ class MyProjectActivity : ProjectActivity {
             throw e
         } catch (e: Exception) {
             thisLogger().error("Exception during task generation", e)
-            println("Error: ${e.message}")
-            e.printStackTrace()
         }
     }
+
+
 }

@@ -5,25 +5,35 @@ import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
 import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.llm.LLModel
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.diagnostic.thisLogger
 
 @Service(Service.Level.PROJECT)
 class ModelProviderResolver {
 
 
     fun resolve(provider: String, modelName: String, apiKey: String): Pair<PromptExecutor, LLModel> {
+        thisLogger().debug("Resolving model provider: $provider, model: $modelName")
+
         return when (provider.uppercase()) {
             "GOOGLE" -> {
                 val executor = simpleGoogleAIExecutor(apiKey)
                 val model = when (modelName.lowercase()) {
                     "gemini-2.5-flash" -> GoogleModels.Gemini2_5Flash
                     "gemini-2.5-pro" -> GoogleModels.Gemini2_5Pro
-                    else -> throw IllegalArgumentException("Unsupported Google model: $modelName")
+
+                    else -> {
+                        thisLogger().error("Unsupported Google model requested: $modelName")
+                        throw IllegalArgumentException("Unsupported Google model: $modelName")
+                    }
                 }
                 Pair(executor, model)
             }
             // "OPENAI" -> ...
             // "OLLAMA" -> ...
-            else -> throw IllegalArgumentException("Unsupported AI provider: $provider")
+            else -> {
+                thisLogger().error("Unsupported AI provider requested: $provider")
+                throw IllegalArgumentException("Unsupported AI provider: $provider")
+            }
         }
     }
 }
