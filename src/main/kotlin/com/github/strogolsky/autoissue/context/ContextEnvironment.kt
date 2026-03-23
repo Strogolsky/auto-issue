@@ -1,4 +1,3 @@
 package com.github.strogolsky.autoissue.context
 
-interface ContextEnvironment {
-}
+interface ContextEnvironment

@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
 class JiraApiClient(private val project: Project) {
-
     private val configService = project.service<JiraConfigService>()
 
     suspend fun testConnection(): Boolean {

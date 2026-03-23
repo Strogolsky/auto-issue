@@ -9,23 +9,26 @@ import com.intellij.openapi.diagnostic.thisLogger
 
 @Service(Service.Level.PROJECT)
 class ModelProviderResolver {
-
-
-    fun resolve(provider: String, modelName: String, apiKey: String): Pair<PromptExecutor, LLModel> {
+    fun resolve(
+        provider: String,
+        modelName: String,
+        apiKey: String,
+    ): Pair<PromptExecutor, LLModel> {
         thisLogger().debug("Resolving model provider: $provider, model: $modelName")
 
         return when (provider.uppercase()) {
             "GOOGLE" -> {
                 val executor = simpleGoogleAIExecutor(apiKey)
-                val model = when (modelName.lowercase()) {
-                    "gemini-2.5-flash" -> GoogleModels.Gemini2_5Flash
-                    "gemini-2.5-pro" -> GoogleModels.Gemini2_5Pro
+                val model =
+                    when (modelName.lowercase()) {
+                        "gemini-2.5-flash" -> GoogleModels.Gemini2_5Flash
+                        "gemini-2.5-pro" -> GoogleModels.Gemini2_5Pro
 
-                    else -> {
-                        thisLogger().error("Unsupported Google model requested: $modelName")
-                        throw IllegalArgumentException("Unsupported Google model: $modelName")
+                        else -> {
+                            thisLogger().error("Unsupported Google model requested: $modelName")
+                            throw IllegalArgumentException("Unsupported Google model: $modelName")
+                        }
                     }
-                }
                 Pair(executor, model)
             }
             // "OPENAI" -> ...

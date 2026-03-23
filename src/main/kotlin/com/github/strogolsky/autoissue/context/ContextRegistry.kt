@@ -17,15 +17,16 @@ class ContextRegistry {
     suspend fun gatherAll(env: ContextEnvironment): List<ContextComponent> {
         thisLogger().info("Starting to gather context from ${providers.size} providers...")
 
-        val components = providers.mapNotNull { provider ->
-            try {
-                thisLogger().debug("Executing provider: ${provider.javaClass.simpleName}")
-                provider.provide(env)
-            } catch (e: Exception) {
-                thisLogger().warn("Failed to gather context from ${provider.javaClass.simpleName}. Skipping component.", e)
-                null
+        val components =
+            providers.mapNotNull { provider ->
+                try {
+                    thisLogger().debug("Executing provider: ${provider.javaClass.simpleName}")
+                    provider.provide(env)
+                } catch (e: Exception) {
+                    thisLogger().warn("Failed to gather context from ${provider.javaClass.simpleName}. Skipping component.", e)
+                    null
+                }
             }
-        }
 
         thisLogger().info("Successfully gathered ${components.size} context components.")
         return components

@@ -10,10 +10,8 @@ import kotlinx.serialization.Serializable
 data class JiraTaskCandidate(
     @property:LLMDescription("A short, clear summary of the issue.")
     override val title: String,
-
     @property:LLMDescription("Detailed explanation of the task, logic, and context formatted for Jira.")
     override val description: String,
-
     @property:LLMDescription("Relevant technical tags or labels (e.g., 'backend', 'performance').")
     val labels: List<String> = emptyList(),
 ) : TaskCandidate

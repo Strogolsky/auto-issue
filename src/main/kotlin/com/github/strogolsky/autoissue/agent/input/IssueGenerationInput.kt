@@ -13,15 +13,16 @@ data class IssueGenerationInput(
     override fun toPrompt(): String {
         thisLogger().debug("Starting prompt generation with ${contextComponents.size} context components.")
 
-        val prompt = buildString {
-            appendLine(renderer.render(instruction))
-            appendLine()
-
-            for (component in contextComponents) {
-                appendLine(renderer.render(component))
+        val prompt =
+            buildString {
+                appendLine(renderer.render(instruction))
                 appendLine()
+
+                for (component in contextComponents) {
+                    appendLine(renderer.render(component))
+                    appendLine()
+                }
             }
-        }
 
         thisLogger().debug("Prompt generation completed. Total length: ${prompt.length} characters.")
         return prompt.trimEnd()
