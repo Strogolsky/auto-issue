@@ -5,11 +5,12 @@ import com.github.strogolsky.autoissue.agent.input.AgentInput
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
+import java.util.concurrent.ConcurrentHashMap
 
 @Service(Service.Level.PROJECT)
 class JiraStrategyRegistry {
 
-    private val strategies = mutableMapOf<String, () -> AIAgentGraphStrategy<AgentInput, JiraTaskCandidate>>()
+    private val strategies = ConcurrentHashMap<String, () -> AIAgentGraphStrategy<AgentInput, JiraTaskCandidate>>()
 
     init {
         register("prod-jira-strategy") { JiraIssueStrategyFactory().createStrategy() }

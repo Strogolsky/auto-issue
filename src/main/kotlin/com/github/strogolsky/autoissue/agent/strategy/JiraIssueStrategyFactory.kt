@@ -4,14 +4,15 @@ import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
 import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequest
+import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.prompt.message.Message
+import ai.koog.prompt.structure.StructuredResponse
 import com.github.strogolsky.autoissue.agent.input.AgentInput
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
 import com.intellij.openapi.diagnostic.thisLogger
 import kotlinx.serialization.json.Json
 
 class JiraIssueStrategyFactory : IssueStrategyFactory<AgentInput, JiraTaskCandidate> {
-    private val jsonParser = Json { ignoreUnknownKeys = true }
 
     override fun createStrategy(): AIAgentGraphStrategy<AgentInput, JiraTaskCandidate> {
         return strategy("jira_issue_generation") {
@@ -20,30 +21,28 @@ class JiraIssueStrategyFactory : IssueStrategyFactory<AgentInput, JiraTaskCandid
                 input.toPrompt()
             }
 
-            val nodeCallLLM by nodeLLMRequest("llm_request")
+            val nodeCallLLM by nodeLLMRequestStructured<JiraTaskCandidate>(
+                name = "llm_structured_request"
+            )
+
+            val nodeProcessResult by node<Result<StructuredResponse<JiraTaskCandidate>>, JiraTaskCandidate>("process_result") { result ->
+                if (result.isSuccess) {
+                    val candidate = result.getOrNull()?.data
+                        ?: throw IllegalStateException("Success result returned null data")
+
+                    thisLogger().info("Successfully generated structured Jira task")
+                    candidate
+                } else {
+                    val error = result.exceptionOrNull()
+                    thisLogger().error("Structured output failed: LLM could not map response to JiraTaskCandidate schema.", error)
+                    throw error ?: RuntimeException("Unknown structured parsing error")
+                }
+            }
 
             edge(nodeStart forwardTo nodePrepareContext)
             edge(nodePrepareContext forwardTo nodeCallLLM)
-
-            edge(
-                nodeCallLLM forwardTo nodeFinish
-                    onCondition { it is Message.Assistant }
-                    transformed { response ->
-                        val rawText = (response as Message.Assistant).content
-                        thisLogger().debug("Received response from LLM. Length: ${rawText.length}")
-
-                        val cleanJson = rawText.removePrefix("```json").removeSuffix("```").trim()
-
-                        try {
-                            jsonParser.decodeFromString<JiraTaskCandidate>(cleanJson).also {
-                                thisLogger().info("Successfully parsed JiraTaskCandidate: ${it.title}")
-                            }
-                        } catch (e: Exception) {
-                            thisLogger().error("Failed to parse LLM response into JSON. Raw text: \n$rawText", e)
-                            throw e
-                        }
-                    },
-            )
+            edge(nodeCallLLM forwardTo nodeProcessResult)
+            edge(nodeProcessResult forwardTo nodeFinish)
         }
     }
 }

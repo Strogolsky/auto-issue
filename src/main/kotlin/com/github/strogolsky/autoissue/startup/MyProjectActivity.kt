@@ -18,12 +18,10 @@ class MyProjectActivity : ProjectActivity {
         val generationService = project.service<JiraTaskGenerationService>()
         val agentConfigService = project.service<AgentConfigService>()
 
-
-
         val testState = AgentState().apply {
             provider = "GOOGLE"
             modelName = "gemini-2.5-flash"
-            systemPrompt = "You are a developer assistant. Return ONLY a valid JSON object with 'title' and 'description'."
+            systemPrompt = "You are an expert developer assistant. Analyze the context and generate a Jira task."
             strategyId = "prod-jira-strategy"
             temperature = 0.0
             maxIterations = 5
