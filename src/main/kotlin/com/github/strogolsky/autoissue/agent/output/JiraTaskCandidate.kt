@@ -6,12 +6,23 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("JiraTaskCandidate")
-@LLMDescription("A fully formatted Jira task candidate generated from source code context.")
+@LLMDescription("A fully formatted Jira task candidate according to API v3 schema.")
 data class JiraTaskCandidate(
-    @property:LLMDescription("A short, clear summary of the issue.")
+    @property:LLMDescription("A short, clear summary (max 255 chars).")
     override val title: String,
-    @property:LLMDescription("Detailed explanation of the task, logic, and context formatted for Jira.")
+
+    @property:LLMDescription("Detailed explanation in plain text (will be converted to ADF).")
     override val description: String,
-    @property:LLMDescription("Relevant technical tags or labels (e.g., 'backend', 'performance').")
+
+    @property:LLMDescription("The ID of the issue type (e.g., '10001').")
+    val issueTypeId: String,
+
+    @property:LLMDescription("The ID of the priority (e.g., '3').")
+    val priorityId: String,
+
+    @property:LLMDescription("List of existing component IDs.")
+    val componentIds: List<String> = emptyList(),
+
+    @property:LLMDescription("List of labels (strings).")
     val labels: List<String> = emptyList(),
 ) : TaskCandidate
