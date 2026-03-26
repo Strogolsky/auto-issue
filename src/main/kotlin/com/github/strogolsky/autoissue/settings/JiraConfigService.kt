@@ -1,6 +1,7 @@
 package com.github.strogolsky.autoissue.settings
 
 import com.intellij.credentialStore.CredentialAttributes
+import com.intellij.credentialStore.Credentials
 import com.intellij.credentialStore.generateServiceName
 import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.openapi.components.PersistentStateComponent
@@ -20,18 +21,25 @@ class JiraConfigService : PersistentStateComponent<JiraIntegrationState> {
         state = s
     }
 
-    fun updateSettings(
-        newState: JiraIntegrationState,
-        newKey: String?,
-    ) {
+    fun updateSettings(newState: JiraIntegrationState, newKey: String?) {
         state = newState
-        newKey?.let { PasswordSafe.instance.setPassword(tokenKey, it) }
+        newKey?.let {
+            // Better practice to store credentials linking username and token
+            PasswordSafe.instance.set(tokenKey, Credentials(state.username, it))
+        }
     }
 
     fun getEffectiveConfig(): JiraConfig {
         val token = PasswordSafe.instance.getPassword(tokenKey)
         require(!token.isNullOrBlank()) { "Jira API Token is missing." }
         require(state.baseUrl.isNotBlank()) { "Jira Base URL is missing." }
-        return JiraConfig(state.baseUrl, token, state.defaultProjectKey)
+        require(state.username.isNotBlank()) { "Jira Username is missing." }
+
+        return JiraConfig(
+            baseUrl = state.baseUrl,
+            username = state.username,
+            apiToken = token,
+            projectKey = state.defaultProjectKey
+        )
     }
 }
