@@ -8,5 +8,5 @@ data class JiraProjectMetadata(
     val projectId: String,
     val issueTypes: List<JiraIssueType>,
     val priorities: List<JiraField>,
-    val components: List<JiraField>
+    val components: List<JiraField>,
 ) : ContextComponent

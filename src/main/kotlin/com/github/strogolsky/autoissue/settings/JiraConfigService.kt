@@ -21,7 +21,10 @@ class JiraConfigService : PersistentStateComponent<JiraIntegrationState> {
         state = s
     }
 
-    fun updateSettings(newState: JiraIntegrationState, newKey: String?) {
+    fun updateSettings(
+        newState: JiraIntegrationState,
+        newKey: String?,
+    ) {
         state = newState
         newKey?.let {
             // Better practice to store credentials linking username and token
@@ -39,7 +42,7 @@ class JiraConfigService : PersistentStateComponent<JiraIntegrationState> {
             baseUrl = state.baseUrl,
             username = state.username,
             apiToken = token,
-            projectKey = state.defaultProjectKey
+            projectKey = state.defaultProjectKey,
         )
     }
 }

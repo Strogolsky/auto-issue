@@ -27,44 +27,47 @@ class MyProjectActivity : ProjectActivity {
         val jiraConfigService = project.service<JiraConfigService>()
         val jiraApiService = project.service<JiraApiService>()
 
-        val testAgentState = AgentState().apply {
-            provider = "GOOGLE"
-            modelName = "gemini-2.5-flash"
-            systemPrompt = "You are an expert developer assistant. Analyze the context and generate a Jira task."
-            strategyId = "prod-jira-strategy"
-            temperature = 0.0
-            maxIterations = 5
-        }
+        val testAgentState =
+            AgentState().apply {
+                provider = "GOOGLE"
+                modelName = "gemini-2.5-flash"
+                systemPrompt = "You are an expert developer assistant. Analyze the context and generate a Jira task."
+                strategyId = "prod-jira-strategy"
+                temperature = 0.0
+                maxIterations = 5
+            }
         agentConfigService.updateSettings(testAgentState, newKey = "")
 
-        val testJiraState = JiraIntegrationState().apply {
-            baseUrl = ""
-            username = ""
-            defaultProjectKey = "KAN"
-        }
+        val testJiraState =
+            JiraIntegrationState().apply {
+                baseUrl = ""
+                username = ""
+                defaultProjectKey = "KAN"
+            }
 
         val myJiraApiToken = ""
         jiraConfigService.updateSettings(testJiraState, newKey = myJiraApiToken)
 
-
-        val testEnv = TestEnvironment(
-            mockFileName = "Test.java",
-            mockSelectedCode = "// TODO: Write instruction for printing Hello World in Java",
-        )
+        val testEnv =
+            TestEnvironment(
+                mockFileName = "Test.java",
+                mockSelectedCode = "// TODO: Write instruction for printing Hello World in Java",
+            )
 
         try {
             thisLogger().info("Executing generation service...")
 
             val result = generationService.generateTask("Write instruction for printing Hello World in Java", testEnv)
 
-            val outputLog = """
-                    Success! Parsed Output:
-                    - Title: '${result.title}'
-                    - Issue Type ID: '${result.issueTypeId}'
-                    - Priority ID: '${result.priorityId}'
-                    - Components: ${result.componentIds}
-                    - Labels: ${result.labels}
-                    - Description: '${result.description}...'
+            val outputLog =
+                """
+                Success! Parsed Output:
+                - Title: '${result.title}'
+                - Issue Type ID: '${result.issueTypeId}'
+                - Priority ID: '${result.priorityId}'
+                - Components: ${result.componentIds}
+                - Labels: ${result.labels}
+                - Description: '${result.description}...'
                 """.trimIndent()
 
             thisLogger().info(outputLog)
@@ -75,7 +78,6 @@ class MyProjectActivity : ProjectActivity {
 
             thisLogger().info("Successfully created Jira issue: $issueKey")
             println("Successfully created Jira issue: $issueKey")
-
         } catch (e: CancellationException) {
             thisLogger().warn("Task was cancelled")
             throw e
