@@ -2,7 +2,7 @@
 # libraries
 junit = "4.13.2"
 opentest4j = "1.3.0"
-koog = "0.7.2"
+koog = "0.7.3"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.10.0"
 
