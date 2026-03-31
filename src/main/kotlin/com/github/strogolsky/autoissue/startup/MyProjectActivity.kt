@@ -13,11 +13,20 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
+import java.io.File
+import java.util.Properties
 import kotlin.coroutines.cancellation.CancellationException
 
 class MyProjectActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
         thisLogger().info("Initializing test through the Orchestrator...")
+
+
+        val geminiApiKey = System.getProperty("gemini.api.key", "")
+        val jiraUrl = System.getProperty("jira.base.url", "")
+        val jiraUser = System.getProperty("jira.username", "")
+        val jiraToken = System.getProperty("jira.api.token", "")
+        val jiraProjectKey = System.getProperty("jira.project-key", "")
 
         val registry = project.service<ContextRegistry>()
         registry.register(JiraMetadataProvider(project))
@@ -36,23 +45,22 @@ class MyProjectActivity : ProjectActivity {
                 temperature = 0.0
                 maxIterations = 5
             }
-        agentConfigService.updateSettings(testAgentState, newKey = "")
 
         val testJiraState =
             JiraIntegrationState().apply {
-                baseUrl = ""
-                username = ""
-                defaultProjectKey = "KAN"
+                baseUrl = jiraUrl
+                username = jiraUser
+                defaultProjectKey = jiraProjectKey
             }
-
-        val myJiraApiToken = ""
-        jiraConfigService.updateSettings(testJiraState, newKey = myJiraApiToken)
 
         val testEnv =
             TestEnvironment(
                 mockFileName = "Test.java",
                 mockSelectedCode = "// TODO: Write instruction for printing Hello World in Java",
             )
+
+        jiraConfigService.updateSettings(testJiraState, newKey = jiraToken)
+        agentConfigService.updateSettings(testAgentState, newKey = geminiApiKey)
 
         try {
             thisLogger().info("Executing generation service...")
