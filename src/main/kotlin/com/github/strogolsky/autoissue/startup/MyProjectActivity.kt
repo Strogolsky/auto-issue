@@ -1,21 +1,16 @@
 package com.github.strogolsky.autoissue.startup
 
-import com.github.strogolsky.autoissue.context.ContextRegistry
-import com.github.strogolsky.autoissue.context.JiraMetadataProvider
-import com.github.strogolsky.autoissue.context.TestEnvironment
-import com.github.strogolsky.autoissue.services.JiraApiService
-import com.github.strogolsky.autoissue.services.JiraTaskGenerationService
+import com.github.strogolsky.autoissue.agent.context.ContextRegistry
+import com.github.strogolsky.autoissue.agent.context.providers.JiraMetadataProvider
+import com.github.strogolsky.autoissue.agent.context.providers.FileContextComponentProvider
 import com.github.strogolsky.autoissue.settings.AgentConfigService
 import com.github.strogolsky.autoissue.settings.AgentState
-import com.github.strogolsky.autoissue.settings.JiraConfigService
+import com.github.strogolsky.autoissue.services.JiraConfigService
 import com.github.strogolsky.autoissue.settings.JiraIntegrationState
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import java.io.File
-import java.util.Properties
-import kotlin.coroutines.cancellation.CancellationException
 
 class MyProjectActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
@@ -30,11 +25,10 @@ class MyProjectActivity : ProjectActivity {
 
         val registry = project.service<ContextRegistry>()
         registry.register(JiraMetadataProvider(project))
+        registry.register(FileContextComponentProvider())
 
-        val generationService = project.service<JiraTaskGenerationService>()
         val agentConfigService = project.service<AgentConfigService>()
         val jiraConfigService = project.service<JiraConfigService>()
-        val jiraApiService = project.service<JiraApiService>()
 
         val testAgentState =
             AgentState().apply {
@@ -53,45 +47,8 @@ class MyProjectActivity : ProjectActivity {
                 defaultProjectKey = jiraProjectKey
             }
 
-        val testEnv =
-            TestEnvironment(
-                mockFileName = "Test.java",
-                mockSelectedCode = "// TODO: Write instruction for printing Hello World in Java",
-            )
-
         jiraConfigService.updateSettings(testJiraState, newKey = jiraToken)
         agentConfigService.updateSettings(testAgentState, newKey = geminiApiKey)
 
-        try {
-            thisLogger().info("Executing generation service...")
-
-            val result = generationService.generateTask("Write instruction for printing Hello World in Java", testEnv)
-
-            val outputLog =
-                """
-                Success! Parsed Output:
-                - Title: '${result.title}'
-                - Issue Type ID: '${result.issueTypeId}'
-                - Priority ID: '${result.priorityId}'
-                - Components: ${result.componentIds}
-                - Labels: ${result.labels}
-                - Description: '${result.description}...'
-                """.trimIndent()
-
-            thisLogger().info(outputLog)
-            println(outputLog)
-
-            thisLogger().info("Sending request to Jira API...")
-            val issueKey = jiraApiService.createIssue(result)
-
-            thisLogger().info("Successfully created Jira issue: $issueKey")
-            println("Successfully created Jira issue: $issueKey")
-        } catch (e: CancellationException) {
-            thisLogger().warn("Task was cancelled")
-            throw e
-        } catch (e: Exception) {
-            thisLogger().error("Exception during task generation or Jira API call", e)
-            e.printStackTrace()
-        }
     }
 }

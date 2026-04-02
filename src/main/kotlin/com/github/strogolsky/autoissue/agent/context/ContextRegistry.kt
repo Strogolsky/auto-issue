@@ -1,6 +1,7 @@
-package com.github.strogolsky.autoissue.context
+package com.github.strogolsky.autoissue.agent.context
 
-import aws.smithy.kotlin.runtime.telemetry.logging.debug
+import com.github.strogolsky.autoissue.agent.context.components.ContextComponent
+import com.github.strogolsky.autoissue.agent.context.providers.ContextComponentProvider
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import java.util.concurrent.CopyOnWriteArrayList

@@ -3,10 +3,10 @@ package com.github.strogolsky.autoissue.services
 import com.github.strogolsky.autoissue.agent.JiraIssueAgentFactory
 import com.github.strogolsky.autoissue.agent.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
-import com.github.strogolsky.autoissue.context.ContextEnvironment
-import com.github.strogolsky.autoissue.context.ContextRegistry
-import com.github.strogolsky.autoissue.context.SimpleRenderer
-import com.github.strogolsky.autoissue.context.TaskInstruction
+import com.github.strogolsky.autoissue.agent.context.ContextEnvironment
+import com.github.strogolsky.autoissue.agent.context.ContextRegistry
+import com.github.strogolsky.autoissue.agent.context.SimpleRenderer
+import com.github.strogolsky.autoissue.agent.context.components.TaskInstruction
 import com.github.strogolsky.autoissue.exceptions.TaskGenerationException
 import com.github.strogolsky.autoissue.settings.AgentConfigService
 import com.intellij.openapi.components.Service
@@ -15,7 +15,7 @@ import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
-class JiraTaskGenerationService(private val project: Project) {
+class JiraIssueGenerationService(private val project: Project) {
     private val factory = project.service<JiraIssueAgentFactory>()
     private val registry = project.service<ContextRegistry>()
     private val agentConfigService = project.service<AgentConfigService>()
