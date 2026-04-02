@@ -1,13 +1,13 @@
 package com.github.strogolsky.autoissue.actions
 
 import com.github.strogolsky.autoissue.tasks.GenerateIssueTask
-import com.intellij.psi.PsiComment
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.markup.GutterIconRenderer
-import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPointerManager
 
 class TodoLineMarkerProvider : LineMarkerProvider {
@@ -32,7 +32,7 @@ class TodoLineMarkerProvider : LineMarkerProvider {
                 GenerateIssueTask(project, commentText, pointer).queue()
             },
             GutterIconRenderer.Alignment.LEFT,
-            { "Create task" }
+            { "Create task" },
         )
     }
 }

@@ -10,12 +10,12 @@ import com.intellij.psi.SmartPsiElementPointer
 
 @Service(Service.Level.PROJECT)
 class TodoUpdaterService(private val project: Project) {
-
-    fun appendKeyToCode(pointer: SmartPsiElementPointer<out PsiElement>, issueKey: String) {
+    fun appendKeyToCode(
+        pointer: SmartPsiElementPointer<out PsiElement>,
+        issueKey: String,
+    ) {
         ApplicationManager.getApplication().invokeLater {
-
             WriteCommandAction.runWriteCommandAction(project, "Update TODO with Jira Task", "AutoIssue", {
-
                 val element = pointer.element ?: return@runWriteCommandAction
                 val documentManager = PsiDocumentManager.getInstance(project)
                 val document = documentManager.getDocument(element.containingFile) ?: return@runWriteCommandAction

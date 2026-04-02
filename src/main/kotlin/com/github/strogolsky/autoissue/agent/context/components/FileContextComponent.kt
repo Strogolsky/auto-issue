@@ -7,5 +7,5 @@ data class FileContextComponent(
     val className: String?,
     val classFields: List<String>,
     val methodSignature: String?,
-    val methodBody: String
+    val methodBody: String,
 ) : ContextComponent

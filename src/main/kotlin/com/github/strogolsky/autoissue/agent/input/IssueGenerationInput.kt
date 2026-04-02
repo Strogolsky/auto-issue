@@ -1,7 +1,7 @@
 package com.github.strogolsky.autoissue.agent.input
 
-import com.github.strogolsky.autoissue.agent.context.components.ContextComponent
 import com.github.strogolsky.autoissue.agent.context.ContextRenderer
+import com.github.strogolsky.autoissue.agent.context.components.ContextComponent
 import com.github.strogolsky.autoissue.agent.context.components.TaskInstruction
 import com.intellij.openapi.diagnostic.thisLogger
 

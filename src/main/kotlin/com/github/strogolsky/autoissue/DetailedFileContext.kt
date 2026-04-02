@@ -6,5 +6,5 @@ data class DetailedFileContext(
     val imports: List<String>,
     val enclosingClass: ClassContext?,
     val enclosingMethod: MethodContext?,
-    val surroundingText: String
+    val surroundingText: String,
 )

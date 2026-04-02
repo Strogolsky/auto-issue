@@ -7,12 +7,14 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.*
+import com.intellij.psi.PsiDocumentManager
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.util.PsiTreeUtil
 
 @Service(Service.Level.PROJECT)
 class CodeAnalysisService(private val project: Project) {
-
     fun extractDetailedContext(pointer: SmartPsiElementPointer<out PsiElement>?): DetailedFileContext? {
         if (pointer == null) return null
 
@@ -26,7 +28,7 @@ class CodeAnalysisService(private val project: Project) {
                 imports = extractImports(file),
                 enclosingClass = extractClassContext(targetElement),
                 enclosingMethod = extractMethodContext(targetElement),
-                surroundingText = extractSurroundingLines(targetElement, lines = 5)
+                surroundingText = extractSurroundingLines(targetElement, lines = 5),
             )
         }
     }
@@ -49,7 +51,6 @@ class CodeAnalysisService(private val project: Project) {
         while (current != null) {
             val typeName = current.javaClass.simpleName
             if ((typeName.contains("Class") || typeName.contains("Object")) && !typeName.contains("Reference")) {
-
                 val className = (current as? PsiNamedElement)?.name ?: "UnknownClass"
                 return ClassContext(className, emptyList())
             }
@@ -68,7 +69,7 @@ class CodeAnalysisService(private val project: Project) {
                 return MethodContext(
                     name = methodName,
                     signature = methodName,
-                    body = current.text
+                    body = current.text,
                 )
             }
             current = current.parent
@@ -76,7 +77,10 @@ class CodeAnalysisService(private val project: Project) {
         return null
     }
 
-    private fun extractSurroundingLines(element: PsiElement, lines: Int): String {
+    private fun extractSurroundingLines(
+        element: PsiElement,
+        lines: Int,
+    ): String {
         val document = PsiDocumentManager.getInstance(project).getDocument(element.containingFile) ?: return element.text
         val lineNumber = document.getLineNumber(element.textRange.startOffset)
 
@@ -86,8 +90,8 @@ class CodeAnalysisService(private val project: Project) {
         return document.getText(
             TextRange(
                 document.getLineStartOffset(startLine),
-                document.getLineEndOffset(endLine)
-            )
+                document.getLineEndOffset(endLine),
+            ),
         )
     }
 }

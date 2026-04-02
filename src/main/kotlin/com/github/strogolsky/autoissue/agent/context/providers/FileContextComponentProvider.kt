@@ -7,7 +7,6 @@ import com.github.strogolsky.autoissue.services.CodeAnalysisService
 import com.intellij.openapi.components.service
 
 class FileContextComponentProvider : ContextComponentProvider {
-
     override suspend fun provide(env: ContextEnvironment): ContextComponent? {
         val psiService = env.project.service<CodeAnalysisService>()
 
@@ -19,7 +18,7 @@ class FileContextComponentProvider : ContextComponentProvider {
             className = detailedData.enclosingClass?.name,
             classFields = detailedData.enclosingClass?.fields ?: emptyList(),
             methodSignature = detailedData.enclosingMethod?.signature,
-            methodBody = detailedData.enclosingMethod?.body ?: detailedData.surroundingText
+            methodBody = detailedData.enclosingMethod?.body ?: detailedData.surroundingText,
         )
     }
 }

@@ -1,12 +1,12 @@
 package com.github.strogolsky.autoissue.services
 
 import com.github.strogolsky.autoissue.agent.JiraIssueAgentFactory
-import com.github.strogolsky.autoissue.agent.input.IssueGenerationInput
-import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
 import com.github.strogolsky.autoissue.agent.context.ContextEnvironment
 import com.github.strogolsky.autoissue.agent.context.ContextRegistry
 import com.github.strogolsky.autoissue.agent.context.SimpleRenderer
 import com.github.strogolsky.autoissue.agent.context.components.TaskInstruction
+import com.github.strogolsky.autoissue.agent.input.IssueGenerationInput
+import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
 import com.github.strogolsky.autoissue.exceptions.TaskGenerationException
 import com.github.strogolsky.autoissue.settings.AgentConfigService
 import com.intellij.openapi.components.Service

@@ -51,20 +51,21 @@ class SimpleRenderer : ContextRenderer {
                     }
                     appendLine("=============================")
                 }
-            is FileContextComponent -> buildString {
-                appendLine("File: ${component.fileName}")
+            is FileContextComponent ->
+                buildString {
+                    appendLine("File: ${component.fileName}")
 
-                if (component.className != null) {
-                    appendLine("Class: ${component.className}")
-                    appendLine("Available class fields/dependencies:")
-                    component.classFields.forEach { appendLine("- $it") }
+                    if (component.className != null) {
+                        appendLine("Class: ${component.className}")
+                        appendLine("Available class fields/dependencies:")
+                        component.classFields.forEach { appendLine("- $it") }
+                    }
+
+                    appendLine("\nTarget Method Context:")
+                    appendLine("```${component.language}")
+                    appendLine(component.methodBody)
+                    appendLine("```")
                 }
-
-                appendLine("\nTarget Method Context:")
-                appendLine("```${component.language}")
-                appendLine(component.methodBody)
-                appendLine("```")
-            }
             else -> {
                 thisLogger()
                     .debug("Rendering unknown component via fallback toString(): ${component.javaClass.simpleName}")

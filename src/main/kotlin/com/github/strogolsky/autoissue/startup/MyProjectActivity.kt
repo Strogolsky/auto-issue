@@ -1,11 +1,11 @@
 package com.github.strogolsky.autoissue.startup
 
 import com.github.strogolsky.autoissue.agent.context.ContextRegistry
-import com.github.strogolsky.autoissue.agent.context.providers.JiraMetadataProvider
 import com.github.strogolsky.autoissue.agent.context.providers.FileContextComponentProvider
+import com.github.strogolsky.autoissue.agent.context.providers.JiraMetadataProvider
+import com.github.strogolsky.autoissue.services.JiraConfigService
 import com.github.strogolsky.autoissue.settings.AgentConfigService
 import com.github.strogolsky.autoissue.settings.AgentState
-import com.github.strogolsky.autoissue.services.JiraConfigService
 import com.github.strogolsky.autoissue.settings.JiraIntegrationState
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -15,7 +15,6 @@ import com.intellij.openapi.startup.ProjectActivity
 class MyProjectActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
         thisLogger().info("Initializing test through the Orchestrator...")
-
 
         val geminiApiKey = System.getProperty("gemini.api.key", "")
         val jiraUrl = System.getProperty("jira.base.url", "")
@@ -49,6 +48,5 @@ class MyProjectActivity : ProjectActivity {
 
         jiraConfigService.updateSettings(testJiraState, newKey = jiraToken)
         agentConfigService.updateSettings(testAgentState, newKey = geminiApiKey)
-
     }
 }
