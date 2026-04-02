@@ -1,4 +1,4 @@
-package com.github.strogolsky.autoissue.context
+package com.github.strogolsky.autoissue.agent.context.components
 
 import kotlinx.serialization.Serializable
 

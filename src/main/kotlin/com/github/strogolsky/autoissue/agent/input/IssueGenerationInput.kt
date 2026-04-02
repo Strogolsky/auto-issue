@@ -1,8 +1,8 @@
 package com.github.strogolsky.autoissue.agent.input
 
-import com.github.strogolsky.autoissue.context.ContextComponent
-import com.github.strogolsky.autoissue.context.ContextRenderer
-import com.github.strogolsky.autoissue.context.TaskInstruction
+import com.github.strogolsky.autoissue.agent.context.ContextRenderer
+import com.github.strogolsky.autoissue.agent.context.components.ContextComponent
+import com.github.strogolsky.autoissue.agent.context.components.TaskInstruction
 import com.intellij.openapi.diagnostic.thisLogger
 
 data class IssueGenerationInput(

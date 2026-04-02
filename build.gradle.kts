@@ -1,6 +1,14 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import java.io.FileInputStream
+import java.util.Properties
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
 
 plugins {
     id("java") // Java support
@@ -144,6 +152,14 @@ tasks {
 
     publishPlugin {
         dependsOn(patchChangelog)
+    }
+
+    runIde {
+        systemProperty("gemini.api.key", localProperties.getProperty("gemini.api.key", ""))
+        systemProperty("jira.base.url", localProperties.getProperty("jira.base.url", ""))
+        systemProperty("jira.username", localProperties.getProperty("jira.username", ""))
+        systemProperty("jira.api.token", localProperties.getProperty("jira.api.token", ""))
+        systemProperty("jira.project-key", localProperties.getProperty("jira.project-key", ""))
     }
 }
 

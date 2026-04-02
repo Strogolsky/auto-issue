@@ -1,5 +1,9 @@
-package com.github.strogolsky.autoissue.context
+package com.github.strogolsky.autoissue.agent.context
 
+import com.github.strogolsky.autoissue.agent.context.components.ContextComponent
+import com.github.strogolsky.autoissue.agent.context.components.FileContextComponent
+import com.github.strogolsky.autoissue.agent.context.components.JiraProjectMetadata
+import com.github.strogolsky.autoissue.agent.context.components.TaskInstruction
 import com.intellij.openapi.diagnostic.thisLogger
 
 class SimpleRenderer : ContextRenderer {
@@ -46,6 +50,21 @@ class SimpleRenderer : ContextRenderer {
                         }
                     }
                     appendLine("=============================")
+                }
+            is FileContextComponent ->
+                buildString {
+                    appendLine("File: ${component.fileName}")
+
+                    if (component.className != null) {
+                        appendLine("Class: ${component.className}")
+                        appendLine("Available class fields/dependencies:")
+                        component.classFields.forEach { appendLine("- $it") }
+                    }
+
+                    appendLine("\nTarget Method Context:")
+                    appendLine("```${component.language}")
+                    appendLine(component.methodBody)
+                    appendLine("```")
                 }
             else -> {
                 thisLogger()

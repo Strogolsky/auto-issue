@@ -1,10 +1,9 @@
 package com.github.strogolsky.autoissue.services
 
+import com.github.strogolsky.autoissue.agent.context.components.JiraField
+import com.github.strogolsky.autoissue.agent.context.components.JiraIssueType
+import com.github.strogolsky.autoissue.agent.context.components.JiraProjectMetadata
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
-import com.github.strogolsky.autoissue.context.JiraField
-import com.github.strogolsky.autoissue.context.JiraIssueType
-import com.github.strogolsky.autoissue.context.JiraProjectMetadata
-import com.github.strogolsky.autoissue.settings.JiraConfigService
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service

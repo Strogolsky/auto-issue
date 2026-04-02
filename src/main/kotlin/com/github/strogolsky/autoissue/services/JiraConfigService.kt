@@ -1,5 +1,7 @@
-package com.github.strogolsky.autoissue.settings
+package com.github.strogolsky.autoissue.services
 
+import com.github.strogolsky.autoissue.settings.JiraConfig
+import com.github.strogolsky.autoissue.settings.JiraIntegrationState
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.credentialStore.Credentials
 import com.intellij.credentialStore.generateServiceName
@@ -27,7 +29,6 @@ class JiraConfigService : PersistentStateComponent<JiraIntegrationState> {
     ) {
         state = newState
         newKey?.let {
-            // Better practice to store credentials linking username and token
             PasswordSafe.instance.set(tokenKey, Credentials(state.username, it))
         }
     }

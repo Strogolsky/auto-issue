@@ -11,5 +11,11 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.strogolsky.autoissue.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
         <postStartupActivity implementation="com.github.strogolsky.autoissue.startup.MyProjectActivity" />
+
+        <codeInsight.lineMarkerProvider
+                language="JAVA"
+                implementationClass="com.github.strogolsky.autoissue.actions.TodoLineMarkerProvider"/>
+
+        <notificationGroup id="AutoIssue Notifications" displayType="BALLOON"/>
     </extensions>
 </idea-plugin>
