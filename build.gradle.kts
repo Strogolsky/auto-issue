@@ -42,7 +42,7 @@ repositories {
 dependencies {
     // Koog dependencies
     implementation(libs.koog.agents)
-    implementation(libs.kotlinx.coroutines.core)
+    compileOnly(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.core)
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
@@ -203,8 +203,10 @@ configurations.all {
     }
 }
 
-configurations.testRuntimeClasspath {
-    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
-    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
-    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-jdk8")
+listOf(configurations.runtimeClasspath, configurations.testRuntimeClasspath).forEach {
+    it.configure {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-jdk8")
+    }
 }

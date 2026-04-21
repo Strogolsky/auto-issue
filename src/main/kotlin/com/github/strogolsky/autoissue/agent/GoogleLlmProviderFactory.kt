@@ -14,7 +14,7 @@ class GoogleLlmProviderFactory : LlmProviderFactory {
         val model =
             when (modelName.lowercase()) {
                 "gemini-2.5-flash" -> GoogleModels.Gemini2_5Flash
-                "gemini-2.5-pro" -> GoogleModels.Gemini2_5Pro
+                "gemini-2.5-flash-lite" -> GoogleModels.Gemini2_5FlashLite
                 else -> throw IllegalArgumentException("Unsupported Google model: $modelName")
             }
         return Pair(executor, model)
