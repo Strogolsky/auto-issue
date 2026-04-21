@@ -14,12 +14,12 @@ class TicketEditDialog(
     project: Project,
     private val candidate: JiraTaskCandidate,
 ) : DialogWrapper(project) {
-
     private val titleField = JBTextField(candidate.title)
-    private val descriptionArea = JBTextArea(candidate.description, 10, 60).apply {
-        lineWrap = true
-        wrapStyleWord = true
-    }
+    private val descriptionArea =
+        JBTextArea(candidate.description, 10, 60).apply {
+            lineWrap = true
+            wrapStyleWord = true
+        }
 
     init {
         title = "Review JIRA Issue"

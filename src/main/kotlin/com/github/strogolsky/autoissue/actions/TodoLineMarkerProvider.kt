@@ -14,7 +14,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPointerManager
 
 class TodoLineMarkerProvider : LineMarkerProvider {
-
     companion object {
         private val JIRA_ID_PATTERN = Regex("\\[[A-Z]+-\\d+]")
     }
@@ -33,18 +32,20 @@ class TodoLineMarkerProvider : LineMarkerProvider {
             { _, psiElement ->
                 val project = psiElement.project
                 val commentText = psiElement.text
-                val confirmed = Messages.showYesNoDialog(
-                    project,
-                    commentText.take(300),
-                    "Create JIRA Issue?",
-                    "Create",
-                    "Cancel",
-                    Messages.getQuestionIcon(),
-                )
+                val confirmed =
+                    Messages.showYesNoDialog(
+                        project,
+                        commentText.take(300),
+                        "Create JIRA Issue?",
+                        "Create",
+                        "Cancel",
+                        Messages.getQuestionIcon(),
+                    )
                 if (confirmed == Messages.YES) {
                     PsiDocumentManager.getInstance(project).commitAllDocuments()
-                    val pointer = SmartPointerManager.getInstance(project)
-                        .createSmartPsiElementPointer(psiElement)
+                    val pointer =
+                        SmartPointerManager.getInstance(project)
+                            .createSmartPsiElementPointer(psiElement)
                     project.service<IssueCreationOrchestrator>().launch(commentText, pointer)
                 }
             },
