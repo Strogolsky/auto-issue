@@ -1,3 +1,3 @@
 package com.github.strogolsky.autoissue.agent.context.components
 
-interface ContextComponent
+sealed interface ContextComponent

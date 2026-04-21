@@ -10,7 +10,6 @@ class ModelProviderResolver {
     private val factories = mutableMapOf<String, LlmProviderFactory>()
 
     init {
-        // TODO(Issue #3): move registration to PluginStartupActivity
         register("GOOGLE", GoogleLlmProviderFactory())
     }
 
