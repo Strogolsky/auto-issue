@@ -45,6 +45,5 @@ class XmlRendererFactory : RendererFactory {
             appendLine("</jira-metadata>")
         }
 
-    private fun renderTaskInstruction(t: TaskInstruction): String =
-        "<instruction>${t.description}</instruction>"
+    private fun renderTaskInstruction(t: TaskInstruction): String = "<instruction>${t.description}</instruction>"
 }

@@ -6,7 +6,6 @@ import java.io.File
 import java.util.Properties
 
 object LocalPropertiesLoader {
-
     fun load(
         project: Project,
         fileName: String,

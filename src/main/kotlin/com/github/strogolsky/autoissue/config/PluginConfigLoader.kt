@@ -6,7 +6,6 @@ import org.w3c.dom.NodeList
 import javax.xml.parsers.DocumentBuilderFactory
 
 object PluginConfigLoader {
-
     fun load(): PluginConfig {
         val stream =
             PluginConfigLoader::class.java.getResourceAsStream("/PluginConfig.xml")
