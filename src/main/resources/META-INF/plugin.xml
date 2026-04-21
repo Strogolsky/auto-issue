@@ -9,12 +9,9 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService
-                serviceInterface="com.github.strogolsky.autoissue.agent.context.RendererFactory"
-                serviceImplementation="com.github.strogolsky.autoissue.agent.context.SimpleRendererFactory"/>
 
         <toolWindow factoryClass="com.github.strogolsky.autoissue.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.strogolsky.autoissue.startup.MyProjectActivity" />
+        <postStartupActivity implementation="com.github.strogolsky.autoissue.startup.PluginStartupActivity" />
 
         <codeInsight.lineMarkerProvider
                 language="JAVA"

@@ -1,0 +1,29 @@
+<plugin-config>
+
+  <llm>
+    <default-provider>GOOGLE</default-provider>
+    <default-model>gemini-2.5-flash</default-model>
+    <default-strategy>prod-jira-strategy</default-strategy>
+    <temperature>0.7</temperature>
+    <max-iterations>3</max-iterations>
+    <system-prompt>You are a Jira issue generator. Based on the provided code context and TODO comment, generate a well-structured Jira issue.</system-prompt>
+  </llm>
+
+  <rendering>
+    <format>SIMPLE</format> <!-- MARKDOWN | XML -->
+  </rendering>
+
+  <context>
+    <providers>
+      <provider enabled="true">FileContextComponentProvider</provider>
+      <provider enabled="true">JiraMetadataProvider</provider>
+      <!-- <provider enabled="false">GitHistoryProvider</provider> -->
+    </providers>
+  </context>
+
+  <dev>
+    <!-- set enabled="false" to disable the mechanism entirely -->
+    <local-properties enabled="true">local.properties</local-properties>
+  </dev>
+
+</plugin-config>

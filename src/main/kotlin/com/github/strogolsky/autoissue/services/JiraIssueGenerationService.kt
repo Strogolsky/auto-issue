@@ -3,13 +3,12 @@ package com.github.strogolsky.autoissue.services
 import com.github.strogolsky.autoissue.agent.JiraIssueAgentFactory
 import com.github.strogolsky.autoissue.agent.context.ContextEnvironment
 import com.github.strogolsky.autoissue.agent.context.ContextRegistry
-import com.github.strogolsky.autoissue.agent.context.RendererFactory
+import com.github.strogolsky.autoissue.agent.context.RendererFactoryHolder
 import com.github.strogolsky.autoissue.agent.context.components.TaskInstruction
 import com.github.strogolsky.autoissue.agent.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
 import com.github.strogolsky.autoissue.exceptions.TaskGenerationException
 import com.github.strogolsky.autoissue.settings.AgentConfigService
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -40,7 +39,7 @@ class JiraIssueGenerationService(private val project: Project) {
         thisLogger().debug("Creating AI agent based on current configuration...")
         val agent = factory.createAgent(config)
 
-        val rendererFactory = ApplicationManager.getApplication().service<RendererFactory>()
+        val rendererFactory = project.service<RendererFactoryHolder>().factory
 
         val taskInstruction = TaskInstruction(instruction)
         val input = IssueGenerationInput(taskInstruction, contextComponents, rendererFactory)
