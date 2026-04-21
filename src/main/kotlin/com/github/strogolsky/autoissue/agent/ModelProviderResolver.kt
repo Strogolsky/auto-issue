@@ -1,7 +1,5 @@
 package com.github.strogolsky.autoissue.agent
 
-import ai.koog.prompt.executor.clients.google.GoogleModels
-import ai.koog.prompt.executor.llms.all.simpleGoogleAIExecutor
 import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.llm.LLModel
 import com.intellij.openapi.components.Service
@@ -9,34 +7,29 @@ import com.intellij.openapi.diagnostic.thisLogger
 
 @Service(Service.Level.PROJECT)
 class ModelProviderResolver {
+    private val factories = mutableMapOf<String, LlmProviderFactory>()
+
+    init {
+        // TODO(Issue #3): move registration to PluginStartupActivity
+        register("GOOGLE", GoogleLlmProviderFactory())
+    }
+
+    fun register(
+        providerKey: String,
+        factory: LlmProviderFactory,
+    ) {
+        factories[providerKey] = factory
+    }
+
     fun resolve(
         provider: String,
         modelName: String,
         apiKey: String,
     ): Pair<PromptExecutor, LLModel> {
         thisLogger().debug("Resolving model provider: $provider, model: $modelName")
-
-        return when (provider.uppercase()) {
-            "GOOGLE" -> {
-                val executor = simpleGoogleAIExecutor(apiKey)
-                val model =
-                    when (modelName.lowercase()) {
-                        "gemini-2.5-flash" -> GoogleModels.Gemini2_5Flash
-                        "gemini-2.5-pro" -> GoogleModels.Gemini2_5Pro
-
-                        else -> {
-                            thisLogger().error("Unsupported Google model requested: $modelName")
-                            throw IllegalArgumentException("Unsupported Google model: $modelName")
-                        }
-                    }
-                Pair(executor, model)
-            }
-            // "OPENAI" -> ...
-            // "OLLAMA" -> ...
-            else -> {
-                thisLogger().error("Unsupported AI provider requested: $provider")
-                throw IllegalArgumentException("Unsupported AI provider: $provider")
-            }
-        }
+        val factory =
+            factories[provider.uppercase()]
+                ?: error("Unknown LLM provider: $provider")
+        return factory.create(modelName, apiKey)
     }
 }
