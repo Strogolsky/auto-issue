@@ -198,8 +198,8 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
 
 configurations.all {
     resolutionStrategy {
-        force("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
-        force("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
+        force("org.jetbrains.kotlin:kotlin-stdlib:2.2.21")
+        force("org.jetbrains.kotlin:kotlin-reflect:2.2.21")
     }
 }
 
