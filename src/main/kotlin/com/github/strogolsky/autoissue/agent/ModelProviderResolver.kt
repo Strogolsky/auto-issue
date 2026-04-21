@@ -9,10 +9,6 @@ import com.intellij.openapi.diagnostic.thisLogger
 class ModelProviderResolver {
     private val factories = mutableMapOf<String, LlmProviderFactory>()
 
-    init {
-        register("GOOGLE", GoogleLlmProviderFactory())
-    }
-
     fun register(
         providerKey: String,
         factory: LlmProviderFactory,

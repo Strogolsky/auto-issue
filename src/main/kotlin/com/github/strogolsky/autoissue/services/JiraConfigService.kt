@@ -23,6 +23,12 @@ class JiraConfigService : PersistentStateComponent<JiraIntegrationState> {
         state = s
     }
 
+    fun getApiToken(): String? = PasswordSafe.instance.getPassword(tokenKey)
+
+    fun saveApiToken(token: String) {
+        PasswordSafe.instance.set(tokenKey, Credentials(state.username, token))
+    }
+
     fun updateSettings(
         newState: JiraIntegrationState,
         newKey: String?,

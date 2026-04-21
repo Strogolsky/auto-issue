@@ -1,5 +1,6 @@
 package com.github.strogolsky.autoissue.settings
 
+import com.github.strogolsky.autoissue.config.LlmDefaults
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.credentialStore.generateServiceName
 import com.intellij.ide.passwordSafe.PasswordSafe
@@ -32,6 +33,21 @@ class AgentConfigService : PersistentStateComponent<AgentState> {
 
         state = newState
         newKey?.let { PasswordSafe.instance.setPassword(tokenKey, it) }
+    }
+
+    fun getApiKey(): String? = PasswordSafe.instance.getPassword(tokenKey)
+
+    fun saveApiKey(key: String) {
+        PasswordSafe.instance.setPassword(tokenKey, key)
+    }
+
+    fun applyDefaults(defaults: LlmDefaults) {
+        if (state.provider.isBlank()) state.provider = defaults.provider
+        if (state.modelName.isBlank()) state.modelName = defaults.modelName
+        if (state.strategyId.isBlank()) state.strategyId = defaults.strategyId
+        if (state.temperature == 0.0) state.temperature = defaults.temperature
+        if (state.maxIterations == 0) state.maxIterations = defaults.maxIterations
+        if (state.systemPrompt.isBlank()) state.systemPrompt = defaults.systemPrompt
     }
 
     fun getEffectiveConfig(): AgentConfig? {
