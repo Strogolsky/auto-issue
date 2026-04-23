@@ -155,11 +155,11 @@ tasks {
     }
 
     runIde {
-        systemProperty("gemini.api.key", localProperties.getProperty("gemini.api.key", ""))
-        systemProperty("jira.base.url", localProperties.getProperty("jira.base.url", ""))
-        systemProperty("jira.username", localProperties.getProperty("jira.username", ""))
-        systemProperty("jira.api.token", localProperties.getProperty("jira.api.token", ""))
-        systemProperty("jira.project-key", localProperties.getProperty("jira.project-key", ""))
+        systemProperty("autoissue.llm.api-key", localProperties.getProperty("llm.api-key", ""))
+        systemProperty("autoissue.jira.base-url", localProperties.getProperty("jira.base.url", ""))
+        systemProperty("autoissue.jira.username", localProperties.getProperty("jira.username", ""))
+        systemProperty("autoissue.jira.api-token", localProperties.getProperty("jira.api.token", ""))
+        systemProperty("autoissue.jira.project-key", localProperties.getProperty("jira.project-key", ""))
     }
 }
 
