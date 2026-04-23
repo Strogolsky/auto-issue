@@ -11,12 +11,10 @@ class GoogleLlmProviderFactory : LlmProviderFactory {
         apiKey: String,
     ): Pair<PromptExecutor, LLModel> {
         val executor = simpleGoogleAIExecutor(apiKey)
-        val model =
-            when (modelName.lowercase()) {
-                "gemini-2.5-flash" -> GoogleModels.Gemini2_5Flash
-                "gemini-2.5-flash-lite" -> GoogleModels.Gemini2_5FlashLite
-                else -> throw IllegalArgumentException("Unsupported Google model: $modelName")
-            }
+        val model = GoogleModels.models.find { it.id == modelName }
+            ?: throw IllegalArgumentException("Unsupported Google model: $modelName")
         return Pair(executor, model)
     }
+
+    override fun availableModels(): List<String> = GoogleModels.models.map { it.id }
 }

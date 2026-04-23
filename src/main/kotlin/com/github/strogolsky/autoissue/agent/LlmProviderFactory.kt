@@ -8,4 +8,6 @@ interface LlmProviderFactory {
         modelName: String,
         apiKey: String,
     ): Pair<PromptExecutor, LLModel>
+
+    fun availableModels(): List<String>
 }
