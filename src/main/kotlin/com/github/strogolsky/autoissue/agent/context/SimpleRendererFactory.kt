@@ -33,34 +33,13 @@ class SimpleRendererFactory : RendererFactory {
         buildString {
             appendLine("=== JIRA CONTEXT METADATA ===")
             appendLine("Project Key: ${m.projectKey}")
-            appendLine("Project ID: ${m.projectId}")
 
-            appendLine("\nCRITICAL INSTRUCTION FOR LLM:")
-            appendLine(
-                "When generating the JSON output, you MUST use the exact numerical 'ID' values from the " +
-                    "lists below for 'issueTypeId', 'priorityId', and 'componentIds'. " +
-                    "DO NOT use the text names.",
-            )
-
-            appendLine("\n1. AVAILABLE ISSUE TYPES (ID -> Name):")
-            if (m.issueTypes.isEmpty()) {
-                appendLine("   - No issue types available.")
+            appendLine("\nAVAILABLE LABELS:")
+            appendLine("Use only labels from this list for the 'labels' field (or leave it empty):")
+            if (m.labels.isEmpty()) {
+                appendLine("   - No labels available.")
             } else {
-                m.issueTypes.forEach { type -> appendLine("   - ${type.id} -> ${type.name}") }
-            }
-
-            appendLine("\n2. AVAILABLE PRIORITIES (ID -> Name):")
-            if (m.priorities.isEmpty()) {
-                appendLine("   - No priorities available.")
-            } else {
-                m.priorities.forEach { priority -> appendLine("   - ${priority.id} -> ${priority.name}") }
-            }
-
-            appendLine("\n3. AVAILABLE COMPONENTS (ID -> Name):")
-            if (m.components.isEmpty()) {
-                appendLine("   - No components available.")
-            } else {
-                m.components.forEach { comp -> appendLine("   - ${comp.id} -> ${comp.name}") }
+                m.labels.forEach { appendLine("   - $it") }
             }
             appendLine("=============================")
         }
