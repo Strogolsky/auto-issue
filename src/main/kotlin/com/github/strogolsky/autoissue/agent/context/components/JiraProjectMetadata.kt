@@ -9,4 +9,6 @@ data class JiraProjectMetadata(
     val issueTypes: List<JiraIssueType>,
     val priorities: List<JiraField>,
     val components: List<JiraField>,
+    val assignees: List<JiraField> = emptyList(),
+    val labels: List<String> = emptyList(),
 ) : ContextComponent

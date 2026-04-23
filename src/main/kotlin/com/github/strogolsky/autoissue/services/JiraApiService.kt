@@ -3,7 +3,7 @@ package com.github.strogolsky.autoissue.services
 import com.github.strogolsky.autoissue.agent.context.components.JiraField
 import com.github.strogolsky.autoissue.agent.context.components.JiraIssueType
 import com.github.strogolsky.autoissue.agent.context.components.JiraProjectMetadata
-import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
+import com.github.strogolsky.autoissue.agent.output.JiraIssueRequest
 import com.github.strogolsky.autoissue.settings.JiraProjectSummary
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
@@ -94,6 +94,42 @@ class JiraApiService(private val project: Project) : Disposable {
                     applyAuth(config.username, config.apiToken)
                 }.body()
 
+            val assignees: List<JiraField> =
+                try {
+                    val response: JsonArray =
+                        httpClient.get {
+                            url {
+                                takeFrom(config.baseUrl)
+                                encodedPath = "/rest/api/3/user/assignable/search"
+                                parameters.append("project", projectKey)
+                                parameters.append("maxResults", "100")
+                            }
+                            applyAuth(config.username, config.apiToken)
+                        }.body()
+                    response.map {
+                        JiraField(
+                            id = it.jsonObject["accountId"]?.jsonPrimitive?.content ?: "",
+                            name = it.jsonObject["displayName"]?.jsonPrimitive?.content ?: "",
+                        )
+                    }
+                } catch (e: Exception) {
+                    thisLogger().warn("Failed to fetch assignees for project $projectKey", e)
+                    emptyList()
+                }
+
+            val labels: List<String> =
+                try {
+                    val response: JsonObject =
+                        httpClient.get {
+                            buildJiraUrl(config.baseUrl, "/rest/api/3/label")
+                            applyAuth(config.username, config.apiToken)
+                        }.body()
+                    response["values"]?.jsonArray?.map { it.jsonPrimitive.content } ?: emptyList()
+                } catch (e: Exception) {
+                    thisLogger().warn("Failed to fetch labels", e)
+                    emptyList()
+                }
+
             JiraProjectMetadata(
                 projectKey = projectKey,
                 projectId = projectInfo["id"]?.jsonPrimitive?.content ?: "",
@@ -106,6 +142,8 @@ class JiraApiService(private val project: Project) : Disposable {
                     projectInfo["components"]?.jsonArray?.map {
                         forgivingJson.decodeFromJsonElement<JiraField>(it)
                     } ?: emptyList(),
+                assignees = assignees,
+                labels = labels,
             )
         } catch (e: ClientRequestException) {
             val errorBody = e.response.bodyAsText()
@@ -114,27 +152,31 @@ class JiraApiService(private val project: Project) : Disposable {
         }
     }
 
-    suspend fun createIssue(candidate: JiraTaskCandidate): String {
+    suspend fun createIssue(request: JiraIssueRequest): String {
         val config = configService.getEffectiveConfig()
 
         val payload =
             buildJsonObject {
                 putJsonObject("fields") {
                     putJsonObject("project") { put("key", config.projectKey) }
-                    put("summary", candidate.title)
-                    putJsonObject("issuetype") { put("id", candidate.issueTypeId) }
-                    putJsonObject("priority") { put("id", candidate.priorityId) }
-                    put("description", buildAdf(candidate.description))
+                    put("summary", request.title)
+                    putJsonObject("issuetype") { put("id", request.issueTypeId) }
+                    putJsonObject("priority") { put("id", request.priorityId) }
+                    put("description", buildAdf(request.description))
 
-                    if (candidate.labels.isNotEmpty()) {
-                        putJsonArray("labels") { candidate.labels.forEach { add(it) } }
+                    if (request.labels.isNotEmpty()) {
+                        putJsonArray("labels") { request.labels.forEach { add(it) } }
                     }
 
-                    if (candidate.componentIds.isNotEmpty()) {
-                        putJsonArray("components") {
-                            candidate.componentIds.forEach { id -> addJsonObject { put("id", id) } }
-                        }
+                    request.assigneeAccountId?.let { accountId ->
+                        putJsonObject("assignee") { put("accountId", accountId) }
                     }
+
+                    request.parentIssueKey?.let { key ->
+                        putJsonObject("parent") { put("key", key) }
+                    }
+
+                    request.dueDate?.let { put("duedate", it) }
                 }
             }
 

@@ -1,7 +1,7 @@
 package com.github.strogolsky.autoissue.orchestrator
 
 import com.github.strogolsky.autoissue.agent.context.ContextEnvironment
-import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
+import com.github.strogolsky.autoissue.agent.output.JiraIssueRequest
 import com.github.strogolsky.autoissue.services.JiraApiService
 import com.github.strogolsky.autoissue.services.JiraConfigService
 import com.github.strogolsky.autoissue.services.JiraIssueGenerationService
@@ -47,31 +47,36 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
             val agentConfig =
                 project.service<AgentConfigService>().getEffectiveConfig()
                     ?: return notify("LLM configuration incomplete. Check plugin settings.", NotificationType.ERROR)
-            try {
-                project.service<JiraConfigService>().getEffectiveConfig()
-            } catch (e: IllegalArgumentException) {
-                return notify("JIRA configuration incomplete: ${e.message}", NotificationType.ERROR)
-            }
+            val jiraConfig =
+                try {
+                    project.service<JiraConfigService>().getEffectiveConfig()
+                } catch (e: IllegalArgumentException) {
+                    return notify("JIRA configuration incomplete: ${e.message}", NotificationType.ERROR)
+                }
 
-            // 2. Gather context and run LLM agent
-            val candidate: JiraTaskCandidate =
+            // 2. Fetch Jira metadata and run LLM agent in parallel background
+            val jiraApiService = project.service<JiraApiService>()
+            val (metadata, candidate) =
                 withBackgroundProgress(project, "AutoIssue: Generating issue…") {
-                    project.service<JiraIssueGenerationService>().generateTask(
-                        instruction = "Generate issue for: $instructionText",
-                        env = ContextEnvironment(project = project, pointer = pointer),
-                    )
+                    val meta = jiraApiService.getMetadata(jiraConfig.projectKey)
+                    val task =
+                        project.service<JiraIssueGenerationService>().generateTask(
+                            instruction = "Generate issue for: $instructionText",
+                            env = ContextEnvironment(project = project, pointer = pointer),
+                        )
+                    meta to task
                 }
 
             // 3. Let the user review and edit the candidate before creating
-            val editedCandidate: JiraTaskCandidate =
+            val issueRequest: JiraIssueRequest =
                 withContext(Dispatchers.Main) {
-                    TicketEditDialog(project, candidate).showAndGetResult()
+                    TicketEditDialog(project, candidate, metadata).showAndGetResult()
                 } ?: return // user cancelled
 
             // 4. Create the JIRA issue — non-cancellable once started
             val issueKey: String =
                 withBackgroundProgress(project, "AutoIssue: Creating JIRA issue…", cancellable = false) {
-                    project.service<JiraApiService>().createIssue(editedCandidate)
+                    jiraApiService.createIssue(issueRequest)
                 }
 
             // 5. Update source code: TODO → TODO [PROJ-42]
