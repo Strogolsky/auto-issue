@@ -41,7 +41,9 @@ class DatePickerField : JPanel(BorderLayout()) {
         textField.document.addDocumentListener(
             object : DocumentListener {
                 override fun insertUpdate(e: DocumentEvent) = syncFromText()
+
                 override fun removeUpdate(e: DocumentEvent) = syncFromText()
+
                 override fun changedUpdate(e: DocumentEvent) {}
             },
         )
@@ -92,8 +94,14 @@ private class CalendarPanel(
 
         val prevButton = JButton("<").apply { isFocusable = false }
         val nextButton = JButton(">").apply { isFocusable = false }
-        prevButton.addActionListener { displayedMonth = displayedMonth.minusMonths(1); refresh() }
-        nextButton.addActionListener { displayedMonth = displayedMonth.plusMonths(1); refresh() }
+        prevButton.addActionListener {
+            displayedMonth = displayedMonth.minusMonths(1)
+            refresh()
+        }
+        nextButton.addActionListener {
+            displayedMonth = displayedMonth.plusMonths(1)
+            refresh()
+        }
 
         add(
             JPanel(BorderLayout()).apply {
