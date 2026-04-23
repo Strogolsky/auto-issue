@@ -176,7 +176,6 @@ class JiraApiService(private val project: Project) : Disposable {
                         putJsonObject("parent") { put("key", key) }
                     }
 
-                    request.startDate?.let { put("startDate", it) }
                     request.dueDate?.let { put("duedate", it) }
                 }
             }

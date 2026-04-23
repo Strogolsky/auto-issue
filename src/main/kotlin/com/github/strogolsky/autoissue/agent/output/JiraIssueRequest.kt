@@ -8,6 +8,5 @@ data class JiraIssueRequest(
     val priorityId: String,
     val assigneeAccountId: String?,
     val parentIssueKey: String?,
-    val startDate: String?,
     val dueDate: String?,
 )
