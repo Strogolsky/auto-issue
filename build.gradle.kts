@@ -50,7 +50,7 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.apache5)
 
-    runtimeOnly("org.slf4j:slf4j-simple:2.0.12")
+    runtimeOnly("org.slf4j:slf4j-simple:2.0.17")
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension
     intellijPlatform {
