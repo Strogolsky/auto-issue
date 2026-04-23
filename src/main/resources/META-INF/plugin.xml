@@ -30,5 +30,11 @@
                 id="com.github.strogolsky.autoissue.jira"
                 instance="com.github.strogolsky.autoissue.ui.JiraSettingsConfigurable"
                 displayName="Jira"/>
+
+        <projectConfigurable
+                parentId="com.github.strogolsky.autoissue"
+                id="com.github.strogolsky.autoissue.llm"
+                instance="com.github.strogolsky.autoissue.ui.LlmSettingsConfigurable"
+                displayName="LLM"/>
     </extensions>
 </idea-plugin>
