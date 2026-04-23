@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(./gradlew compileKotlin)",
-      "Bash(xargs -I {} find {} -type d)"
+      "Bash(xargs -I {} find {} -type d)",
+      "Bash(xargs cat *)",
+      "Bash(find /d/Project/auto-issue -name \"*.xml\" -path \"*/resources/*\" -exec grep -l \"local\" {} \\\\;)"
     ]
   }
 }

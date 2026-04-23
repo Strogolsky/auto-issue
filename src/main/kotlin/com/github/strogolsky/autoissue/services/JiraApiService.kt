@@ -4,6 +4,7 @@ import com.github.strogolsky.autoissue.agent.context.components.JiraField
 import com.github.strogolsky.autoissue.agent.context.components.JiraIssueType
 import com.github.strogolsky.autoissue.agent.context.components.JiraProjectMetadata
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
+import com.github.strogolsky.autoissue.settings.JiraProjectSummary
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -28,12 +29,14 @@ import io.ktor.http.isSuccess
 import io.ktor.http.takeFrom
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -172,14 +175,48 @@ class JiraApiService(private val project: Project) : Disposable {
     suspend fun testConnection(): Boolean =
         try {
             val config = configService.getEffectiveConfig()
+            testConnection(config.baseUrl, config.username, config.apiToken)
+        } catch (e: Exception) {
+            thisLogger().warn("Jira connection test failed: config missing", e)
+            false
+        }
+
+    suspend fun testConnection(
+        baseUrl: String,
+        username: String,
+        apiToken: String,
+    ): Boolean =
+        try {
             val response =
                 httpClient.get {
-                    buildJiraUrl(config.baseUrl, "/rest/api/3/myself")
-                    applyAuth(config.username, config.apiToken)
+                    buildJiraUrl(baseUrl, "/rest/api/3/myself")
+                    applyAuth(username, apiToken)
                 }
             response.status.isSuccess()
         } catch (e: Exception) {
             thisLogger().warn("Jira connection test failed", e)
             false
+        }
+
+    suspend fun getProjects(
+        baseUrl: String,
+        username: String,
+        apiToken: String,
+    ): List<JiraProjectSummary> =
+        try {
+            val response: JsonArray =
+                httpClient.get {
+                    buildJiraUrl(baseUrl, "/rest/api/3/project")
+                    applyAuth(username, apiToken)
+                }.body()
+            response.map {
+                JiraProjectSummary(
+                    key = it.jsonObject["key"]?.jsonPrimitive?.content ?: "",
+                    name = it.jsonObject["name"]?.jsonPrimitive?.content ?: "",
+                )
+            }
+        } catch (e: Exception) {
+            thisLogger().warn("Failed to load Jira projects", e)
+            emptyList()
         }
 }

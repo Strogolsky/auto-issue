@@ -16,6 +16,13 @@ class ModelProviderResolver {
         factories[providerKey] = factory
     }
 
+    fun providers(): Set<String> = factories.keys
+
+    fun modelsFor(provider: String): List<String> {
+        val factory = factories[provider.uppercase()] ?: error("Unknown LLM provider: $provider")
+        return factory.availableModels()
+    }
+
     fun resolve(
         provider: String,
         modelName: String,

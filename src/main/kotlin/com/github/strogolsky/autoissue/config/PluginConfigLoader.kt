@@ -43,10 +43,9 @@ object PluginConfigLoader {
             if (devNode != null) {
                 DevConfig(
                     localPropertiesEnabled = devNode.attributes.getNamedItem("enabled")?.textContent == "true",
-                    localPropertiesFile = devNode.textContent.trim(),
                 )
             } else {
-                DevConfig(localPropertiesEnabled = false, localPropertiesFile = "local.properties")
+                DevConfig(localPropertiesEnabled = false)
             }
 
         return PluginConfig(llm, format, providers, dev)

@@ -18,5 +18,23 @@
                 implementationClass="com.github.strogolsky.autoissue.actions.TodoLineMarkerProvider"/>
 
         <notificationGroup id="AutoIssue Notifications" displayType="BALLOON"/>
+
+        <projectConfigurable
+                parentId="tools"
+                id="com.github.strogolsky.autoissue"
+                instance="com.github.strogolsky.autoissue.ui.AutoIssueSettingsConfigurable"
+                displayName="AutoIssue"/>
+
+        <projectConfigurable
+                parentId="com.github.strogolsky.autoissue"
+                id="com.github.strogolsky.autoissue.jira"
+                instance="com.github.strogolsky.autoissue.ui.JiraSettingsConfigurable"
+                displayName="Jira"/>
+
+        <projectConfigurable
+                parentId="com.github.strogolsky.autoissue"
+                id="com.github.strogolsky.autoissue.llm"
+                instance="com.github.strogolsky.autoissue.ui.LlmSettingsConfigurable"
+                displayName="LLM"/>
     </extensions>
 </idea-plugin>

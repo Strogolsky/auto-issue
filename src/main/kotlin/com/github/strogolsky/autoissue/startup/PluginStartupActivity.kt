@@ -10,7 +10,6 @@ import com.github.strogolsky.autoissue.agent.context.providers.ContextComponentP
 import com.github.strogolsky.autoissue.agent.context.providers.FileContextComponentProvider
 import com.github.strogolsky.autoissue.agent.context.providers.JiraMetadataProvider
 import com.github.strogolsky.autoissue.config.LlmDefaults
-import com.github.strogolsky.autoissue.config.LocalPropertiesLoader
 import com.github.strogolsky.autoissue.config.PluginConfig
 import com.github.strogolsky.autoissue.config.PluginConfigLoader
 import com.github.strogolsky.autoissue.config.RenderingFormat
@@ -26,7 +25,7 @@ class PluginStartupActivity : ProjectActivity {
         val config = PluginConfigLoader.load()
 
         if (config.dev.localPropertiesEnabled) {
-            applyLocalProperties(project, config.dev.localPropertiesFile)
+            applyLocalProperties(project)
         }
 
         initModelProviders(project, config)
@@ -36,31 +35,15 @@ class PluginStartupActivity : ProjectActivity {
         checkConfiguration(project)
     }
 
-    private fun applyLocalProperties(
-        project: Project,
-        fileName: String,
-    ) {
-        val props = LocalPropertiesLoader.load(project, fileName)
-        if (props.isEmpty()) return
-
+    private fun applyLocalProperties(project: Project) {
         val agentConfig = project.service<AgentConfigService>()
         val jiraConfig = project.service<JiraConfigService>()
 
-        props["autoissue.llm.api-key"]?.let {
-            if (agentConfig.getApiKey().isNullOrBlank()) agentConfig.saveApiKey(it)
-        }
-        props["autoissue.jira.api-token"]?.let {
-            if (jiraConfig.getApiToken().isNullOrBlank()) jiraConfig.saveApiToken(it)
-        }
-        props["autoissue.jira.base-url"]?.let {
-            if (jiraConfig.state.baseUrl.isBlank()) jiraConfig.state.baseUrl = it
-        }
-        props["autoissue.jira.username"]?.let {
-            if (jiraConfig.state.username.isBlank()) jiraConfig.state.username = it
-        }
-        props["autoissue.jira.project-key"]?.let {
-            if (jiraConfig.state.defaultProjectKey.isBlank()) jiraConfig.state.defaultProjectKey = it
-        }
+        System.getProperty("autoissue.llm.api-key")?.takeIf { it.isNotBlank() }?.let { agentConfig.saveApiKey(it) }
+        System.getProperty("autoissue.jira.api-token")?.takeIf { it.isNotBlank() }?.let { jiraConfig.saveApiToken(it) }
+        System.getProperty("autoissue.jira.base-url")?.takeIf { it.isNotBlank() }?.let { jiraConfig.state.baseUrl = it }
+        System.getProperty("autoissue.jira.username")?.takeIf { it.isNotBlank() }?.let { jiraConfig.state.username = it }
+        System.getProperty("autoissue.jira.project-key")?.takeIf { it.isNotBlank() }?.let { jiraConfig.state.defaultProjectKey = it }
     }
 
     private fun initModelProviders(

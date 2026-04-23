@@ -18,7 +18,6 @@ data class LlmDefaults(
 
 data class DevConfig(
     val localPropertiesEnabled: Boolean,
-    val localPropertiesFile: String,
 )
 
 enum class RenderingFormat { SIMPLE }
