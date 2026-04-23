@@ -14,7 +14,6 @@ import javax.swing.JComponent
 import javax.swing.JPasswordField
 
 class LlmSettingsConfigurable(private val project: Project) : Configurable {
-
     private val configService = project.service<AgentConfigService>()
     private val resolver = project.service<ModelProviderResolver>()
 
@@ -24,18 +23,19 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
 
     override fun getDisplayName() = "LLM"
 
-    override fun createComponent(): JComponent = panel {
-        row("Provider:") {
-            providerComboBox = comboBox(resolver.providers().sorted()).component
-            providerComboBox.addActionListener { refreshModels() }
+    override fun createComponent(): JComponent =
+        panel {
+            row("Provider:") {
+                providerComboBox = comboBox(resolver.providers().sorted()).component
+                providerComboBox.addActionListener { refreshModels() }
+            }
+            row("Model:") {
+                modelComboBox = comboBox(emptyList<String>()).columns(COLUMNS_LARGE).component
+            }
+            row("API Key:") {
+                apiKeyField = passwordField().columns(COLUMNS_LARGE).component
+            }
         }
-        row("Model:") {
-            modelComboBox = comboBox(emptyList<String>()).columns(COLUMNS_LARGE).component
-        }
-        row("API Key:") {
-            apiKeyField = passwordField().columns(COLUMNS_LARGE).component
-        }
-    }
 
     private fun refreshModels() {
         val provider = providerComboBox.selectedItem as? String ?: return
@@ -53,15 +53,16 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
     }
 
     override fun apply() {
-        val newState = AgentState().apply {
-            val s = configService.getState()
-            provider = providerComboBox.selectedItem as? String ?: s.provider
-            modelName = modelComboBox.selectedItem as? String ?: s.modelName
-            systemPrompt = s.systemPrompt
-            temperature = s.temperature
-            maxIterations = s.maxIterations
-            strategyId = s.strategyId
-        }
+        val newState =
+            AgentState().apply {
+                val s = configService.getState()
+                provider = providerComboBox.selectedItem as? String ?: s.provider
+                modelName = modelComboBox.selectedItem as? String ?: s.modelName
+                systemPrompt = s.systemPrompt
+                temperature = s.temperature
+                maxIterations = s.maxIterations
+                strategyId = s.strategyId
+            }
         val token = String(apiKeyField.password).trim().takeIf { it.isNotBlank() }
         configService.updateSettings(newState, token)
     }

@@ -22,7 +22,6 @@ import javax.swing.JPasswordField
 import javax.swing.SwingUtilities
 
 class JiraSettingsConfigurable(private val project: Project) : Configurable {
-
     private val configService = project.service<JiraConfigService>()
     private val apiService = project.service<JiraApiService>()
 
@@ -38,26 +37,27 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
 
     override fun getDisplayName() = "Jira"
 
-    override fun createComponent(): JComponent = panel {
-        row("Base URL:") {
-            baseUrlField = textField().columns(COLUMNS_LARGE).component
+    override fun createComponent(): JComponent =
+        panel {
+            row("Base URL:") {
+                baseUrlField = textField().columns(COLUMNS_LARGE).component
+            }
+            row("Username:") {
+                usernameField = textField().columns(COLUMNS_LARGE).component
+            }
+            row("API Key:") {
+                apiKeyField = passwordField().columns(COLUMNS_LARGE).component
+            }
+            row {
+                button("Test Connection") { testConnection() }
+                connectionStatusLabel = label("").component
+            }
+            separator()
+            row("Default Project:") {
+                projectComboBox = comboBox(emptyList<String>()).component
+                loadProjectsButton = button("Load Projects") { loadProjects() }.component
+            }
         }
-        row("Username:") {
-            usernameField = textField().columns(COLUMNS_LARGE).component
-        }
-        row("API Key:") {
-            apiKeyField = passwordField().columns(COLUMNS_LARGE).component
-        }
-        row {
-            button("Test Connection") { testConnection() }
-            connectionStatusLabel = label("").component
-        }
-        separator()
-        row("Default Project:") {
-            projectComboBox = comboBox(emptyList<String>()).component
-            loadProjectsButton = button("Load Projects") { loadProjects() }.component
-        }
-    }
 
     private fun testConnection() {
         val url = baseUrlField.text.trim()
@@ -109,8 +109,9 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
     override fun isModified(): Boolean {
         val state = configService.getState()
         val savedToken = configService.getApiToken() ?: ""
-        val selectedKey = projectKeyMap[projectComboBox.selectedItem as? String]
-            ?: (projectComboBox.selectedItem as? String ?: "")
+        val selectedKey =
+            projectKeyMap[projectComboBox.selectedItem as? String]
+                ?: (projectComboBox.selectedItem as? String ?: "")
 
         return baseUrlField.text != state.baseUrl ||
             usernameField.text != state.username ||
@@ -120,11 +121,12 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
 
     override fun apply() {
         val selectedDisplay = projectComboBox.selectedItem as? String ?: ""
-        val newState = JiraIntegrationState().apply {
-            baseUrl = this@JiraSettingsConfigurable.baseUrlField.text.trim()
-            username = this@JiraSettingsConfigurable.usernameField.text.trim()
-            defaultProjectKey = projectKeyMap[selectedDisplay] ?: selectedDisplay
-        }
+        val newState =
+            JiraIntegrationState().apply {
+                baseUrl = this@JiraSettingsConfigurable.baseUrlField.text.trim()
+                username = this@JiraSettingsConfigurable.usernameField.text.trim()
+                defaultProjectKey = projectKeyMap[selectedDisplay] ?: selectedDisplay
+            }
         val token = String(apiKeyField.password).trim().takeIf { it.isNotBlank() }
         configService.updateSettings(newState, token)
     }

@@ -5,7 +5,10 @@ import javax.swing.JComponent
 
 class AutoIssueSettingsConfigurable : Configurable {
     override fun getDisplayName() = "AutoIssue"
+
     override fun createComponent(): JComponent? = null
+
     override fun isModified() = false
+
     override fun apply() {}
 }

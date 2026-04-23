@@ -11,8 +11,9 @@ class GoogleLlmProviderFactory : LlmProviderFactory {
         apiKey: String,
     ): Pair<PromptExecutor, LLModel> {
         val executor = simpleGoogleAIExecutor(apiKey)
-        val model = GoogleModels.models.find { it.id == modelName }
-            ?: throw IllegalArgumentException("Unsupported Google model: $modelName")
+        val model =
+            GoogleModels.models.find { it.id == modelName }
+                ?: throw IllegalArgumentException("Unsupported Google model: $modelName")
         return Pair(executor, model)
     }
 
