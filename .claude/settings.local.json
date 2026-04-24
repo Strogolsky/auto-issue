@@ -5,7 +5,8 @@
       "Bash(xargs -I {} find {} -type d)",
       "Bash(xargs cat *)",
       "Bash(find /d/Project/auto-issue -name \"*.xml\" -path \"*/resources/*\" -exec grep -l \"local\" {} \\\\;)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(grep -E \"\\\\.\\(gradle|properties|yml|yaml|json|sh|bat\\)$\")"
     ]
   }
 }

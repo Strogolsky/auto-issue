@@ -6,7 +6,7 @@
     <default-strategy>prod-jira-strategy</default-strategy>
     <temperature>0.7</temperature>
     <max-iterations>3</max-iterations>
-    <system-prompt>You are a Jira issue generator. Based on the provided code context and TODO comment, generate a well-structured Jira issue.</system-prompt>
+    <system-prompt file="prompts/system-prompt.md"/>
   </llm>
 
   <rendering>
@@ -23,7 +23,7 @@
 
   <dev>
     <!-- set enabled="false" to disable the mechanism entirely -->
-    <local-properties enabled="false">local.properties</local-properties>
+    <local-properties enabled="true">local.properties</local-properties>
   </dev>
 
 </plugin-config>
