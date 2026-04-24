@@ -25,7 +25,7 @@ object PluginConfigLoader {
                 strategyId = llmNode.text("default-strategy"),
                 temperature = llmNode.text("temperature").toDouble(),
                 maxIterations = llmNode.text("max-iterations").toInt(),
-                systemPrompt = resolveSystemPrompt(llmNode),
+                systemPrompt = resolveSystemPrompt(llmNode) + resolveExamples(llmNode),
             )
 
         val format =
@@ -63,6 +63,17 @@ object PluginConfigLoader {
             return stream.bufferedReader().use { it.readText() }.trim()
         }
         return node.textContent.trim()
+    }
+
+    private fun resolveExamples(llmNode: Element): String {
+        val node = llmNode.getElementsByTagName("examples").item(0) as? Element ?: return ""
+        val filePath = node.getAttribute("file").trim()
+        if (filePath.isEmpty()) return ""
+        val stream = PluginConfigLoader::class.java.getResourceAsStream("/$filePath")
+            ?: File(filePath).takeIf { it.exists() }?.inputStream()
+            ?: error("examples file not found: $filePath")
+        val content = stream.bufferedReader().use { it.readText() }.trim()
+        return if (content.isEmpty()) "" else "\n\n---\n\n$content"
     }
 
     private fun Element.text(tag: String): String = getElementsByTagName(tag).item(0).textContent.trim()
