@@ -1,5 +1,6 @@
 package com.github.strogolsky.autoissue.config
 
+import com.github.strogolsky.autoissue.masking.MaskingConfig
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
@@ -49,7 +50,18 @@ object PluginConfigLoader {
                 DevConfig(localPropertiesEnabled = false)
             }
 
-        return PluginConfig(llm, format, providers, dev)
+        val maskingNode = doc.getElementsByTagName("masking").item(0) as? Element
+        val masking =
+            if (maskingNode != null) {
+                val enabled =
+                    maskingNode.getElementsByTagName("enabled").item(0)
+                        ?.textContent?.trim()?.equals("true", ignoreCase = true) ?: true
+                MaskingConfig(enabled = enabled)
+            } else {
+                MaskingConfig()
+            }
+
+        return PluginConfig(llm, format, providers, dev, masking)
     }
 
     private fun resolveSystemPrompt(llmNode: Element): String {

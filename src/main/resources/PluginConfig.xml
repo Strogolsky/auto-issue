@@ -27,4 +27,8 @@
     <local-properties enabled="true">local.properties</local-properties>
   </dev>
 
+  <masking>
+    <enabled>true</enabled>
+  </masking>
+
 </plugin-config>

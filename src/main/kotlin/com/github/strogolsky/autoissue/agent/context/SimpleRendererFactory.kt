@@ -4,8 +4,9 @@ import com.github.strogolsky.autoissue.agent.context.components.ContextComponent
 import com.github.strogolsky.autoissue.agent.context.components.FileContextComponent
 import com.github.strogolsky.autoissue.agent.context.components.JiraProjectMetadata
 import com.github.strogolsky.autoissue.agent.context.components.TaskInstruction
+import com.github.strogolsky.autoissue.masking.ContentMasker
 
-class SimpleRendererFactory : RendererFactory {
+class SimpleRendererFactory(private val masker: ContentMasker) : RendererFactory {
     override fun render(component: ContextComponent): String =
         when (component) {
             is FileContextComponent -> renderFileContext(component)
@@ -20,12 +21,12 @@ class SimpleRendererFactory : RendererFactory {
             if (c.className != null) {
                 appendLine("Class: ${c.className}")
                 appendLine("Available class fields/dependencies:")
-                c.classFields.forEach { appendLine("- $it") }
+                c.classFields.map { masker.mask(it) }.forEach { appendLine("- $it") }
             }
 
             appendLine("\nTarget Method Context:")
             appendLine("```${c.language}")
-            appendLine(c.methodBody)
+            appendLine(masker.mask(c.methodBody))
             appendLine("```")
         }
 
@@ -44,5 +45,5 @@ class SimpleRendererFactory : RendererFactory {
             appendLine("=============================")
         }
 
-    private fun renderTaskInstruction(t: TaskInstruction): String = "Instruction: ${t.description}"
+    private fun renderTaskInstruction(t: TaskInstruction): String = "Instruction: ${masker.mask(t.description)}"
 }

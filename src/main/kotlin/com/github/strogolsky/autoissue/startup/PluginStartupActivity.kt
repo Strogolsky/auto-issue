@@ -13,6 +13,9 @@ import com.github.strogolsky.autoissue.config.LlmDefaults
 import com.github.strogolsky.autoissue.config.PluginConfig
 import com.github.strogolsky.autoissue.config.PluginConfigLoader
 import com.github.strogolsky.autoissue.config.RenderingFormat
+import com.github.strogolsky.autoissue.masking.ContentMasker
+import com.github.strogolsky.autoissue.masking.MaskingPatterns
+import com.github.strogolsky.autoissue.masking.RegexContentMasker
 import com.github.strogolsky.autoissue.services.JiraConfigService
 import com.github.strogolsky.autoissue.settings.AgentConfigService
 import com.intellij.openapi.components.service
@@ -76,12 +79,19 @@ class PluginStartupActivity : ProjectActivity {
         project: Project,
         config: PluginConfig,
     ) {
+        val masker: ContentMasker =
+            if (!config.masking.enabled) {
+                ContentMasker { it }
+            } else {
+                RegexContentMasker(MaskingPatterns.ALL)
+            }
         val factory: RendererFactory =
             when (config.renderingFormat) {
-                RenderingFormat.SIMPLE -> SimpleRendererFactory()
+                RenderingFormat.SIMPLE -> SimpleRendererFactory(masker)
             }
         project.service<RendererFactoryHolder>().factory = factory
     }
+
 
     private fun applyLlmDefaults(
         project: Project,
