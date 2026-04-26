@@ -26,6 +26,7 @@ class TicketEditDialog(
     private val descriptionArea =
         JBTextArea(candidate.description).apply {
             rows = 8
+            columns = 40
             lineWrap = true
             wrapStyleWord = true
         }
@@ -54,7 +55,13 @@ class TicketEditDialog(
     override fun createCenterPanel(): JComponent =
         panel {
             row("Title:") { cell(titleField).align(Align.FILL) }
-            row("Description:") { cell(JBScrollPane(descriptionArea)).align(Align.FILL) }
+            row("Description:") {
+                cell(
+                    JBScrollPane(descriptionArea).apply {
+                        preferredSize = Dimension(600, 160)
+                    },
+                ).align(Align.FILL)
+            }
             row("Issue Type:") { cell(issueTypeCombo) }
             row("Priority:") { cell(priorityCombo) }
             row("Assignee:") { cell(assigneeCombo) }

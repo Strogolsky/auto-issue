@@ -61,7 +61,6 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
                 systemPrompt = s.systemPrompt
                 temperature = s.temperature
                 maxIterations = s.maxIterations
-                strategyId = s.strategyId
             }
         val token = String(apiKeyField.password).trim().takeIf { it.isNotBlank() }
         configService.updateSettings(newState, token)

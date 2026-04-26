@@ -42,12 +42,12 @@ class AgentConfigService : PersistentStateComponent<AgentState> {
     }
 
     fun applyDefaults(defaults: LlmDefaults) {
-        if (state.provider.isBlank()) state.provider = defaults.provider
-        if (state.modelName.isBlank()) state.modelName = defaults.modelName
-        if (state.strategyId.isBlank()) state.strategyId = defaults.strategyId
-        if (state.temperature == 0.0) state.temperature = defaults.temperature
-        if (state.maxIterations == 0) state.maxIterations = defaults.maxIterations
-        if (state.systemPrompt.isBlank()) state.systemPrompt = defaults.systemPrompt
+        if (defaults.provider.isNotBlank()) state.provider = defaults.provider
+        if (defaults.modelName.isNotBlank()) state.modelName = defaults.modelName
+        if (defaults.strategyId.isNotBlank()) state.strategyId = defaults.strategyId
+        if (defaults.temperature != 0.0) state.temperature = defaults.temperature
+        if (defaults.maxIterations != 0) state.maxIterations = defaults.maxIterations
+        if (defaults.systemPrompt.isNotBlank()) state.systemPrompt = defaults.systemPrompt
     }
 
     fun getEffectiveConfig(): AgentConfig? {

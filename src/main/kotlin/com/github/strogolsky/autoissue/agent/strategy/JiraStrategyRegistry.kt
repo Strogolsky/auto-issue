@@ -5,14 +5,16 @@ import com.github.strogolsky.autoissue.agent.input.AgentInput
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.project.Project
 import java.util.concurrent.ConcurrentHashMap
 
 @Service(Service.Level.PROJECT)
-class JiraStrategyRegistry {
+class JiraStrategyRegistry(private val project: Project) {
     private val strategies = ConcurrentHashMap<String, () -> AIAgentGraphStrategy<AgentInput, JiraTaskCandidate>>()
 
     init {
-        register("prod-jira-strategy") { JiraIssueStrategyFactory().createStrategy() }
+        register("prod-jira-strategy") { JiraIssueStrategyFactory(project).createStrategy() }
+        register("prod-jira-reasoning-strategy") { JiraReasoningStrategyFactory(project).createStrategy() }
         thisLogger().info("JiraStrategyRegistry initialized with default strategies.")
     }
 

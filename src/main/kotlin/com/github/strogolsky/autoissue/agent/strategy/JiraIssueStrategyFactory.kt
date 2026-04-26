@@ -5,16 +5,25 @@ import ai.koog.agents.core.dsl.builder.node
 import ai.koog.agents.core.dsl.builder.strategy
 import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.prompt.structure.StructuredResponse
+import com.github.strogolsky.autoissue.agent.context.PromptRenderService
 import com.github.strogolsky.autoissue.agent.input.AgentInput
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.project.Project
 
-class JiraIssueStrategyFactory : IssueStrategyFactory<AgentInput, JiraTaskCandidate> {
+class JiraIssueStrategyFactory(
+    private val project: Project,
+) : IssueStrategyFactory<AgentInput, JiraTaskCandidate> {
+    private val renderService = project.service<PromptRenderService>()
+
     override fun createStrategy(): AIAgentGraphStrategy<AgentInput, JiraTaskCandidate> {
         return strategy("jira_issue_generation") {
             val nodePrepareContext by node<AgentInput, String>("prepare_context") { input ->
                 thisLogger().debug("Preparing context for LLM prompt")
-                input.toPrompt()
+                renderService.buildPrompt {
+                    components(input.components)
+                }
             }
 
             val nodeCallLLM by nodeLLMRequestStructured<JiraTaskCandidate>(

@@ -1,9 +1,11 @@
 package com.github.strogolsky.autoissue.agent
 
 import ai.koog.agents.core.agent.AIAgent
+import ai.koog.agents.core.tools.ToolRegistry
 import com.github.strogolsky.autoissue.agent.input.AgentInput
 import com.github.strogolsky.autoissue.agent.output.JiraTaskCandidate
 import com.github.strogolsky.autoissue.agent.strategy.JiraStrategyRegistry
+import com.github.strogolsky.autoissue.config.PluginConfigLoader
 import com.github.strogolsky.autoissue.settings.AgentConfig
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -20,14 +22,17 @@ class JiraIssueAgentFactory(private val project: Project) :
 
         val modelResolver = project.service<ModelProviderResolver>()
         val strategyRegistry = project.service<JiraStrategyRegistry>()
+        val pluginConfig = PluginConfigLoader.load()
 
         val (executor, model) = modelResolver.resolve(config.provider, config.modelName, config.apiKey)
 
-        val strategy = strategyRegistry.getStrategy(config.strategyId)
+        val strategy = strategyRegistry.getStrategy(pluginConfig.llm.strategyId)
 
         thisLogger().debug(
-            "Agent components resolved. Provider: ${config.provider}, Model: ${config.modelName}, Strategy: ${config.strategyId}",
+            "Agent components resolved. Provider: ${config.provider}, Model: ${config.modelName}, Strategy: ${pluginConfig.llm.strategyId}",
         )
+
+        val toolRegistry = ToolRegistry { }
 
         val rawKoogAgent =
             AIAgent(
@@ -37,6 +42,7 @@ class JiraIssueAgentFactory(private val project: Project) :
                 systemPrompt = config.systemPrompt,
                 temperature = config.temperature,
                 maxIterations = config.maxIterations,
+                toolRegistry = toolRegistry,
             )
 
         thisLogger().info("Jira Issue Agent successfully created.")

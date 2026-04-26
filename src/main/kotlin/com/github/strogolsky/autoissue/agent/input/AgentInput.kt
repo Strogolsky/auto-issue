@@ -1,5 +1,7 @@
 package com.github.strogolsky.autoissue.agent.input
 
-interface AgentInput {
-    fun toPrompt(): String
-}
+import com.github.strogolsky.autoissue.agent.context.components.ContextComponent
+
+data class AgentInput(
+    val components: List<ContextComponent>,
+)

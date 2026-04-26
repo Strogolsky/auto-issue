@@ -1,8 +1,10 @@
 package com.github.strogolsky.autoissue.config
 
+import com.github.strogolsky.autoissue.masking.MaskingConfig
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
+import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
 object PluginConfigLoader {
@@ -24,7 +26,7 @@ object PluginConfigLoader {
                 strategyId = llmNode.text("default-strategy"),
                 temperature = llmNode.text("temperature").toDouble(),
                 maxIterations = llmNode.text("max-iterations").toInt(),
-                systemPrompt = llmNode.text("system-prompt"),
+                systemPrompt = resolveSystemPrompt(llmNode) + resolveExamples(llmNode),
             )
 
         val format =
@@ -48,7 +50,45 @@ object PluginConfigLoader {
                 DevConfig(localPropertiesEnabled = false)
             }
 
-        return PluginConfig(llm, format, providers, dev)
+        val maskingNode = doc.getElementsByTagName("masking").item(0) as? Element
+        val masking =
+            if (maskingNode != null) {
+                val enabled =
+                    maskingNode.getElementsByTagName("enabled").item(0)
+                        ?.textContent?.trim()?.equals("true", ignoreCase = true) ?: true
+                MaskingConfig(enabled = enabled)
+            } else {
+                MaskingConfig()
+            }
+
+        return PluginConfig(llm, format, providers, dev, masking)
+    }
+
+    private fun resolveSystemPrompt(llmNode: Element): String {
+        val node =
+            llmNode.getElementsByTagName("system-prompt").item(0) as? Element
+                ?: error("Missing <system-prompt> in PluginConfig.xml")
+        val filePath = node.getAttribute("file").trim()
+        if (filePath.isNotEmpty()) {
+            val stream =
+                PluginConfigLoader::class.java.getResourceAsStream("/$filePath")
+                    ?: File(filePath).takeIf { it.exists() }?.inputStream()
+                    ?: error("system-prompt file not found: $filePath")
+            return stream.bufferedReader().use { it.readText() }.trim()
+        }
+        return node.textContent.trim()
+    }
+
+    private fun resolveExamples(llmNode: Element): String {
+        val node = llmNode.getElementsByTagName("examples").item(0) as? Element ?: return ""
+        val filePath = node.getAttribute("file").trim()
+        if (filePath.isEmpty()) return ""
+        val stream =
+            PluginConfigLoader::class.java.getResourceAsStream("/$filePath")
+                ?: File(filePath).takeIf { it.exists() }?.inputStream()
+                ?: error("examples file not found: $filePath")
+        val content = stream.bufferedReader().use { it.readText() }.trim()
+        return if (content.isEmpty()) "" else "\n\n---\n\n$content"
     }
 
     private fun Element.text(tag: String): String = getElementsByTagName(tag).item(0).textContent.trim()
