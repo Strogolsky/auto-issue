@@ -1,10 +1,10 @@
 package com.github.strogolsky.autoissue.plugin.startup
 
+import com.github.strogolsky.autoissue.core.masking.MaskingConfig
 import com.github.strogolsky.autoissue.plugin.config.DevConfig
 import com.github.strogolsky.autoissue.plugin.config.LlmDefaults
 import com.github.strogolsky.autoissue.plugin.config.PluginConfig
 import com.github.strogolsky.autoissue.plugin.config.RenderingFormat
-import com.github.strogolsky.autoissue.core.masking.MaskingConfig
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList

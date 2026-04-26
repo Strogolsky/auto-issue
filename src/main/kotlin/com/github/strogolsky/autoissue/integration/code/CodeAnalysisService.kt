@@ -1,6 +1,5 @@
 package com.github.strogolsky.autoissue.integration.code
 
-import com.github.strogolsky.autoissue.integration.code.MethodContext
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project

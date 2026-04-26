@@ -13,7 +13,6 @@ import ai.koog.agents.core.dsl.extension.onToolCall
 import ai.koog.prompt.structure.StructuredResponse
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.core.input.AgentInput
-import com.github.strogolsky.autoissue.core.agent.strategy.AnalysisContext
 import com.github.strogolsky.autoissue.core.output.JiraTaskCandidate
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger

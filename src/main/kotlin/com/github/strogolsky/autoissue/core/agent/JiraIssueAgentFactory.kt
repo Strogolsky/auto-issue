@@ -2,11 +2,11 @@ package com.github.strogolsky.autoissue.core.agent
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
+import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
 import com.github.strogolsky.autoissue.core.input.AgentInput
 import com.github.strogolsky.autoissue.core.output.JiraTaskCandidate
-import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
-import com.github.strogolsky.autoissue.plugin.startup.PluginConfigLoader
 import com.github.strogolsky.autoissue.plugin.config.AgentConfig
+import com.github.strogolsky.autoissue.plugin.startup.PluginConfigLoader
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger

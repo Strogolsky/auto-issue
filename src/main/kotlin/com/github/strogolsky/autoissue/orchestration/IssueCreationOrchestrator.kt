@@ -1,12 +1,12 @@
 package com.github.strogolsky.autoissue.orchestration
 
+import com.github.strogolsky.autoissue.core.JiraIssueGenerationService
 import com.github.strogolsky.autoissue.core.context.ContextEnvironment
 import com.github.strogolsky.autoissue.core.output.JiraIssueRequest
-import com.github.strogolsky.autoissue.integration.jira.JiraApiService
-import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
-import com.github.strogolsky.autoissue.core.JiraIssueGenerationService
 import com.github.strogolsky.autoissue.integration.code.TodoUpdaterService
+import com.github.strogolsky.autoissue.integration.jira.JiraApiService
 import com.github.strogolsky.autoissue.plugin.config.AgentConfigService
+import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.ui.components.TicketEditDialog
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType

@@ -1,6 +1,5 @@
 package com.github.strogolsky.autoissue
 
-import com.github.strogolsky.autoissue.MyProjectService
 import com.intellij.ide.highlighter.XmlFileType
 import com.intellij.openapi.components.service
 import com.intellij.psi.xml.XmlFile

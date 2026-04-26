@@ -4,9 +4,9 @@ import com.github.strogolsky.autoissue.core.agent.JiraIssueAgentFactory
 import com.github.strogolsky.autoissue.core.context.ContextEnvironment
 import com.github.strogolsky.autoissue.core.context.ContextRegistry
 import com.github.strogolsky.autoissue.core.context.components.TaskInstruction
+import com.github.strogolsky.autoissue.core.exceptions.TaskGenerationException
 import com.github.strogolsky.autoissue.core.input.AgentInput
 import com.github.strogolsky.autoissue.core.output.JiraTaskCandidate
-import com.github.strogolsky.autoissue.core.exceptions.TaskGenerationException
 import com.github.strogolsky.autoissue.plugin.config.AgentConfigService
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service

@@ -1,7 +1,5 @@
 package com.github.strogolsky.autoissue.integration.code
 
-import com.github.strogolsky.autoissue.integration.code.MethodContext
-
 data class DetailedFileContext(
     val fileName: String,
     val language: String,
