@@ -65,13 +65,15 @@ object PluginConfigLoader {
     }
 
     private fun resolveSystemPrompt(llmNode: Element): String {
-        val node = llmNode.getElementsByTagName("system-prompt").item(0) as? Element
-            ?: error("Missing <system-prompt> in PluginConfig.xml")
+        val node =
+            llmNode.getElementsByTagName("system-prompt").item(0) as? Element
+                ?: error("Missing <system-prompt> in PluginConfig.xml")
         val filePath = node.getAttribute("file").trim()
         if (filePath.isNotEmpty()) {
-            val stream = PluginConfigLoader::class.java.getResourceAsStream("/$filePath")
-                ?: File(filePath).takeIf { it.exists() }?.inputStream()
-                ?: error("system-prompt file not found: $filePath")
+            val stream =
+                PluginConfigLoader::class.java.getResourceAsStream("/$filePath")
+                    ?: File(filePath).takeIf { it.exists() }?.inputStream()
+                    ?: error("system-prompt file not found: $filePath")
             return stream.bufferedReader().use { it.readText() }.trim()
         }
         return node.textContent.trim()
@@ -81,9 +83,10 @@ object PluginConfigLoader {
         val node = llmNode.getElementsByTagName("examples").item(0) as? Element ?: return ""
         val filePath = node.getAttribute("file").trim()
         if (filePath.isEmpty()) return ""
-        val stream = PluginConfigLoader::class.java.getResourceAsStream("/$filePath")
-            ?: File(filePath).takeIf { it.exists() }?.inputStream()
-            ?: error("examples file not found: $filePath")
+        val stream =
+            PluginConfigLoader::class.java.getResourceAsStream("/$filePath")
+                ?: File(filePath).takeIf { it.exists() }?.inputStream()
+                ?: error("examples file not found: $filePath")
         val content = stream.bufferedReader().use { it.readText() }.trim()
         return if (content.isEmpty()) "" else "\n\n---\n\n$content"
     }

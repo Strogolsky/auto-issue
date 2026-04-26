@@ -91,6 +91,7 @@ class PluginStartupActivity : ProjectActivity {
             }
         project.service<PromptRenderService>().initialize(factory)
     }
+
     private fun applyLlmDefaults(
         project: Project,
         defaults: LlmDefaults,

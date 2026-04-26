@@ -36,5 +36,4 @@ class JiraStrategyRegistry(private val project: Project) {
         thisLogger().debug("Instantiating strategy: '$id'")
         return factory.invoke()
     }
-
 }
