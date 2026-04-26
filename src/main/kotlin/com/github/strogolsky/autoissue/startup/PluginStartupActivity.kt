@@ -3,8 +3,8 @@ package com.github.strogolsky.autoissue.startup
 import com.github.strogolsky.autoissue.agent.GoogleLlmProviderFactory
 import com.github.strogolsky.autoissue.agent.ModelProviderResolver
 import com.github.strogolsky.autoissue.agent.context.ContextRegistry
+import com.github.strogolsky.autoissue.agent.context.PromptRenderService
 import com.github.strogolsky.autoissue.agent.context.RendererFactory
-import com.github.strogolsky.autoissue.agent.context.RendererFactoryHolder
 import com.github.strogolsky.autoissue.agent.context.SimpleRendererFactory
 import com.github.strogolsky.autoissue.agent.context.providers.ContextComponentProvider
 import com.github.strogolsky.autoissue.agent.context.providers.FileContextComponentProvider
@@ -89,10 +89,8 @@ class PluginStartupActivity : ProjectActivity {
             when (config.renderingFormat) {
                 RenderingFormat.SIMPLE -> SimpleRendererFactory(masker)
             }
-        project.service<RendererFactoryHolder>().factory = factory
+        project.service<PromptRenderService>().initialize(factory)
     }
-
-
     private fun applyLlmDefaults(
         project: Project,
         defaults: LlmDefaults,
