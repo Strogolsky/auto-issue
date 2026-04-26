@@ -11,11 +11,10 @@ import java.util.concurrent.ConcurrentHashMap
 @Service(Service.Level.PROJECT)
 class JiraStrategyRegistry(private val project: Project) {
     private val strategies = ConcurrentHashMap<String, () -> AIAgentGraphStrategy<AgentInput, JiraTaskCandidate>>()
-    private val reasoningFactory = JiraReasoningStrategyFactory(project)
 
     init {
         register("prod-jira-strategy") { JiraIssueStrategyFactory(project).createStrategy() }
-        register("prod-jira-reasoning-strategy") { reasoningFactory.createStrategy() }
+        register("prod-jira-reasoning-strategy") { JiraReasoningStrategyFactory(project).createStrategy() }
         thisLogger().info("JiraStrategyRegistry initialized with default strategies.")
     }
 
@@ -38,7 +37,4 @@ class JiraStrategyRegistry(private val project: Project) {
         return factory.invoke()
     }
 
-    fun setReasoningTools(tools: List<ai.koog.agents.core.tools.Tool<*, *>>) {
-        reasoningFactory.tools = tools
-    }
 }

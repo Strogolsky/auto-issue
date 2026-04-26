@@ -11,7 +11,6 @@ import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.agents.core.dsl.extension.nodeLLMSendToolResult
 import ai.koog.agents.core.dsl.extension.onAssistantMessage
 import ai.koog.agents.core.dsl.extension.onToolCall
-import ai.koog.agents.core.tools.Tool
 import ai.koog.prompt.structure.StructuredResponse
 import com.github.strogolsky.autoissue.agent.context.PromptRenderService
 import com.github.strogolsky.autoissue.agent.input.AgentInput
@@ -24,8 +23,6 @@ import com.intellij.openapi.project.Project
 class JiraReasoningStrategyFactory(
     private val project: Project,
 ) : IssueStrategyFactory<AgentInput, JiraTaskCandidate> {
-    var tools: List<Tool<*, *>> = emptyList()
-
     private val renderService = project.service<PromptRenderService>()
 
     override fun createStrategy(): AIAgentGraphStrategy<AgentInput, JiraTaskCandidate> {
@@ -34,7 +31,6 @@ class JiraReasoningStrategyFactory(
         return strategy("jira_reasoning_strategy") {
             val analysisSubgraph by subgraph<AgentInput, AnalysisContext>(
                 name = "analysis",
-                tools = tools,
             ) {
                 val nodePrepare by node<AgentInput, String>("prepare_analysis_prompt") { input ->
                     originalInput = input
@@ -105,10 +101,6 @@ class JiraReasoningStrategyFactory(
         renderService.buildPrompt {
             instruction("Stage 1 of 2 — analysis only. Do not produce the ticket yet; the next stage will.")
             instruction("Write a concise technical analysis of the TODO based on the context below, in plain prose.")
-
-            if (tools.isNotEmpty()) {
-                instruction("If any of the available tools help you ground the analysis in real data, use them.")
-            }
 
             components(input.components)
         }
