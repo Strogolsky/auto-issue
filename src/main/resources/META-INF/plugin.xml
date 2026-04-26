@@ -11,30 +11,30 @@
     <extensions defaultExtensionNs="com.intellij">
 
         <toolWindow factoryClass="com.github.strogolsky.autoissue.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.strogolsky.autoissue.startup.PluginStartupActivity" />
+        <postStartupActivity implementation="com.github.strogolsky.autoissue.plugin.startup.PluginStartupActivity" />
 
         <codeInsight.lineMarkerProvider
                 language="JAVA"
-                implementationClass="com.github.strogolsky.autoissue.actions.TodoLineMarkerProvider"/>
+                implementationClass="com.github.strogolsky.autoissue.ui.action.TodoLineMarkerProvider"/>
 
         <notificationGroup id="AutoIssue Notifications" displayType="BALLOON"/>
 
         <projectConfigurable
                 parentId="tools"
                 id="com.github.strogolsky.autoissue"
-                instance="com.github.strogolsky.autoissue.ui.AutoIssueSettingsConfigurable"
+                instance="com.github.strogolsky.autoissue.ui.components.AutoIssueSettingsConfigurable"
                 displayName="AutoIssue"/>
 
         <projectConfigurable
                 parentId="com.github.strogolsky.autoissue"
                 id="com.github.strogolsky.autoissue.jira"
-                instance="com.github.strogolsky.autoissue.ui.JiraSettingsConfigurable"
+                instance="com.github.strogolsky.autoissue.ui.components.JiraSettingsConfigurable"
                 displayName="Jira"/>
 
         <projectConfigurable
                 parentId="com.github.strogolsky.autoissue"
                 id="com.github.strogolsky.autoissue.llm"
-                instance="com.github.strogolsky.autoissue.ui.LlmSettingsConfigurable"
+                instance="com.github.strogolsky.autoissue.ui.components.LlmSettingsConfigurable"
                 displayName="LLM"/>
     </extensions>
 </idea-plugin>
