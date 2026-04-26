@@ -1,19 +1,19 @@
 package com.github.strogolsky.autoissue.plugin.startup
 
 import com.github.strogolsky.autoissue.core.agent.GoogleLlmProviderFactory
-import com.github.strogolsky.autoissue.core.agent.ModelProviderResolver
+import com.github.strogolsky.autoissue.core.agent.LlmProviderRegistry
 import com.github.strogolsky.autoissue.core.context.ContextRegistry
 import com.github.strogolsky.autoissue.core.context.providers.ContextComponentProvider
 import com.github.strogolsky.autoissue.core.context.providers.FileContextComponentProvider
 import com.github.strogolsky.autoissue.core.context.providers.JiraMetadataProvider
+import com.github.strogolsky.autoissue.core.context.render.PlainTextPromptRenderer
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
-import com.github.strogolsky.autoissue.core.context.render.RendererFactory
-import com.github.strogolsky.autoissue.core.context.render.SimpleRendererFactory
+import com.github.strogolsky.autoissue.core.context.render.PromptRenderer
 import com.github.strogolsky.autoissue.core.masking.ContentMasker
 import com.github.strogolsky.autoissue.core.masking.MaskingPatterns
 import com.github.strogolsky.autoissue.core.masking.RegexContentMasker
-import com.github.strogolsky.autoissue.plugin.config.AgentConfigService
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
+import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
 import com.github.strogolsky.autoissue.plugin.config.LlmDefaults
 import com.github.strogolsky.autoissue.plugin.config.PluginConfig
 import com.github.strogolsky.autoissue.plugin.config.RenderingFormat
@@ -38,7 +38,7 @@ class PluginStartupActivity : ProjectActivity {
     }
 
     private fun applyLocalProperties(project: Project) {
-        val agentConfig = project.service<AgentConfigService>()
+        val agentConfig = project.service<LlmAgentConfigService>()
         val jiraConfig = project.service<JiraConfigService>()
 
         System.getProperty("autoissue.llm.api-key")?.takeIf { it.isNotBlank() }?.let { agentConfig.saveApiKey(it) }
@@ -52,7 +52,7 @@ class PluginStartupActivity : ProjectActivity {
         project: Project,
         config: PluginConfig,
     ) {
-        val resolver = project.service<ModelProviderResolver>()
+        val resolver = project.service<LlmProviderRegistry>()
         resolver.register("GOOGLE", GoogleLlmProviderFactory())
     }
 
@@ -84,9 +84,9 @@ class PluginStartupActivity : ProjectActivity {
             } else {
                 RegexContentMasker(MaskingPatterns.ALL)
             }
-        val factory: RendererFactory =
+        val factory: PromptRenderer =
             when (config.renderingFormat) {
-                RenderingFormat.SIMPLE -> SimpleRendererFactory(masker)
+                RenderingFormat.SIMPLE -> PlainTextPromptRenderer(masker)
             }
         project.service<PromptRenderService>().initialize(factory)
     }
@@ -95,11 +95,11 @@ class PluginStartupActivity : ProjectActivity {
         project: Project,
         defaults: LlmDefaults,
     ) {
-        project.service<AgentConfigService>().applyDefaults(defaults)
+        project.service<LlmAgentConfigService>().applyDefaults(defaults)
     }
 
     private fun checkConfiguration(project: Project) {
-        val agentConfig = project.service<AgentConfigService>()
+        val agentConfig = project.service<LlmAgentConfigService>()
         val jiraConfig = project.service<JiraConfigService>()
 
         val apiKeyMissing = agentConfig.getApiKey().isNullOrBlank()

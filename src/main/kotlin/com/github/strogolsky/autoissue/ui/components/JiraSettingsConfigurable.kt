@@ -2,7 +2,7 @@ package com.github.strogolsky.autoissue.ui.components
 
 import com.github.strogolsky.autoissue.integration.jira.JiraApiService
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
-import com.github.strogolsky.autoissue.plugin.state.JiraIntegrationState
+import com.github.strogolsky.autoissue.plugin.state.JiraState
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
@@ -124,7 +124,7 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
     override fun apply() {
         val selectedDisplay = projectComboBox.selectedItem as? String ?: ""
         val newState =
-            JiraIntegrationState().apply {
+            JiraState().apply {
                 baseUrl = this@JiraSettingsConfigurable.baseUrlField.text.trim()
                 username = this@JiraSettingsConfigurable.usernameField.text.trim()
                 defaultProjectKey = projectKeyMap[selectedDisplay] ?: selectedDisplay

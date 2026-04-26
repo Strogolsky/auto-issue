@@ -1,6 +1,6 @@
 package com.github.strogolsky.autoissue.core.output
 
-interface TaskCandidate {
+interface IssueCandidate {
     val title: String
     val description: String
 }

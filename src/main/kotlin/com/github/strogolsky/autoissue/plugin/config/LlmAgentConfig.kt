@@ -1,11 +1,11 @@
 package com.github.strogolsky.autoissue.plugin.config
 
-data class AgentConfig(
+data class LlmAgentConfig(
     val apiKey: String,
     val provider: String,
     val modelName: String,
     val systemPrompt: String,
     val temperature: Double,
     val maxIterations: Int,
-    var strategyId: String,
+    val strategyId: String,
 )

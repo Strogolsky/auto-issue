@@ -1,6 +1,6 @@
 package com.github.strogolsky.autoissue.plugin.config
 
-import com.github.strogolsky.autoissue.plugin.state.JiraIntegrationState
+import com.github.strogolsky.autoissue.plugin.state.JiraState
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.credentialStore.Credentials
 import com.intellij.credentialStore.generateServiceName
@@ -12,13 +12,13 @@ import com.intellij.openapi.components.Storage
 
 @Service(Service.Level.PROJECT)
 @State(name = "JiraIntegrationConfiguration", storages = [Storage("AutoIssue_Jira.xml")])
-class JiraConfigService : PersistentStateComponent<JiraIntegrationState> {
-    private var state = JiraIntegrationState()
+class JiraConfigService : PersistentStateComponent<JiraState> {
+    private var state = JiraState()
     private val tokenKey = CredentialAttributes(generateServiceName("AutoIssue", "JiraApiToken"))
 
     override fun getState() = state
 
-    override fun loadState(s: JiraIntegrationState) {
+    override fun loadState(s: JiraState) {
         state = s
     }
 
@@ -29,7 +29,7 @@ class JiraConfigService : PersistentStateComponent<JiraIntegrationState> {
     }
 
     fun updateSettings(
-        newState: JiraIntegrationState,
+        newState: JiraState,
         newKey: String?,
     ) {
         state = newState

@@ -1,8 +1,8 @@
 package com.github.strogolsky.autoissue.core.agent.strategy
 
 import ai.koog.agents.core.agent.entity.AIAgentGraphStrategy
-import com.github.strogolsky.autoissue.core.input.AgentInput
-import com.github.strogolsky.autoissue.core.output.JiraTaskCandidate
+import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
+import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
@@ -10,23 +10,23 @@ import java.util.concurrent.ConcurrentHashMap
 
 @Service(Service.Level.PROJECT)
 class JiraStrategyRegistry(private val project: Project) {
-    private val strategies = ConcurrentHashMap<String, () -> AIAgentGraphStrategy<AgentInput, JiraTaskCandidate>>()
+    private val strategies = ConcurrentHashMap<String, () -> AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate>>()
 
     init {
-        register("prod-jira-strategy") { JiraIssueStrategyFactory(project).createStrategy() }
+        register("prod-jira-strategy") { JiraDirectStrategyFactory(project).createStrategy() }
         register("prod-jira-reasoning-strategy") { JiraReasoningStrategyFactory(project).createStrategy() }
         thisLogger().info("JiraStrategyRegistry initialized with default strategies.")
     }
 
     fun register(
         id: String,
-        factory: () -> AIAgentGraphStrategy<AgentInput, JiraTaskCandidate>,
+        factory: () -> AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate>,
     ) {
         strategies[id] = factory
         thisLogger().debug("Registered new strategy with id: '$id'")
     }
 
-    fun getStrategy(id: String): AIAgentGraphStrategy<AgentInput, JiraTaskCandidate> {
+    fun getStrategy(id: String): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
         val factory =
             strategies[id]
                 ?: run {

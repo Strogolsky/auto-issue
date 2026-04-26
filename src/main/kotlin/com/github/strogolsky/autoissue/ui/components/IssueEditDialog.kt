@@ -3,8 +3,8 @@ package com.github.strogolsky.autoissue.ui.components
 import com.github.strogolsky.autoissue.core.context.components.JiraField
 import com.github.strogolsky.autoissue.core.context.components.JiraIssueType
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
+import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
 import com.github.strogolsky.autoissue.core.output.JiraIssueRequest
-import com.github.strogolsky.autoissue.core.output.JiraTaskCandidate
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
@@ -17,9 +17,9 @@ import com.intellij.ui.dsl.builder.panel
 import java.awt.Dimension
 import javax.swing.JComponent
 
-class TicketEditDialog(
+class IssueEditDialog(
     project: Project,
-    private val candidate: JiraTaskCandidate,
+    private val candidate: JiraIssueCandidate,
     private val metadata: JiraProjectMetadata,
 ) : DialogWrapper(project) {
     private val titleField = JBTextField(candidate.title)

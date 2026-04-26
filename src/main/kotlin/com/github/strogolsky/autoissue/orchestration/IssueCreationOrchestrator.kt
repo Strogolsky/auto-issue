@@ -5,9 +5,9 @@ import com.github.strogolsky.autoissue.core.context.ContextEnvironment
 import com.github.strogolsky.autoissue.core.output.JiraIssueRequest
 import com.github.strogolsky.autoissue.integration.code.TodoUpdaterService
 import com.github.strogolsky.autoissue.integration.jira.JiraApiService
-import com.github.strogolsky.autoissue.plugin.config.AgentConfigService
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
-import com.github.strogolsky.autoissue.ui.components.TicketEditDialog
+import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
+import com.github.strogolsky.autoissue.ui.components.IssueEditDialog
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -45,7 +45,7 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
         try {
             // 1. Validate configuration — fast fail before any network/LLM calls
             val agentConfig =
-                project.service<AgentConfigService>().getEffectiveConfig()
+                project.service<LlmAgentConfigService>().getEffectiveConfig()
                     ?: return notify("LLM configuration incomplete. Check plugin settings.", NotificationType.ERROR)
             val jiraConfig =
                 try {
@@ -70,7 +70,7 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
             // 3. Let the user review and edit the candidate before creating
             val issueRequest: JiraIssueRequest =
                 withContext(Dispatchers.Main) {
-                    TicketEditDialog(project, candidate, metadata).showAndGetResult()
+                    IssueEditDialog(project, candidate, metadata).showAndGetResult()
                 } ?: return // user cancelled
 
             // 4. Create the JIRA issue — non-cancellable once started
@@ -79,7 +79,7 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
                     jiraApiService.createIssue(issueRequest)
                 }
 
-            // 5. Update source code: TODO → TODO [PROJ-42]
+            // 5. Update source code
             project.service<TodoUpdaterService>().appendKeyToCode(pointer, issueKey)
 
             notify("Successfully created JIRA issue: $issueKey", NotificationType.INFORMATION)

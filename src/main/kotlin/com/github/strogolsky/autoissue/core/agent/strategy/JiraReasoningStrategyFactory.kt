@@ -12,25 +12,25 @@ import ai.koog.agents.core.dsl.extension.onAssistantMessage
 import ai.koog.agents.core.dsl.extension.onToolCall
 import ai.koog.prompt.structure.StructuredResponse
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
-import com.github.strogolsky.autoissue.core.input.AgentInput
-import com.github.strogolsky.autoissue.core.output.JiraTaskCandidate
+import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
+import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 
 class JiraReasoningStrategyFactory(
     private val project: Project,
-) : IssueStrategyFactory<AgentInput, JiraTaskCandidate> {
+) : IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate> {
     private val renderService = project.service<PromptRenderService>()
 
-    override fun createStrategy(): AIAgentGraphStrategy<AgentInput, JiraTaskCandidate> {
-        var originalInput: AgentInput? = null
+    override fun createStrategy(): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
+        var originalInput: IssueGenerationInput? = null
 
         return strategy("jira_reasoning_strategy") {
-            val analysisSubgraph by subgraph<AgentInput, AnalysisContext>(
+            val analysisSubgraph by subgraph<IssueGenerationInput, AnalysisStageResult>(
                 name = "analysis",
             ) {
-                val nodePrepare by node<AgentInput, String>("prepare_analysis_prompt") { input ->
+                val nodePrepare by node<IssueGenerationInput, String>("prepare_analysis_prompt") { input ->
                     originalInput = input
                     thisLogger().debug("Analysis stage: preparing prompt")
                     buildAnalysisPrompt(input)
@@ -40,12 +40,12 @@ class JiraReasoningStrategyFactory(
                 val nodeExecAnalysisTool by nodeExecuteTool()
                 val nodeSendToolResult by nodeLLMSendToolResult()
 
-                val nodeExtract by node<String, AnalysisContext>("extract_analysis_text") { content ->
+                val nodeExtract by node<String, AnalysisStageResult>("extract_analysis_text") { content ->
                     thisLogger().info("Analysis stage produced ${content.length} chars")
                     val input =
                         originalInput
-                            ?: error("AgentInput is missing — analysis subgraph must run before structuring")
-                    AnalysisContext(input, content)
+                            ?: error("IssueGenerationInput is missing — analysis subgraph must run before structuring")
+                    AnalysisStageResult(input, content)
                 }
 
                 edge(nodeStart forwardTo nodePrepare)
@@ -58,18 +58,18 @@ class JiraReasoningStrategyFactory(
                 edge(nodeExtract forwardTo nodeFinish)
             }
 
-            val structuringSubgraph by subgraph<AnalysisContext, JiraTaskCandidate>(
+            val structuringSubgraph by subgraph<AnalysisStageResult, JiraIssueCandidate>(
                 name = "structuring",
             ) {
-                val nodeBuildPrompt by node<AnalysisContext, String>("build_structuring_prompt") { context ->
+                val nodeBuildPrompt by node<AnalysisStageResult, String>("build_structuring_prompt") { context ->
                     buildStructuringPrompt(context)
                 }
 
-                val nodeStructured by nodeLLMRequestStructured<JiraTaskCandidate>(
+                val nodeStructured by nodeLLMRequestStructured<JiraIssueCandidate>(
                     name = "llm_structured_request",
                 )
 
-                val nodeUnwrap by node<Result<StructuredResponse<JiraTaskCandidate>>, JiraTaskCandidate>(
+                val nodeUnwrap by node<Result<StructuredResponse<JiraIssueCandidate>>, JiraIssueCandidate>(
                     name = "unwrap_structured",
                 ) { result ->
                     if (result.isSuccess) {
@@ -78,7 +78,7 @@ class JiraReasoningStrategyFactory(
                     } else {
                         val err = result.exceptionOrNull()
                         thisLogger().error(
-                            "Structured output failed: LLM could not map response to JiraTaskCandidate schema.",
+                            "Structured output failed: LLM could not map response to JiraIssueCandidate schema.",
                             err,
                         )
                         throw err ?: RuntimeException("Unknown structured parsing error")
@@ -95,7 +95,7 @@ class JiraReasoningStrategyFactory(
         }
     }
 
-    private fun buildAnalysisPrompt(input: AgentInput): String =
+    private fun buildAnalysisPrompt(input: IssueGenerationInput): String =
         renderService.buildPrompt {
             instruction("Stage 1 of 2 — analysis only. Do not produce the ticket yet; the next stage will.")
             instruction("Write a concise technical analysis of the TODO based on the context below, in plain prose.")
@@ -103,7 +103,7 @@ class JiraReasoningStrategyFactory(
             components(input.components)
         }
 
-    private fun buildStructuringPrompt(context: AnalysisContext): String =
+    private fun buildStructuringPrompt(context: AnalysisStageResult): String =
         renderService.buildPrompt {
             instruction("Stage 2 of 2 — produce the ticket now, strictly according to the schema and the rules in the system prompt.")
             instruction("Use the analysis below as input; the original context is included again for reference.")

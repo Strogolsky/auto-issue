@@ -1,6 +1,6 @@
 package com.github.strogolsky.autoissue.plugin.state
 
-class JiraIntegrationState {
+class JiraState {
     var baseUrl: String = ""
     var username: String = ""
     var defaultProjectKey: String = ""

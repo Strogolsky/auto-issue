@@ -1,6 +1,6 @@
 package com.github.strogolsky.autoissue.plugin.config
 
-import com.github.strogolsky.autoissue.plugin.state.AgentState
+import com.github.strogolsky.autoissue.plugin.state.LlmAgentState
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.credentialStore.generateServiceName
 import com.intellij.ide.passwordSafe.PasswordSafe
@@ -15,18 +15,18 @@ import com.intellij.openapi.diagnostic.thisLogger
     name = "JiraAgentConfiguration",
     storages = [Storage("AutoIssuePlugin.xml")],
 )
-class AgentConfigService : PersistentStateComponent<AgentState> {
-    private var state = AgentState()
+class LlmAgentConfigService : PersistentStateComponent<LlmAgentState> {
+    private var state = LlmAgentState()
     private val tokenKey = CredentialAttributes(generateServiceName("AutoIssue", "LlmApiKey"))
 
     override fun getState() = state
 
-    override fun loadState(s: AgentState) {
+    override fun loadState(s: LlmAgentState) {
         state = s
     }
 
     fun updateSettings(
-        newState: AgentState,
+        newState: LlmAgentState,
         newKey: String?,
     ) {
         thisLogger().info("Updating Agent settings. Provider: ${newState.provider}, Model: ${newState.modelName}")
@@ -50,14 +50,14 @@ class AgentConfigService : PersistentStateComponent<AgentState> {
         if (defaults.systemPrompt.isNotBlank()) state.systemPrompt = defaults.systemPrompt
     }
 
-    fun getEffectiveConfig(): AgentConfig? {
+    fun getEffectiveConfig(): LlmAgentConfig? {
         val apiKey = PasswordSafe.instance.getPassword(tokenKey)
 
         if (apiKey.isNullOrBlank()) {
             thisLogger().warn("Failed to retrieve Agent configuration: LLM API Key is missing in PasswordSafe.")
             return null
         }
-        return AgentConfig(
+        return LlmAgentConfig(
             apiKey = apiKey,
             provider = state.provider,
             modelName = state.modelName,

@@ -2,16 +2,16 @@ package com.github.strogolsky.autoissue.core.context.render
 
 import com.github.strogolsky.autoissue.core.context.components.ContextComponent
 import com.github.strogolsky.autoissue.core.context.components.FileContextComponent
+import com.github.strogolsky.autoissue.core.context.components.IssueInstruction
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
-import com.github.strogolsky.autoissue.core.context.components.TaskInstruction
 import com.github.strogolsky.autoissue.core.masking.ContentMasker
 
-class SimpleRendererFactory(private val masker: ContentMasker) : RendererFactory {
+class PlainTextPromptRenderer(private val masker: ContentMasker) : PromptRenderer {
     override fun renderComponent(component: ContextComponent): String =
         when (component) {
             is FileContextComponent -> renderFileContext(component)
             is JiraProjectMetadata -> renderJiraMetadata(component)
-            is TaskInstruction -> renderTaskInstruction(component)
+            is IssueInstruction -> renderIssueInstruction(component)
         }
 
     override fun buildPrompt(block: PromptBuilder.() -> Unit): String {
@@ -51,9 +51,9 @@ class SimpleRendererFactory(private val masker: ContentMasker) : RendererFactory
             appendLine("=============================")
         }
 
-    private fun renderTaskInstruction(t: TaskInstruction): String = "Instruction: ${masker.mask(t.description)}"
+    private fun renderIssueInstruction(t: IssueInstruction): String = "Instruction: ${masker.mask(t.description)}"
 
-    private class SimplePromptBuilder(private val factory: SimpleRendererFactory) : PromptBuilder {
+    private class SimplePromptBuilder(private val renderer: PlainTextPromptRenderer) : PromptBuilder {
         private val sb = StringBuilder()
 
         override fun instruction(text: String) {
@@ -72,7 +72,7 @@ class SimpleRendererFactory(private val masker: ContentMasker) : RendererFactory
         override fun components(components: List<ContextComponent>) {
             if (components.isEmpty()) return
             sb.appendLine("=== CONTEXT ===")
-            components.forEach { sb.appendLine(factory.renderComponent(it)) }
+            components.forEach { sb.appendLine(renderer.renderComponent(it)) }
             sb.appendLine()
         }
 

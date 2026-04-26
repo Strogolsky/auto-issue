@@ -4,9 +4,9 @@ import com.intellij.openapi.components.Service
 
 @Service(Service.Level.PROJECT)
 class PromptRenderService {
-    private var factory: RendererFactory? = null
+    private var factory: PromptRenderer? = null
 
-    fun initialize(rendererFactory: RendererFactory) {
+    fun initialize(rendererFactory: PromptRenderer) {
         this.factory = rendererFactory
     }
 

@@ -6,7 +6,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 
 @Service(Service.Level.PROJECT)
-class ModelProviderResolver {
+class LlmProviderRegistry {
     private val factories = mutableMapOf<String, LlmProviderFactory>()
 
     fun register(

@@ -27,7 +27,9 @@
       "Bash(mkdir -p src/main/kotlin/com/github/strogolsky/autoissue/core/context)",
       "Bash(xargs -I {} git mv {} src/main/kotlin/com/github/strogolsky/autoissue/plugin/state/)",
       "Bash(rmdir src/main/kotlin/com/github/strogolsky/autoissue/orchestrator)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(./gradlew ktlintFormat)",
+      "Bash(./gradlew compileKotlin ktlintMainSourceSetCheck)"
     ]
   }
 }

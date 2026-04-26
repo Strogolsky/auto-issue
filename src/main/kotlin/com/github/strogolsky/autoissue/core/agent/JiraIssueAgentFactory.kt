@@ -3,9 +3,9 @@ package com.github.strogolsky.autoissue.core.agent
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
 import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
-import com.github.strogolsky.autoissue.core.input.AgentInput
-import com.github.strogolsky.autoissue.core.output.JiraTaskCandidate
-import com.github.strogolsky.autoissue.plugin.config.AgentConfig
+import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
+import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
+import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfig
 import com.github.strogolsky.autoissue.plugin.startup.PluginConfigLoader
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -15,12 +15,12 @@ import kotlin.time.ExperimentalTime
 
 @Service(Service.Level.PROJECT)
 class JiraIssueAgentFactory(private val project: Project) :
-    AgentFactory<KoogIssueGenerationAgent<AgentInput, JiraTaskCandidate>> {
+    AgentFactory<KoogAgentAdapter<IssueGenerationInput, JiraIssueCandidate>> {
     @OptIn(ExperimentalTime::class)
-    override fun createAgent(config: AgentConfig): KoogIssueGenerationAgent<AgentInput, JiraTaskCandidate> {
+    override fun createAgent(config: LlmAgentConfig): KoogAgentAdapter<IssueGenerationInput, JiraIssueCandidate> {
         thisLogger().info("Creating Jira Issue Agent...")
 
-        val modelResolver = project.service<ModelProviderResolver>()
+        val modelResolver = project.service<LlmProviderRegistry>()
         val strategyRegistry = project.service<JiraStrategyRegistry>()
         val pluginConfig = PluginConfigLoader.load()
 
@@ -46,6 +46,6 @@ class JiraIssueAgentFactory(private val project: Project) :
             )
 
         thisLogger().info("Jira Issue Agent successfully created.")
-        return KoogIssueGenerationAgent(rawKoogAgent)
+        return KoogAgentAdapter(rawKoogAgent)
     }
 }

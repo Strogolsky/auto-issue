@@ -1,6 +1,6 @@
 package com.github.strogolsky.autoissue.plugin.state
 
-data class AgentState(
+data class LlmAgentState(
     var provider: String = "GOOGLE",
     var modelName: String = "gemini-2.5-flash-lite",
     var systemPrompt: String =

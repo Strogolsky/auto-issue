@@ -1,8 +1,8 @@
 package com.github.strogolsky.autoissue.ui.components
 
-import com.github.strogolsky.autoissue.core.agent.ModelProviderResolver
-import com.github.strogolsky.autoissue.plugin.config.AgentConfigService
-import com.github.strogolsky.autoissue.plugin.state.AgentState
+import com.github.strogolsky.autoissue.core.agent.LlmProviderRegistry
+import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
+import com.github.strogolsky.autoissue.plugin.state.LlmAgentState
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
@@ -14,8 +14,8 @@ import javax.swing.JComponent
 import javax.swing.JPasswordField
 
 class LlmSettingsConfigurable(private val project: Project) : Configurable {
-    private val configService = project.service<AgentConfigService>()
-    private val resolver = project.service<ModelProviderResolver>()
+    private val configService = project.service<LlmAgentConfigService>()
+    private val resolver = project.service<LlmProviderRegistry>()
 
     private lateinit var providerComboBox: ComboBox<String>
     private lateinit var modelComboBox: ComboBox<String>
@@ -54,7 +54,7 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
 
     override fun apply() {
         val newState =
-            AgentState().apply {
+            LlmAgentState().apply {
                 val s = configService.getState()
                 provider = providerComboBox.selectedItem as? String ?: s.provider
                 modelName = modelComboBox.selectedItem as? String ?: s.modelName
