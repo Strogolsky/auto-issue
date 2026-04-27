@@ -31,7 +31,7 @@ class JiraStrategyRegistry(private val project: Project) {
             strategies[id]
                 ?: run {
                     thisLogger().error("Strategy not found for id: '$id'. Available: ${strategies.keys}")
-                    throw IllegalArgumentException("Strategy not found for id: '$id'. Available: ${strategies.keys}")
+                    error("Strategy not found for id: '$id'. Available: ${strategies.keys}")
                 }
         thisLogger().debug("Instantiating strategy: '$id'")
         return factory.invoke()

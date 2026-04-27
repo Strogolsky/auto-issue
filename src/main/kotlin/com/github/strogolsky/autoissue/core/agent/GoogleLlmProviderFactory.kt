@@ -13,8 +13,8 @@ class GoogleLlmProviderFactory : LlmProviderFactory {
         val executor = simpleGoogleAIExecutor(apiKey)
         val model =
             GoogleModels.models.find { it.id == modelName }
-                ?: throw IllegalArgumentException("Unsupported Google model: $modelName")
-        return Pair(executor, model)
+                ?: error("Unsupported Google model: $modelName")
+        return executor to model
     }
 
     override fun availableModels(): List<String> = GoogleModels.models.map { it.id }

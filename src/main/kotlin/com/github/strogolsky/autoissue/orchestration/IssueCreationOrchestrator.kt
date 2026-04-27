@@ -27,7 +27,7 @@ import kotlinx.coroutines.withContext
 
 @Service(Service.Level.PROJECT)
 class IssueCreationOrchestrator(private val project: Project) : Disposable {
-    private val cs = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val cs = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun dispose() = cs.cancel()
 

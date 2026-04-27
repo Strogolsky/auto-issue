@@ -17,8 +17,8 @@ class JiraDirectStrategyFactory(
 ) : IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate> {
     private val renderService = project.service<PromptRenderService>()
 
-    override fun createStrategy(): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
-        return strategy("jira_issue_generation") {
+    override fun createStrategy(): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> =
+        strategy("jira_issue_generation") {
             val nodePrepareContext by node<IssueGenerationInput, String>("prepare_context") { input ->
                 thisLogger().debug("Preparing context for LLM prompt")
                 renderService.buildPrompt {
@@ -31,18 +31,12 @@ class JiraDirectStrategyFactory(
             )
 
             val nodeProcessResult by node<Result<StructuredResponse<JiraIssueCandidate>>, JiraIssueCandidate>("process_result") { result ->
-                if (result.isSuccess) {
-                    val candidate =
-                        result.getOrNull()?.data
-                            ?: throw IllegalStateException("Success result returned null data")
-
-                    thisLogger().info("Successfully generated structured Jira task")
-                    candidate
-                } else {
-                    val error = result.exceptionOrNull()
-                    thisLogger().error("Structured output failed: LLM could not map response to JiraIssueCandidate schema.", error)
-                    throw error ?: RuntimeException("Unknown structured parsing error")
-                }
+                val candidate = result
+                    .onFailure { thisLogger().error("Structured output failed: LLM could not map response to JiraIssueCandidate schema.", it) }
+                    .getOrThrow()
+                    .data ?: error("Structured result was success but data was null")
+                thisLogger().info("Successfully generated structured Jira task")
+                candidate
             }
 
             edge(nodeStart forwardTo nodePrepareContext)
@@ -50,5 +44,4 @@ class JiraDirectStrategyFactory(
             edge(nodeCallLLM forwardTo nodeProcessResult)
             edge(nodeProcessResult forwardTo nodeFinish)
         }
-    }
 }

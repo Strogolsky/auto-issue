@@ -29,7 +29,7 @@ class JiraIssueGenerationService(private val project: Project) {
             agentConfigService.getEffectiveConfig()
                 ?: run {
                     thisLogger().error("Task generation aborted: API Key or configuration is missing in settings.")
-                    throw IllegalStateException("API Key or configuration is missing.")
+                    error("API Key or configuration is missing.")
                 }
 
         thisLogger().debug("Gathering context components from environment...")

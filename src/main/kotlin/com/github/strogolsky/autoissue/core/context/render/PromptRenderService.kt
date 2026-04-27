@@ -13,7 +13,7 @@ class PromptRenderService {
     fun buildPrompt(block: PromptBuilder.() -> Unit): String {
         val currentFactory =
             factory
-                ?: throw IllegalStateException("PromptRenderService was not initialized by StartupActivity")
+                ?: error("PromptRenderService was not initialized by StartupActivity")
         return currentFactory.buildPrompt(block)
     }
 }

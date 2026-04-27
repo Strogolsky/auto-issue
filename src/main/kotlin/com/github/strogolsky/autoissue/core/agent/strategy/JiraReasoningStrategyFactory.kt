@@ -72,17 +72,10 @@ class JiraReasoningStrategyFactory(
                 val nodeUnwrap by node<Result<StructuredResponse<JiraIssueCandidate>>, JiraIssueCandidate>(
                     name = "unwrap_structured",
                 ) { result ->
-                    if (result.isSuccess) {
-                        result.getOrNull()?.data
-                            ?: throw IllegalStateException("Structured result was success but data was null")
-                    } else {
-                        val err = result.exceptionOrNull()
-                        thisLogger().error(
-                            "Structured output failed: LLM could not map response to JiraIssueCandidate schema.",
-                            err,
-                        )
-                        throw err ?: RuntimeException("Unknown structured parsing error")
-                    }
+                    result
+                        .onFailure { thisLogger().error("Structured output failed: LLM could not map response to JiraIssueCandidate schema.", it) }
+                        .getOrThrow()
+                        .data ?: error("Structured result was success but data was null")
                 }
 
                 edge(nodeStart forwardTo nodeBuildPrompt)

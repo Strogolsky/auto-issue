@@ -1,5 +1,6 @@
 package com.github.strogolsky.autoissue.integration.jira
 
+import com.github.strogolsky.autoissue.core.exceptions.IssueGenerationException
 import com.github.strogolsky.autoissue.core.context.components.JiraField
 import com.github.strogolsky.autoissue.core.context.components.JiraIssueType
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
@@ -149,7 +150,7 @@ class JiraApiService(private val project: Project) : Disposable {
         } catch (e: ClientRequestException) {
             val errorBody = e.response.bodyAsText()
             thisLogger().error("Failed to get metadata. Status: ${e.response.status}. Body: $errorBody")
-            throw RuntimeException("Jira API error: $errorBody", e)
+            throw IssueGenerationException("Jira API error: $errorBody", e)
         }
     }
 
@@ -190,11 +191,11 @@ class JiraApiService(private val project: Project) : Disposable {
                 }.body()
 
             response["key"]?.jsonPrimitive?.content
-                ?: throw IllegalStateException("Key missing in Jira response")
+                ?: error("Key missing in Jira response")
         } catch (e: ClientRequestException) {
             val errorBody = e.response.bodyAsText()
             thisLogger().error("Failed to create issue. Status: ${e.response.status}. Body: $errorBody")
-            throw RuntimeException("Jira API error: $errorBody", e)
+            throw IssueGenerationException("Jira API error: $errorBody", e)
         }
     }
 

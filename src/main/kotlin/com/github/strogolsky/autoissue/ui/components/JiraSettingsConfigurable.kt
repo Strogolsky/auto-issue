@@ -16,11 +16,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPasswordField
-import javax.swing.SwingUtilities
 import kotlin.collections.get
 
 class JiraSettingsConfigurable(private val project: Project) : Configurable {
@@ -34,7 +34,7 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
     private lateinit var projectComboBox: ComboBox<String>
     private lateinit var loadProjectsButton: JButton
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var projectKeyMap: Map<String, String> = emptyMap()
 
     override fun getDisplayName() = "Jira"
@@ -75,7 +75,7 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
 
         scope.launch {
             val ok = apiService.testConnection(url, user, token)
-            SwingUtilities.invokeLater {
+            withContext(Dispatchers.Main) {
                 connectionStatusLabel.text = if (ok) "✓ Connected" else "✗ Connection failed"
             }
         }
@@ -96,7 +96,7 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
             val projects = apiService.getProjects(url, user, token)
             val newMap = projects.associate { "${it.key} – ${it.name}" to it.key }
 
-            SwingUtilities.invokeLater {
+            withContext(Dispatchers.Main) {
                 loadProjectsButton.isEnabled = true
                 projectKeyMap = newMap
                 projectComboBox.removeAllItems()

@@ -31,7 +31,7 @@ Class: ApiClient
 Method: parseResponse
 
 Objective:
-Refactor the hand-written JSON string parsing to use the Gson library already present in the project, reducing error-prone string manipulation.
+Refactor the handwritten JSON string parsing to use the Gson library already present in the project, reducing error-prone string manipulation.
 
 Technical Analysis:
 The current implementation splits the raw response string by comma and extracts values by index, which breaks on any whitespace variation or field reordering. Gson is already on the classpath (used in NetworkModule). Replacing the manual parsing with Gson.fromJson will make the code robust to response format changes.

@@ -18,7 +18,7 @@ import com.github.strogolsky.autoissue.plugin.config.LlmDefaults
 import com.github.strogolsky.autoissue.plugin.config.PluginConfig
 import com.github.strogolsky.autoissue.plugin.config.RenderingFormat
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 
@@ -70,7 +70,7 @@ class PluginStartupActivity : ProjectActivity {
 
         config.enabledProviders.forEach { name ->
             available[name]?.let { registry.register(it) }
-                ?: logger.warn("AutoIssue: unknown context provider in config: $name")
+                ?: thisLogger().warn("AutoIssue: unknown context provider in config: $name")
         }
     }
 
@@ -106,13 +106,9 @@ class PluginStartupActivity : ProjectActivity {
         val jiraUrlMissing = jiraConfig.state.baseUrl.isBlank()
 
         if (apiKeyMissing || jiraUrlMissing) {
-            logger.warn(
+            thisLogger().warn(
                 "AutoIssue: configuration incomplete — apiKey missing: $apiKeyMissing, jiraUrl missing: $jiraUrlMissing",
             )
         }
-    }
-
-    companion object {
-        private val logger = Logger.getInstance(PluginStartupActivity::class.java)
     }
 }
