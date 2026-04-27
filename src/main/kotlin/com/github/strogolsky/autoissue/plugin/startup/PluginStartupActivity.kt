@@ -17,14 +17,26 @@ import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
 import com.github.strogolsky.autoissue.plugin.config.LlmDefaults
 import com.github.strogolsky.autoissue.plugin.config.PluginConfig
 import com.github.strogolsky.autoissue.plugin.config.RenderingFormat
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class PluginStartupActivity : ProjectActivity {
     override suspend fun execute(project: Project) {
-        val config = PluginConfigLoader.load()
+        val config = try {
+            withContext(Dispatchers.IO) {
+                PluginConfigLoader.load()
+            }
+        } catch (e: Exception) {
+            thisLogger().error("AutoIssue: Failed to load plugin configuration", e)
+            showErrorNotification(project, "Failed to load configuration. The plugin may not work correctly. Please check the logs.")
+            return
+        }
 
         if (config.dev.localPropertiesEnabled) {
             applyLocalProperties(project)
@@ -35,6 +47,13 @@ class PluginStartupActivity : ProjectActivity {
         initRendering(project, config)
         applyLlmDefaults(project, config.llm)
         checkConfiguration(project)
+    }
+
+    private fun showErrorNotification(project: Project, message: String) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("AutoIssue Notifications")
+            .createNotification("AutoIssue Error", message, NotificationType.ERROR)
+            .notify(project)
     }
 
     private fun applyLocalProperties(project: Project) {
