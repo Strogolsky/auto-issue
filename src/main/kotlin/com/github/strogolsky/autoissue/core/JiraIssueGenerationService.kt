@@ -26,11 +26,12 @@ class JiraIssueGenerationService(private val project: Project) {
         thisLogger().info("Initiating Jira task generation process.")
 
         val config =
-            agentConfigService.getEffectiveConfig()
-                ?: run {
-                    thisLogger().error("Task generation aborted: API Key or configuration is missing in settings.")
-                    error("API Key or configuration is missing.")
-                }
+            try {
+                agentConfigService.getEffectiveConfig()
+            } catch (e: IllegalArgumentException) {
+                thisLogger().error("Task generation aborted: ${e.message}")
+                throw IssueGenerationException(e.message ?: "LLM configuration is missing")
+            }
 
         thisLogger().debug("Gathering context components from environment...")
         val contextComponents = registry.gatherAll(env)

@@ -216,15 +216,6 @@ class JiraApiService(private val project: Project) : Disposable {
             }
         }
 
-    suspend fun testConnection(): Boolean =
-        try {
-            val config = configService.getEffectiveConfig()
-            testConnection(config.baseUrl, config.username, config.apiToken)
-        } catch (e: Exception) {
-            thisLogger().warn("Jira connection test failed: config missing", e)
-            false
-        }
-
     suspend fun testConnection(
         baseUrl: String,
         username: String,

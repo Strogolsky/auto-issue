@@ -8,5 +8,5 @@ data class LlmAgentState(
             "and TODO comment, generate a well-structured Jira issue.",
     var temperature: Double = 0.0,
     var maxIterations: Int = 20,
-    var strategyId: String = "prod-jira-strategy",
+    var strategyId: String = "jira-direct-strategy",
 )

@@ -28,6 +28,7 @@ import kotlinx.coroutines.withContext
 @Service(Service.Level.PROJECT)
 class IssueCreationOrchestrator(private val project: Project) : Disposable {
     private val cs = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val jiraApiService by lazy { project.service<JiraApiService>() }
 
     override fun dispose() = cs.cancel()
 
@@ -44,9 +45,12 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
     ) {
         try {
             // 1. Validate configuration — fast fail before any network/LLM calls
-            val agentConfig =
+            try {
                 project.service<LlmAgentConfigService>().getEffectiveConfig()
-                    ?: return notify("LLM configuration incomplete. Check plugin settings.", NotificationType.ERROR)
+            } catch (e: IllegalArgumentException) {
+                return notify("LLM configuration incomplete: ${e.message}", NotificationType.ERROR)
+            }
+
             val jiraConfig =
                 try {
                     project.service<JiraConfigService>().getEffectiveConfig()
@@ -55,7 +59,6 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
                 }
 
             // 2. Fetch Jira metadata and run LLM agent in parallel background
-            val jiraApiService = project.service<JiraApiService>()
             val (metadata, candidate) =
                 withBackgroundProgress(project, "AutoIssue: Generating issue…") {
                     val meta = jiraApiService.getMetadata(jiraConfig.projectKey)

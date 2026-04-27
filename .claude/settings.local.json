@@ -29,7 +29,9 @@
       "Bash(rmdir src/main/kotlin/com/github/strogolsky/autoissue/orchestrator)",
       "Bash(git add *)",
       "Bash(./gradlew ktlintFormat)",
-      "Bash(./gradlew compileKotlin ktlintMainSourceSetCheck)"
+      "Bash(./gradlew compileKotlin ktlintMainSourceSetCheck)",
+      "Bash(./gradlew ktlintMainSourceSetCheck --no-daemon)",
+      "Bash(git reset *)"
     ]
   }
 }

@@ -13,8 +13,8 @@ class JiraStrategyRegistry(private val project: Project) {
     private val strategies = ConcurrentHashMap<String, () -> AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate>>()
 
     init {
-        register("prod-jira-strategy") { JiraDirectStrategyFactory(project).createStrategy() }
-        register("prod-jira-reasoning-strategy") { JiraReasoningStrategyFactory(project).createStrategy() }
+        register("jira-direct-strategy") { JiraDirectStrategyFactory(project).createStrategy() }
+        register("jira-reasoning-strategy") { JiraReasoningStrategyFactory(project).createStrategy() }
         thisLogger().info("JiraStrategyRegistry initialized with default strategies.")
     }
 

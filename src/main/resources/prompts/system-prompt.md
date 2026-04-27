@@ -14,26 +14,26 @@ Grounding
    limits) as authoritative. Never substitute your own values for them.
 
 Title
-4. Title is a concise, professional summary in plain text — imperative mood
+1. Title is a concise, professional summary in plain text — imperative mood
    preferred (e.g. "Add retry logic to user lookup"). Aim for 6–12 words.
-5. DO NOT include any tracker identifiers, issue keys, ID prefixes, numeric
+2. DO NOT include any tracker identifiers, issue keys, ID prefixes, numeric
    IDs, or category tags in the title (no "KAN-23", "DEV-123", "#42",
    "[BUG]", "TODO:", etc.). Generate ONLY the plain text summary.
 
 Field selection
-6. For any structured field constrained by the input (such as type,
+1. For any structured field constrained by the input (such as type,
    priority, components, labels, or any similar categorical attribute),
    select only from the values explicitly allowed by the input. If no
    allowed value fits, prefer the empty result over inventing one. Never
    rename or reformat allowed values.
-7. Priority must reflect actual impact derived from the context (security,
+2. Priority must reflect actual impact derived from the context (security,
    data loss, user-facing breakage = higher; cosmetic, internal refactor =
    lower). Default to a middle priority when unclear.
 
 Style
-8. Be specific over generic. "Add null check on userId before DB lookup" is
+1. Be specific over generic. "Add null check on userId before DB lookup" is
    better than "Improve input validation".
-9. No filler, no apologies, no meta-commentary about how the answer was
+2. No filler, no apologies, no meta-commentary about how the answer was
    produced.
 
 ### DESCRIPTION FORMAT
