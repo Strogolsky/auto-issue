@@ -3,149 +3,175 @@ package com.github.strogolsky.autoissue.ui.components
 import com.github.strogolsky.autoissue.integration.jira.JiraApiService
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.state.JiraState
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.components.JBTextField
+import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.SimpleListCellRenderer
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
+import com.intellij.ui.dsl.builder.bindItem
+import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.util.ui.AsyncProcessIcon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.swing.JButton
-import javax.swing.JComponent
-import javax.swing.JLabel
-import javax.swing.JPasswordField
-import kotlin.collections.get
+import javax.swing.DefaultComboBoxModel
 
 class JiraSettingsConfigurable(private val project: Project) : Configurable {
     private val configService = project.service<JiraConfigService>()
     private val apiService = project.service<JiraApiService>()
 
-    private lateinit var baseUrlField: JBTextField
-    private lateinit var usernameField: JBTextField
-    private lateinit var apiKeyField: JPasswordField
-    private lateinit var connectionStatusLabel: JLabel
-    private lateinit var projectComboBox: ComboBox<String>
-    private lateinit var loadProjectsButton: JButton
-
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var projectKeyMap: Map<String, String> = emptyMap()
+    private lateinit var settingsPanel: DialogPanel
 
-    override fun getDisplayName() = "Jira"
+    private var jiraUrl = ""
+    private var jiraUser = ""
+    private var jiraToken = ""
+    private var jiraProjectKey: String? = null
 
-    override fun createComponent(): JComponent =
-        panel {
+    private val projectsModel = DefaultComboBoxModel<ProjectItem>()
+
+    private val loadingIcon = AsyncProcessIcon("JiraTestConnection").apply {
+        isVisible = false
+        suspend()
+    }
+
+    override fun getDisplayName() = "Jira Integration"
+
+    override fun createComponent(): DialogPanel {
+        settingsPanel = panel {
             row("Base URL:") {
-                baseUrlField = textField().columns(COLUMNS_LARGE).component
+                textField().columns(COLUMNS_LARGE).bindText(::jiraUrl)
             }
             row("Username:") {
-                usernameField = textField().columns(COLUMNS_LARGE).component
+                textField().columns(COLUMNS_LARGE).bindText(::jiraUser)
             }
             row("API Key:") {
-                apiKeyField = passwordField().columns(COLUMNS_LARGE).component
+                passwordField().columns(COLUMNS_LARGE).bindText(::jiraToken)
             }
             row {
-                button("Test Connection") { testConnection() }
-                connectionStatusLabel = label("").component
+                val statusLabel = JBLabel("")
+                button("Test Connection") {
+                    settingsPanel.apply()
+                    testConnection(statusLabel)
+                }
+                cell(loadingIcon)
+                cell(statusLabel)
             }
+
             separator()
+
             row("Default Project:") {
-                projectComboBox = comboBox(emptyList<String>()).component
-                loadProjectsButton = button("Load Projects") { loadProjects() }.component
+                comboBox(projectsModel, renderer = SimpleListCellRenderer.create("") { it?.displayText ?: "" })
+                    .bindItem(
+                        getter = {
+                            val currentKey = jiraProjectKey
+                            if (currentKey == null) null
+                            else {
+                                (0 until projectsModel.size)
+                                    .map { projectsModel.getElementAt(it) }
+                                    .find { it.key == currentKey }
+                            }
+                        },
+                        setter = { jiraProjectKey = it?.key }
+                    )
+
+                button("Load Projects") {
+                    settingsPanel.apply()
+                    loadProjects(jiraProjectKey)
+                }
             }
         }
+        return settingsPanel
+    }
 
-    private fun testConnection() {
-        val url = baseUrlField.text.trim()
-        val user = usernameField.text.trim()
-        val token = String(apiKeyField.password).trim()
-
-        if (url.isBlank() || user.isBlank() || token.isBlank()) {
-            connectionStatusLabel.text = "Fill in all fields first"
+    private fun testConnection(statusLabel: JBLabel) {
+        if (jiraUrl.isBlank() || jiraUser.isBlank() || jiraToken.isBlank()) {
+            statusLabel.icon = AllIcons.General.Warning
+            statusLabel.text = "Fill in all fields first"
             return
         }
 
-        connectionStatusLabel.text = "Testing…"
+        statusLabel.icon = null
+        statusLabel.text = "Testing..."
+        loadingIcon.isVisible = true
+        loadingIcon.resume()
 
         scope.launch {
-            val ok = apiService.testConnection(url, user, token)
+            val ok = apiService.testConnection(jiraUrl, jiraUser, jiraToken)
             withContext(Dispatchers.Main) {
-                connectionStatusLabel.text = if (ok) "✓ Connected" else "✗ Connection failed"
-            }
-        }
-    }
-
-    private fun loadProjects() {
-        val url = baseUrlField.text.trim()
-        val user = usernameField.text.trim()
-        val token = String(apiKeyField.password).trim()
-        // Read state on EDT before entering background thread
-        val currentKey = configService.getState().defaultProjectKey
-
-        if (url.isBlank() || user.isBlank() || token.isBlank()) return
-
-        loadProjectsButton.isEnabled = false
-
-        scope.launch {
-            val projects = apiService.getProjects(url, user, token)
-            val newMap = projects.associate { "${it.key} – ${it.name}" to it.key }
-
-            withContext(Dispatchers.Main) {
-                loadProjectsButton.isEnabled = true
-                projectKeyMap = newMap
-                projectComboBox.removeAllItems()
-                newMap.keys.forEach { projectComboBox.addItem(it) }
-                newMap.entries.find { it.value == currentKey }?.key?.let {
-                    projectComboBox.selectedItem = it
+                loadingIcon.suspend()
+                loadingIcon.isVisible = false
+                if (ok) {
+                    statusLabel.icon = AllIcons.General.InspectionsOK
+                    statusLabel.text = "Connection successful"
+                } else {
+                    statusLabel.icon = AllIcons.General.Error
+                    statusLabel.text = "Connection failed"
                 }
             }
         }
     }
 
-    override fun isModified(): Boolean {
-        val state = configService.getState()
-        val savedToken = configService.getApiToken() ?: ""
-        val selectedKey =
-            projectKeyMap[projectComboBox.selectedItem as? String]
-                ?: (projectComboBox.selectedItem as? String ?: "")
+    private fun loadProjects(keyToSelect: String?) {
+        if (jiraUrl.isBlank() || jiraUser.isBlank() || jiraToken.isBlank()) return
 
-        return baseUrlField.text != state.baseUrl ||
-            usernameField.text != state.username ||
-            String(apiKeyField.password) != savedToken ||
-            selectedKey != state.defaultProjectKey
+        scope.launch {
+            val projects = apiService.getProjects(jiraUrl, jiraUser, jiraToken)
+                .map { ProjectItem(it.key, "${it.key} - ${it.name}") }
+
+            withContext(Dispatchers.Main) {
+                projectsModel.removeAllElements()
+                projects.forEach { projectsModel.addElement(it) }
+
+                val itemToSelect = projects.find { it.key == keyToSelect }
+                if (itemToSelect != null) {
+                    projectsModel.selectedItem = itemToSelect
+                } else if (projects.isNotEmpty()) {
+                    projectsModel.selectedItem = projects.first()
+                }
+
+                settingsPanel.reset()
+            }
+        }
     }
 
+    override fun isModified(): Boolean = settingsPanel.isModified()
+
     override fun apply() {
-        val selectedDisplay = projectComboBox.selectedItem as? String ?: ""
-        val newState =
-            JiraState().apply {
-                baseUrl = this@JiraSettingsConfigurable.baseUrlField.text.trim()
-                username = this@JiraSettingsConfigurable.usernameField.text.trim()
-                defaultProjectKey = projectKeyMap[selectedDisplay] ?: selectedDisplay
-            }
-        val token = String(apiKeyField.password).trim().takeIf { it.isNotBlank() }
-        configService.updateSettings(newState, token)
+        settingsPanel.apply()
+        val newState = JiraState().apply {
+            baseUrl = jiraUrl
+            username = jiraUser
+            defaultProjectKey = jiraProjectKey ?: ""
+        }
+        configService.updateSettings(newState, jiraToken.takeIf { it.isNotBlank() })
     }
 
     override fun reset() {
         val state = configService.getState()
-        baseUrlField.text = state.baseUrl
-        usernameField.text = state.username
-        apiKeyField.text = configService.getApiToken() ?: ""
-        connectionStatusLabel.text = ""
+        jiraUrl = state.baseUrl
+        jiraUser = state.username
+        jiraToken = configService.getApiToken() ?: ""
+        jiraProjectKey = state.defaultProjectKey
 
-        if (state.baseUrl.isNotBlank() && state.username.isNotBlank() && !configService.getApiToken().isNullOrBlank()) {
-            loadProjects()
+        settingsPanel.reset()
+
+        if (jiraUrl.isNotBlank() && jiraUser.isNotBlank() && jiraToken.isNotBlank()) {
+            loadProjects(jiraProjectKey)
         }
     }
 
     override fun disposeUIResources() {
         scope.cancel()
     }
+
+    private data class ProjectItem(val key: String, val displayText: String)
 }

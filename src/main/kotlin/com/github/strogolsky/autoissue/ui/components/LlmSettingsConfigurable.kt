@@ -6,77 +6,102 @@ import com.github.strogolsky.autoissue.plugin.state.LlmAgentState
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
+import com.intellij.ui.dsl.builder.bindItem
+import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
-import javax.swing.JComponent
-import javax.swing.JPasswordField
+import javax.swing.DefaultComboBoxModel
 
 class LlmSettingsConfigurable(private val project: Project) : Configurable {
     private val configService = project.service<LlmAgentConfigService>()
     private val resolver = project.service<LlmProviderRegistry>()
 
-    private lateinit var providerComboBox: ComboBox<String>
-    private lateinit var modelComboBox: ComboBox<String>
-    private lateinit var apiKeyField: JPasswordField
+    private lateinit var settingsPanel: DialogPanel
+
+    private var llmProvider: String? = ""
+    private var llmModel: String? = ""
+    private var llmToken = ""
+
+    private val modelsModel = DefaultComboBoxModel<String>()
 
     override fun getDisplayName() = "LLM"
 
-    override fun createComponent(): JComponent =
-        panel {
+    override fun createComponent(): DialogPanel {
+        settingsPanel = panel {
             row("Provider:") {
-                providerComboBox = comboBox(resolver.providers().sorted()).component
-                providerComboBox.addActionListener { refreshModels() }
+                comboBox(resolver.providers().sorted())
+                    .bindItem(::llmProvider)
+                    .applyToComponent {
+                        addActionListener {
+                            val selected = selectedItem as? String
+                            // Обновляем список моделей только если провайдер реально изменился
+                            if (selected != null && selected != llmProvider) {
+                                llmProvider = selected
+                                loadModelsForProvider(selected)
+
+                                // Автоматически выбираем первую модель из нового списка, чтобы поле не было пустым
+                                llmModel = if (modelsModel.size > 0) modelsModel.getElementAt(0) else ""
+
+                                // Заставляем UI обновиться с новыми значениями
+                                settingsPanel.reset()
+                            }
+                        }
+                    }
             }
             row("Model:") {
-                modelComboBox = comboBox(emptyList<String>()).columns(COLUMNS_LARGE).component
+                comboBox(modelsModel)
+                    .columns(COLUMNS_LARGE)
+                    .bindItem(::llmModel)
             }
             row("API Key:") {
-                apiKeyField = passwordField().columns(COLUMNS_LARGE).component
+                passwordField()
+                    .columns(COLUMNS_LARGE)
+                    .bindText(::llmToken)
             }
         }
+        return settingsPanel
+    }
 
-    private fun refreshModels() {
-        val provider = providerComboBox.selectedItem as? String ?: return
+    private fun loadModelsForProvider(provider: String?) {
+        modelsModel.removeAllElements()
+        if (provider.isNullOrBlank()) return
+
         val models = runCatching { resolver.modelsFor(provider) }.getOrDefault(emptyList())
-        modelComboBox.removeAllItems()
-        models.forEach { modelComboBox.addItem(it) }
+        models.forEach { modelsModel.addElement(it) }
     }
 
-    override fun isModified(): Boolean {
-        val state = configService.getState()
-        val savedKey = configService.getApiKey() ?: ""
-        return providerComboBox.selectedItem as? String != state.provider ||
-            modelComboBox.selectedItem as? String != state.modelName ||
-            String(apiKeyField.password) != savedKey
-    }
+    override fun isModified(): Boolean = settingsPanel.isModified()
 
     override fun apply() {
-        val newState =
-            LlmAgentState().apply {
-                val s = configService.getState()
-                provider = providerComboBox.selectedItem as? String ?: s.provider
-                modelName = modelComboBox.selectedItem as? String ?: s.modelName
-                systemPrompt = s.systemPrompt
-                temperature = s.temperature
-                maxIterations = s.maxIterations
-            }
-        val token = String(apiKeyField.password).trim().takeIf { it.isNotBlank() }
-        configService.updateSettings(newState, token)
+        settingsPanel.apply()
+
+        val currentState = configService.getState()
+        val newState = LlmAgentState().apply {
+            provider = llmProvider ?: ""
+            modelName = llmModel ?: ""
+            systemPrompt = currentState.systemPrompt
+            temperature = currentState.temperature
+            maxIterations = currentState.maxIterations
+        }
+        configService.updateSettings(newState, llmToken.takeIf { it.isNotBlank() })
     }
 
     override fun reset() {
         val state = configService.getState()
 
-        val providers = resolver.providers().sorted()
-        providerComboBox.removeAllItems()
-        providers.forEach { providerComboBox.addItem(it) }
-        providerComboBox.selectedItem = state.provider
+        // 1. Сначала вытаскиваем данные из стейта
+        llmProvider = state.provider
+        llmToken = configService.getApiKey() ?: ""
 
-        refreshModels()
-        modelComboBox.selectedItem = state.modelName
+        // 2. Строго до применения модели, заполняем ComboBox нужным списком
+        loadModelsForProvider(state.provider)
 
-        apiKeyField.text = configService.getApiKey() ?: ""
+        // 3. Теперь, когда список заполнен, можно безопасно установить выбранную модель
+        llmModel = state.modelName
+
+        // 4. Синхронизируем переменные с интерфейсом
+        settingsPanel.reset()
     }
 }
