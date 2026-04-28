@@ -6,6 +6,8 @@ import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.llm.LLModel
 
 class GoogleLlmProviderFactory : LlmProviderFactory {
+    override fun providerKey() = "GOOGLE"
+
     override fun create(
         modelName: String,
         apiKey: String,

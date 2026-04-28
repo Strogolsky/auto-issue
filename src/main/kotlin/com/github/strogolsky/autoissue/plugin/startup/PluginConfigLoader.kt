@@ -4,9 +4,7 @@ import com.github.strogolsky.autoissue.core.masking.MaskingConfig
 import com.github.strogolsky.autoissue.plugin.config.DevConfig
 import com.github.strogolsky.autoissue.plugin.config.LlmDefaults
 import com.github.strogolsky.autoissue.plugin.config.PluginConfig
-import com.github.strogolsky.autoissue.plugin.config.RenderingFormat
 import org.w3c.dom.Element
-import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
@@ -33,16 +31,7 @@ object PluginConfigLoader {
                 systemPrompt = resolveSystemPrompt(llmNode) + resolveExamples(llmNode),
             )
 
-        val format =
-            RenderingFormat.valueOf(
-                doc.getElementsByTagName("format").item(0).textContent.trim(),
-            )
-
-        val providers =
-            doc.getElementsByTagName("provider")
-                .toList()
-                .filter { it.attributes.getNamedItem("enabled")?.textContent == "true" }
-                .map { it.textContent.trim() }
+        val format = doc.getElementsByTagName("format").item(0).textContent.trim()
 
         val devNode = doc.getElementsByTagName("local-properties").item(0)
         val dev =
@@ -65,7 +54,7 @@ object PluginConfigLoader {
                 MaskingConfig()
             }
 
-        return PluginConfig(llm, format, providers, dev, masking)
+        return PluginConfig(llm, format, dev, masking)
     }
 
     private fun resolveSystemPrompt(llmNode: Element): String {
@@ -97,5 +86,5 @@ object PluginConfigLoader {
 
     private fun Element.text(tag: String): String = getElementsByTagName(tag).item(0).textContent.trim()
 
-    private fun NodeList.toList(): List<Node> = (0 until length).map { item(it) }
+    private fun NodeList.toList() = (0 until length).map { item(it) }
 }

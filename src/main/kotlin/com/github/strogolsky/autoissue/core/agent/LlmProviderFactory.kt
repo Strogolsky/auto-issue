@@ -4,6 +4,8 @@ import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.llm.LLModel
 
 interface LlmProviderFactory {
+    fun providerKey(): String
+
     fun create(
         modelName: String,
         apiKey: String,

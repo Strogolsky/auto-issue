@@ -8,6 +8,21 @@
 
     <resource-bundle>messages.AutoIssueBundle</resource-bundle>
 
+    <extensionPoints>
+        <extensionPoint
+            name="llmProviderFactory"
+            interface="com.github.strogolsky.autoissue.core.agent.LlmProviderFactory"
+            dynamic="true"/>
+        <extensionPoint
+            name="contextComponentProvider"
+            interface="com.github.strogolsky.autoissue.core.context.providers.ContextComponentProvider"
+            dynamic="true"/>
+        <extensionPoint
+            name="promptRenderer"
+            interface="com.github.strogolsky.autoissue.core.context.render.PromptRenderer"
+            dynamic="true"/>
+    </extensionPoints>
+
     <extensions defaultExtensionNs="com.intellij">
 
         <postStartupActivity implementation="com.github.strogolsky.autoissue.plugin.startup.PluginStartupActivity" />
@@ -29,5 +44,16 @@
                 id="com.github.strogolsky.autoissue.llm"
                 instance="com.github.strogolsky.autoissue.ui.components.LlmSettingsConfigurable"
                 displayName="LLM"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.github.strogolsky.autoissue">
+        <llmProviderFactory
+            implementation="com.github.strogolsky.autoissue.core.agent.GoogleLlmProviderFactory"/>
+        <contextComponentProvider
+            implementation="com.github.strogolsky.autoissue.core.context.providers.FileContextComponentProvider"/>
+        <contextComponentProvider
+            implementation="com.github.strogolsky.autoissue.core.context.providers.JiraMetadataProvider"/>
+        <promptRenderer
+            implementation="com.github.strogolsky.autoissue.core.context.render.PlainTextPromptRenderer"/>
     </extensions>
 </idea-plugin>

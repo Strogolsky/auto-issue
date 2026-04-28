@@ -4,11 +4,21 @@ import com.github.strogolsky.autoissue.core.context.components.ContextComponent
 import com.github.strogolsky.autoissue.core.context.providers.ContextComponentProvider
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.extensions.ExtensionPointName
 import java.util.concurrent.CopyOnWriteArrayList
 
 @Service(Service.Level.PROJECT)
 class ContextRegistry {
     private val providers = CopyOnWriteArrayList<ContextComponentProvider>()
+
+    companion object {
+        val EP_NAME: ExtensionPointName<ContextComponentProvider> =
+            ExtensionPointName.create("com.github.strogolsky.autoissue.contextComponentProvider")
+    }
+
+    init {
+        EP_NAME.extensionList.forEach { providers.add(it) }
+    }
 
     fun register(provider: ContextComponentProvider) {
         providers.add(provider)

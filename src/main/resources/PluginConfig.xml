@@ -13,15 +13,6 @@
   <rendering>
     <format>SIMPLE</format> <!-- MARKDOWN | XML -->
   </rendering>
-
-  <context>
-    <providers>
-      <provider enabled="true">FileContextComponentProvider</provider>
-      <provider enabled="true">JiraMetadataProvider</provider>
-      <!-- <provider enabled="false">GitHistoryProvider</provider> -->
-    </providers>
-  </context>
-
   <dev>
     <!-- set enabled="false" to disable the mechanism entirely -->
     <local-properties enabled="true">local.properties</local-properties>

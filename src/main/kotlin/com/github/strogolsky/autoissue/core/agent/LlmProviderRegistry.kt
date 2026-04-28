@@ -4,10 +4,20 @@ import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.llm.LLModel
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
+import com.intellij.openapi.extensions.ExtensionPointName
 
 @Service(Service.Level.PROJECT)
 class LlmProviderRegistry {
     private val factories = mutableMapOf<String, LlmProviderFactory>()
+
+    companion object {
+        val EP_NAME: ExtensionPointName<LlmProviderFactory> =
+            ExtensionPointName.create("com.github.strogolsky.autoissue.llmProviderFactory")
+    }
+
+    init {
+        EP_NAME.extensionList.forEach { factories[it.providerKey()] = it }
+    }
 
     fun register(
         providerKey: String,

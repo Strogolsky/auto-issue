@@ -4,9 +4,10 @@ import com.github.strogolsky.autoissue.core.context.components.ContextComponent
 import com.github.strogolsky.autoissue.core.context.components.FileContextComponent
 import com.github.strogolsky.autoissue.core.context.components.IssueInstruction
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
-import com.github.strogolsky.autoissue.core.masking.ContentMasker
 
-class PlainTextPromptRenderer(private val masker: ContentMasker) : PromptRenderer {
+class PlainTextPromptRenderer : PromptRenderer {
+    override fun rendererKey() = "SIMPLE"
+
     override fun renderComponent(component: ContextComponent): String =
         when (component) {
             is FileContextComponent -> renderFileContext(component)
@@ -27,12 +28,12 @@ class PlainTextPromptRenderer(private val masker: ContentMasker) : PromptRendere
             if (c.className != null) {
                 appendLine("Class: ${c.className}")
                 appendLine("Available class fields/dependencies:")
-                c.classFields.map { masker.mask(it) }.forEach { appendLine("- $it") }
+                c.classFields.forEach { appendLine("- $it") }
             }
 
             appendLine("\nTarget Method Context:")
             appendLine("```${c.language}")
-            appendLine(masker.mask(c.methodBody))
+            appendLine(c.methodBody)
             appendLine("```")
         }
 
@@ -51,7 +52,7 @@ class PlainTextPromptRenderer(private val masker: ContentMasker) : PromptRendere
             appendLine("=============================")
         }
 
-    private fun renderIssueInstruction(t: IssueInstruction): String = "Instruction: ${masker.mask(t.description)}"
+    private fun renderIssueInstruction(t: IssueInstruction): String = "Instruction: ${t.description}"
 
     private class SimplePromptBuilder(private val renderer: PlainTextPromptRenderer) : PromptBuilder {
         private val sb = StringBuilder()
