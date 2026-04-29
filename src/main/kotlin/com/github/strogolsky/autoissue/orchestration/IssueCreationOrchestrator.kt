@@ -2,13 +2,16 @@ package com.github.strogolsky.autoissue.orchestration
 
 import com.github.strogolsky.autoissue.core.JiraIssueGenerationService
 import com.github.strogolsky.autoissue.core.context.ContextEnvironment
+import com.github.strogolsky.autoissue.core.exceptions.AutoIssueException
+import com.github.strogolsky.autoissue.core.exceptions.IssueGenerationException
 import com.github.strogolsky.autoissue.core.output.JiraIssueRequest
 import com.github.strogolsky.autoissue.integration.code.TodoUpdaterService
 import com.github.strogolsky.autoissue.integration.jira.JiraApiService
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
+import com.github.strogolsky.autoissue.plugin.config.validation.ConfigHealthChecker
 import com.github.strogolsky.autoissue.ui.components.IssueEditDialog
-import com.intellij.notification.NotificationGroupManager
+import com.github.strogolsky.autoissue.ui.notifications.AutoIssueNotifier
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
@@ -29,6 +32,7 @@ import kotlinx.coroutines.withContext
 class IssueCreationOrchestrator(private val project: Project) : Disposable {
     private val cs = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val jiraApiService by lazy { project.service<JiraApiService>() }
+    private val healthChecker by lazy { project.service<ConfigHealthChecker>() }
 
     override fun dispose() = cs.cancel()
 
@@ -43,22 +47,14 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
         instructionText: String,
         pointer: SmartPsiElementPointer<out PsiElement>,
     ) {
+        // 1. UX Validation: Pre-check configs
+        if (!healthChecker.validateAndNotify()) return
+
         try {
-            // 1. Validate configuration — fast fail before any network/LLM calls
-            try {
-                project.service<LlmAgentConfigService>().getEffectiveConfig()
-            } catch (e: IllegalArgumentException) {
-                return notify("LLM configuration incomplete: ${e.message}", NotificationType.ERROR)
-            }
+            // 2. Fetch Config
+            val jiraConfig = project.service<JiraConfigService>().getEffectiveConfig()
 
-            val jiraConfig =
-                try {
-                    project.service<JiraConfigService>().getEffectiveConfig()
-                } catch (e: IllegalArgumentException) {
-                    return notify("JIRA configuration incomplete: ${e.message}", NotificationType.ERROR)
-                }
-
-            // 2. Fetch Jira metadata and run LLM agent in parallel background
+            // 3. Fetch Jira metadata and run LLM
             val (metadata, candidate) =
                 withBackgroundProgress(project, "AutoIssue: Generating issue…") {
                     val meta = jiraApiService.getMetadata(jiraConfig.projectKey)
@@ -70,35 +66,29 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
                     meta to task
                 }
 
-            // 3. Let the user review and edit the candidate before creating
+            // 4. User review
             val issueRequest: JiraIssueRequest =
                 withContext(Dispatchers.Main) {
                     IssueEditDialog(project, candidate, metadata).showAndGetResult()
                 } ?: return // user cancelled
 
-            // 4. Create the JIRA issue — non-cancellable once started
+            // 5. Create JIRA issue
             val issueKey: String =
                 withBackgroundProgress(project, "AutoIssue: Creating JIRA issue…", cancellable = false) {
                     jiraApiService.createIssue(issueRequest)
                 }
 
-            // 5. Update source code
+            // 6. Update source code
             project.service<TodoUpdaterService>().appendKeyToCode(pointer, issueKey)
 
-            notify("Successfully created JIRA issue: $issueKey", NotificationType.INFORMATION)
-        } catch (e: Exception) {
-            thisLogger().error("Failed to create JIRA issue", e)
-            notify("Error: ${e.message}", NotificationType.ERROR)
-        }
-    }
+            AutoIssueNotifier.notify(project, "Successfully created JIRA issue: $issueKey", NotificationType.INFORMATION)
+        } catch (e: AutoIssueException) {
+            thisLogger().warn("Operation interrupted: ${e.message}", e)
+            AutoIssueNotifier.notify(project, e.message ?: "An operation failed", NotificationType.ERROR)
 
-    private fun notify(
-        content: String,
-        type: NotificationType,
-    ) {
-        NotificationGroupManager.getInstance()
-            .getNotificationGroup("AutoIssue Notifications")
-            .createNotification("AutoIssue", content, type)
-            .notify(project)
+        } catch (e: Exception) {
+            thisLogger().error("Unexpected system error during issue creation", e)
+            AutoIssueNotifier.notify(project, "Unexpected system error: ${e.message}", NotificationType.ERROR)
+        }
     }
 }

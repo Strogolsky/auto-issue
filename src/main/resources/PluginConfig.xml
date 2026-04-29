@@ -15,7 +15,7 @@
   </rendering>
   <dev>
     <!-- set enabled="false" to disable the mechanism entirely -->
-    <local-properties enabled="true">local.properties</local-properties>
+    <local-properties enabled="false">local.properties</local-properties>
   </dev>
 
   <masking>

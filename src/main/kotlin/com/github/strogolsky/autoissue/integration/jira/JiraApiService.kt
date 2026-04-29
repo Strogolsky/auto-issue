@@ -4,6 +4,7 @@ import com.github.strogolsky.autoissue.core.context.components.JiraField
 import com.github.strogolsky.autoissue.core.context.components.JiraIssueType
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
 import com.github.strogolsky.autoissue.core.exceptions.IssueGenerationException
+import com.github.strogolsky.autoissue.core.exceptions.JiraApiException
 import com.github.strogolsky.autoissue.core.output.JiraIssueRequest
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.config.JiraProjectSummary
@@ -150,7 +151,11 @@ class JiraApiService(private val project: Project) : Disposable {
         } catch (e: ClientRequestException) {
             val errorBody = e.response.bodyAsText()
             thisLogger().error("Failed to get metadata. Status: ${e.response.status}. Body: $errorBody")
-            throw IssueGenerationException("Jira API error: $errorBody", e)
+            throw JiraApiException("Jira API error (HTTP ${e.response.status}): $errorBody", e)
+
+        } catch (e: Exception) {
+            thisLogger().error("Unexpected network error while fetching Jira metadata", e)
+            throw JiraApiException("Failed to connect to Jira. Please check your network or Base URL. Error: ${e.localizedMessage}", e)
         }
     }
 
@@ -195,7 +200,10 @@ class JiraApiService(private val project: Project) : Disposable {
         } catch (e: ClientRequestException) {
             val errorBody = e.response.bodyAsText()
             thisLogger().error("Failed to create issue. Status: ${e.response.status}. Body: $errorBody")
-            throw IssueGenerationException("Jira API error: $errorBody", e)
+            throw JiraApiException("Failed to create issue in Jira: ${e.message}", e)
+        } catch (e: Exception) {
+            thisLogger().error("Unexpected network error while fetching Jira metadata", e)
+            throw JiraApiException("Failed to connect to Jira. Please check your network or Base URL. Error: ${e.localizedMessage}", e)
         }
     }
 

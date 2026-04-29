@@ -30,12 +30,6 @@ class AutoIssueSetupTool(private val project: Project) {
         }
     }
 
-    fun isSystemReady(): Boolean {
-        val apiKeyPresent = !project.service<LlmAgentConfigService>().getApiKey().isNullOrBlank()
-        val jiraUrlPresent = project.service<JiraConfigService>().state.baseUrl.isNotBlank()
-        return apiKeyPresent && jiraUrlPresent
-    }
-
     private fun initRendering(config: com.github.strogolsky.autoissue.plugin.config.PluginConfig) {
         val masker: ContentMasker =
             if (!config.masking.enabled) {

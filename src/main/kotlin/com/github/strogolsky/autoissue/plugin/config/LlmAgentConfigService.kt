@@ -50,12 +50,14 @@ class LlmAgentConfigService : PersistentStateComponent<LlmAgentState> {
         if (state.systemPrompt.isBlank()) state.systemPrompt = defaults.systemPrompt
     }
 
+    fun isReady(): Boolean {
+        val apiKey = PasswordSafe.instance.getPassword(tokenKey)
+        return !apiKey.isNullOrBlank()
+    }
+
     fun getEffectiveConfig(): LlmAgentConfig {
         val apiKey = PasswordSafe.instance.getPassword(tokenKey)
-
-        if (apiKey.isNullOrBlank()) {
-            throw IllegalArgumentException("LLM API Key is missing in PasswordSafe")
-        }
+        require(!apiKey.isNullOrBlank()) { "LLM API Key is missing in PasswordSafe" }
         return LlmAgentConfig(
             apiKey = apiKey,
             provider = state.provider,

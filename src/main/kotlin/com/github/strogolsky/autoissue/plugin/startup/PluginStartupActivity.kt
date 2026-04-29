@@ -1,6 +1,7 @@
 package com.github.strogolsky.autoissue.plugin.startup
 
-import com.intellij.notification.NotificationGroupManager
+import com.github.strogolsky.autoissue.plugin.config.validation.ConfigHealthChecker
+import com.github.strogolsky.autoissue.ui.notifications.AutoIssueNotifier
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -17,17 +18,15 @@ class PluginStartupActivity : ProjectActivity {
             }
         } catch (e: Exception) {
             thisLogger().error("AutoIssue: setup failed", e)
-            NotificationGroupManager.getInstance()
-                .getNotificationGroup("AutoIssue Notifications")
-                .createNotification(
-                    "AutoIssue Error",
-                    "Failed to initialize. Please check the logs.",
-                    NotificationType.ERROR,
-                ).notify(project)
+            AutoIssueNotifier.notify(
+                project,
+                "Failed to initialize. Please check the logs.",
+                NotificationType.ERROR,
+            )
             return
         }
 
-        if (!project.service<AutoIssueSetupTool>().isSystemReady()) {
+        if (!project.service<ConfigHealthChecker>().isSystemReady()) {
             thisLogger().warn("AutoIssue: configuration incomplete — LLM API key or Jira URL missing")
         }
     }

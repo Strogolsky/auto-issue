@@ -1,5 +1,6 @@
 package com.github.strogolsky.autoissue.plugin.config
 
+import com.github.strogolsky.autoissue.core.exceptions.ConfigurationException
 import com.github.strogolsky.autoissue.plugin.state.JiraState
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.credentialStore.Credentials
@@ -38,11 +39,23 @@ class JiraConfigService : PersistentStateComponent<JiraState> {
         }
     }
 
+    fun isReady(): Boolean {
+        val token = PasswordSafe.instance.getPassword(tokenKey)
+        return !token.isNullOrBlank() && state.baseUrl.isNotBlank() && state.username.isNotBlank()
+    }
+
     fun getEffectiveConfig(): JiraConfig {
         val token = PasswordSafe.instance.getPassword(tokenKey)
-        require(!token.isNullOrBlank()) { "Jira API Token is missing." }
-        require(state.baseUrl.isNotBlank()) { "Jira Base URL is missing." }
-        require(state.username.isNotBlank()) { "Jira Username is missing." }
+
+        if (token.isNullOrBlank()) {
+            throw ConfigurationException("Jira API Token is missing in PasswordSafe.")
+        }
+        if (state.baseUrl.isBlank()) {
+            throw ConfigurationException("Jira Base URL is missing.")
+        }
+        if (state.username.isBlank()) {
+            throw ConfigurationException("Jira Username is missing.")
+        }
 
         return JiraConfig(
             baseUrl = state.baseUrl,
