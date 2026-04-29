@@ -20,6 +20,5 @@ class PromptRendererRegistry {
         renderers[renderer.rendererKey()] = renderer
     }
 
-    fun resolve(key: String): PromptRenderer =
-        renderers[key] ?: error("AutoIssue: no PromptRenderer registered for key: $key")
+    fun resolve(key: String): PromptRenderer = renderers[key] ?: error("AutoIssue: no PromptRenderer registered for key: $key")
 }

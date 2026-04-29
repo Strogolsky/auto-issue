@@ -38,57 +38,60 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
 
     private val projectsModel = DefaultComboBoxModel<ProjectItem>()
 
-    private val loadingIcon = AsyncProcessIcon("JiraTestConnection").apply {
-        isVisible = false
-        suspend()
-    }
+    private val loadingIcon =
+        AsyncProcessIcon("JiraTestConnection").apply {
+            isVisible = false
+            suspend()
+        }
 
     override fun getDisplayName() = "Jira Integration"
 
     override fun createComponent(): DialogPanel {
-        settingsPanel = panel {
-            row("Base URL:") {
-                textField().columns(COLUMNS_LARGE).bindText(::jiraUrl)
-            }
-            row("Username:") {
-                textField().columns(COLUMNS_LARGE).bindText(::jiraUser)
-            }
-            row("API Key:") {
-                passwordField().columns(COLUMNS_LARGE).bindText(::jiraToken)
-            }
-            row {
-                val statusLabel = JBLabel("")
-                button("Test Connection") {
-                    settingsPanel.apply()
-                    testConnection(statusLabel)
+        settingsPanel =
+            panel {
+                row("Base URL:") {
+                    textField().columns(COLUMNS_LARGE).bindText(::jiraUrl)
                 }
-                cell(loadingIcon)
-                cell(statusLabel)
-            }
+                row("Username:") {
+                    textField().columns(COLUMNS_LARGE).bindText(::jiraUser)
+                }
+                row("API Key:") {
+                    passwordField().columns(COLUMNS_LARGE).bindText(::jiraToken)
+                }
+                row {
+                    val statusLabel = JBLabel("")
+                    button("Test Connection") {
+                        settingsPanel.apply()
+                        testConnection(statusLabel)
+                    }
+                    cell(loadingIcon)
+                    cell(statusLabel)
+                }
 
-            separator()
+                separator()
 
-            row("Default Project:") {
-                comboBox(projectsModel, renderer = SimpleListCellRenderer.create("") { it?.displayText ?: "" })
-                    .bindItem(
-                        getter = {
-                            val currentKey = jiraProjectKey
-                            if (currentKey == null) null
-                            else {
-                                (0 until projectsModel.size)
-                                    .map { projectsModel.getElementAt(it) }
-                                    .find { it.key == currentKey }
-                            }
-                        },
-                        setter = { jiraProjectKey = it?.key }
-                    )
+                row("Default Project:") {
+                    comboBox(projectsModel, renderer = SimpleListCellRenderer.create("") { it?.displayText ?: "" })
+                        .bindItem(
+                            getter = {
+                                val currentKey = jiraProjectKey
+                                if (currentKey == null) {
+                                    null
+                                } else {
+                                    (0 until projectsModel.size)
+                                        .map { projectsModel.getElementAt(it) }
+                                        .find { it.key == currentKey }
+                                }
+                            },
+                            setter = { jiraProjectKey = it?.key },
+                        )
 
-                button("Load Projects") {
-                    settingsPanel.apply()
-                    loadProjects(jiraProjectKey)
+                    button("Load Projects") {
+                        settingsPanel.apply()
+                        loadProjects(jiraProjectKey)
+                    }
                 }
             }
-        }
         return settingsPanel
     }
 
@@ -124,8 +127,9 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
         if (jiraUrl.isBlank() || jiraUser.isBlank() || jiraToken.isBlank()) return
 
         scope.launch {
-            val projects = apiService.getProjects(jiraUrl, jiraUser, jiraToken)
-                .map { ProjectItem(it.key, "${it.key} - ${it.name}") }
+            val projects =
+                apiService.getProjects(jiraUrl, jiraUser, jiraToken)
+                    .map { ProjectItem(it.key, "${it.key} - ${it.name}") }
 
             withContext(Dispatchers.Main) {
                 projectsModel.removeAllElements()
@@ -147,11 +151,12 @@ class JiraSettingsConfigurable(private val project: Project) : Configurable {
 
     override fun apply() {
         settingsPanel.apply()
-        val newState = JiraState().apply {
-            baseUrl = jiraUrl
-            username = jiraUser
-            defaultProjectKey = jiraProjectKey ?: ""
-        }
+        val newState =
+            JiraState().apply {
+                baseUrl = jiraUrl
+                username = jiraUser
+                defaultProjectKey = jiraProjectKey ?: ""
+            }
         configService.updateSettings(newState, jiraToken.takeIf { it.isNotBlank() })
     }
 

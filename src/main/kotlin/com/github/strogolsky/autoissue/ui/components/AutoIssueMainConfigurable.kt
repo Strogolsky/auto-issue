@@ -11,24 +11,28 @@ import javax.swing.JComponent
 class AutoIssueMainConfigurable(private val project: Project) : Configurable {
     override fun getDisplayName() = "AutoIssue"
 
-    override fun createComponent(): JComponent = panel {
-        row {
-            label("Main configuration for the AutoIssue plugin.")
-        }
+    override fun createComponent(): JComponent =
+        panel {
+            row {
+                label("Main configuration for the AutoIssue plugin.")
+            }
 
-        row {
-            link("Jira") { event ->
-                navigateTo(event, "com.github.strogolsky.autoissue.Jira")
+            row {
+                link("Jira") { event ->
+                    navigateTo(event, "com.github.strogolsky.autoissue.Jira")
+                }
+            }
+            row {
+                link("LLM") { event ->
+                    navigateTo(event, "com.github.strogolsky.autoissue.LLM")
+                }
             }
         }
-        row {
-            link("LLM") { event ->
-                navigateTo(event, "com.github.strogolsky.autoissue.LLM")
-            }
-        }
-    }
 
-    private fun navigateTo(event: ActionEvent, configurableId: String) {
+    private fun navigateTo(
+        event: ActionEvent,
+        configurableId: String,
+    ) {
         val component = event.source as? JComponent ?: return
 
         val dataContext = DataManager.getInstance().getDataContext(component)
@@ -43,6 +47,8 @@ class AutoIssueMainConfigurable(private val project: Project) : Configurable {
     }
 
     override fun isModified() = false
+
     override fun apply() {}
+
     override fun reset() {}
 }

@@ -73,7 +73,13 @@ class JiraReasoningStrategyFactory(
                     name = "unwrap_structured",
                 ) { result ->
                     result
-                        .onFailure { thisLogger().error("Structured output failed: LLM could not map response to JiraIssueCandidate schema.", it) }
+                        .onFailure {
+                            thisLogger().error(
+                                "Structured output failed: LLM could not map" +
+                                    "response to JiraIssueCandidate schema.",
+                                it,
+                            )
+                        }
                         .getOrThrow()
                         .data ?: error("Structured result was success but data was null")
                 }

@@ -31,10 +31,17 @@ class JiraDirectStrategyFactory(
             )
 
             val nodeProcessResult by node<Result<StructuredResponse<JiraIssueCandidate>>, JiraIssueCandidate>("process_result") { result ->
-                val candidate = result
-                    .onFailure { thisLogger().error("Structured output failed: LLM could not map response to JiraIssueCandidate schema.", it) }
-                    .getOrThrow()
-                    .data ?: error("Structured result was success but data was null")
+                val candidate =
+                    result
+                        .onFailure {
+                            thisLogger().error(
+                                "Structured output failed: LLM could not map" +
+                                    "response to JiraIssueCandidate schema.",
+                                it,
+                            )
+                        }
+                        .getOrThrow()
+                        .data ?: error("Structured result was success but data was null")
                 thisLogger().info("Successfully generated structured Jira task")
                 candidate
             }

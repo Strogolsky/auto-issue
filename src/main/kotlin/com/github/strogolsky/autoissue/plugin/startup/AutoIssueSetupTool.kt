@@ -1,7 +1,7 @@
 package com.github.strogolsky.autoissue.plugin.startup
 
-import com.github.strogolsky.autoissue.core.context.render.PromptRendererRegistry
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
+import com.github.strogolsky.autoissue.core.context.render.PromptRendererRegistry
 import com.github.strogolsky.autoissue.core.masking.ContentMasker
 import com.github.strogolsky.autoissue.core.masking.MaskingPatterns
 import com.github.strogolsky.autoissue.core.masking.RegexContentMasker
@@ -10,15 +10,10 @@ import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import java.io.File
-import java.io.FileInputStream
-import java.util.Properties
 
 @Service(Service.Level.PROJECT)
 class AutoIssueSetupTool(private val project: Project) {
-
     fun setupEnvironmentIfNeeded() {
         val config = PluginConfigLoader.load()
 
@@ -43,14 +38,16 @@ class AutoIssueSetupTool(private val project: Project) {
 
     private fun initRendering(config: com.github.strogolsky.autoissue.plugin.config.PluginConfig) {
         val masker: ContentMasker =
-            if (!config.masking.enabled) ContentMasker { it }
-            else RegexContentMasker(MaskingPatterns.ALL)
+            if (!config.masking.enabled) {
+                ContentMasker { it }
+            } else {
+                RegexContentMasker(MaskingPatterns.ALL)
+            }
         val renderer = project.service<PromptRendererRegistry>().resolve(config.renderingFormat)
         project.service<PromptRenderService>().initialize(renderer, masker)
     }
 
     private fun applyLocalProperties() {
-
         val agentConfig = project.service<LlmAgentConfigService>()
         val jiraConfig = project.service<JiraConfigService>()
 

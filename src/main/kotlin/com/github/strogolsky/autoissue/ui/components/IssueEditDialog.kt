@@ -28,52 +28,59 @@ class IssueEditDialog(
     private val candidate: JiraIssueCandidate,
     private val metadata: JiraProjectMetadata,
 ) : DialogWrapper(project) {
-
     // Base text fields
     private val titleField = JBTextField(candidate.title, 40)
 
-    private val descriptionArea = JBTextArea(candidate.description).apply {
-        rows = 8
-        columns = 40
-        lineWrap = true
-        wrapStyleWord = true
-    }
+    private val descriptionArea =
+        JBTextArea(candidate.description).apply {
+            rows = 8
+            columns = 40
+            lineWrap = true
+            wrapStyleWord = true
+        }
 
     // Dropdowns
-    private val issueTypeCombo = ComboBox(metadata.issueTypes.toTypedArray()).apply {
-        renderer = SimpleListCellRenderer.create("") { it?.name ?: "" }
-    }
+    private val issueTypeCombo =
+        ComboBox(metadata.issueTypes.toTypedArray()).apply {
+            renderer = SimpleListCellRenderer.create("") { it?.name ?: "" }
+        }
 
-    private val priorityCombo = ComboBox(metadata.priorities.toTypedArray()).apply {
-        renderer = SimpleListCellRenderer.create("") { it?.name ?: "" }
-    }
+    private val priorityCombo =
+        ComboBox(metadata.priorities.toTypedArray()).apply {
+            renderer = SimpleListCellRenderer.create("") { it?.name ?: "" }
+        }
 
-    private val assigneeCombo = ComboBox((listOf(noneAssignee) + metadata.assignees).toTypedArray()).apply {
-        renderer = SimpleListCellRenderer.create("") { it?.name ?: "None" }
-    }
+    private val assigneeCombo =
+        ComboBox((listOf(noneAssignee) + metadata.assignees).toTypedArray()).apply {
+            renderer = SimpleListCellRenderer.create("") { it?.name ?: "None" }
+        }
 
     // Autocomplete fields
-    private val labelsCompletionProvider = TextFieldWithAutoCompletion.StringsCompletionProvider(
-        metadata.labels,
-        null
-    )
+    private val labelsCompletionProvider =
+        TextFieldWithAutoCompletion.StringsCompletionProvider(
+            metadata.labels,
+            null,
+        )
 
-    private val labelsField = TextFieldWithAutoCompletion(
-        project,
-        labelsCompletionProvider,
-        true,
-        candidate.labels.joinToString(" ")
-    )
+    private val labelsField =
+        TextFieldWithAutoCompletion(
+            project,
+            labelsCompletionProvider,
+            true,
+            candidate.labels.joinToString(" "),
+        )
 
-    private val parentField = JBTextField().apply {
-        emptyText.text = "e.g. PROJ-123 (optional)"
-    }
+    private val parentField =
+        JBTextField().apply {
+            emptyText.text = "e.g. PROJ-123 (optional)"
+        }
 
     // Date picker
     private val dueDateModel = SpinnerDateModel()
-    private val dueDatePicker = JSpinner(dueDateModel).apply {
-        editor = JSpinner.DateEditor(this, "yyyy-MM-dd")
-    }
+    private val dueDatePicker =
+        JSpinner(dueDateModel).apply {
+            editor = JSpinner.DateEditor(this, "yyyy-MM-dd")
+        }
 
     init {
         title = "Review JIRA Issue"
@@ -82,47 +89,49 @@ class IssueEditDialog(
         init()
     }
 
-    override fun createCenterPanel(): JComponent = panel {
-        row("Title:") {
-            cell(titleField).align(AlignX.FILL)
-        }
+    override fun createCenterPanel(): JComponent =
+        panel {
+            row("Title:") {
+                cell(titleField).align(AlignX.FILL)
+            }
 
-        row("Description:") {
-            scrollCell(descriptionArea)
-                .align(Align.FILL)
-                .applyToComponent {
-                    preferredSize = JBUI.size(500, 150)
+            row("Description:") {
+                scrollCell(descriptionArea)
+                    .align(Align.FILL)
+                    .applyToComponent {
+                        preferredSize = JBUI.size(500, 150)
+                    }
+            }.resizableRow()
+
+            group("Issue Details") {
+                row("Issue Type:") { cell(issueTypeCombo) }
+                row("Priority:") { cell(priorityCombo) }
+                row("Assignee:") { cell(assigneeCombo) }
+            }
+
+            group("Additional Info") {
+                row("Labels:") {
+                    cell(labelsField)
+                        .align(AlignX.FILL)
                 }
-        }.resizableRow()
-
-        group("Issue Details") {
-            row("Issue Type:") { cell(issueTypeCombo) }
-            row("Priority:") { cell(priorityCombo) }
-            row("Assignee:") { cell(assigneeCombo) }
-        }
-
-        group("Additional Info") {
-            row("Labels:") {
-                cell(labelsField)
-                    .align(AlignX.FILL)
-            }
-            row("Parent:") {
-                cell(parentField).align(AlignX.FILL)
-            }
-            row("Due Date:") {
-                cell(dueDatePicker)
+                row("Parent:") {
+                    cell(parentField).align(AlignX.FILL)
+                }
+                row("Due Date:") {
+                    cell(dueDatePicker)
+                }
             }
         }
-    }
 
     fun showAndGetResult(): JiraIssueRequest? {
         if (!showAndGet()) return null
 
         val dateValue = dueDatePicker.value as? Date
-        val formattedDate = dateValue?.toInstant()
-            ?.atZone(ZoneId.systemDefault())
-            ?.toLocalDate()
-            ?.format(DateTimeFormatter.ISO_LOCAL_DATE)
+        val formattedDate =
+            dateValue?.toInstant()
+                ?.atZone(ZoneId.systemDefault())
+                ?.toLocalDate()
+                ?.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
         return JiraIssueRequest(
             title = titleField.text.trim(),

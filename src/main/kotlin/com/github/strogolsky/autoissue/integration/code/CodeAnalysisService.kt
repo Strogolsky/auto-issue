@@ -32,15 +32,16 @@ class CodeAnalysisService(private val project: Project) {
         }
     }
 
-    private fun extractImports(file: PsiElement): List<String> = buildList {
-        PsiTreeUtil.processElements(file) { element ->
-            val typeName = element.javaClass.simpleName
-            if (typeName.contains("ImportList") || typeName.contains("ImportDirective")) {
-                add(element.text)
+    private fun extractImports(file: PsiElement): List<String> =
+        buildList {
+            PsiTreeUtil.processElements(file) { element ->
+                val typeName = element.javaClass.simpleName
+                if (typeName.contains("ImportList") || typeName.contains("ImportDirective")) {
+                    add(element.text)
+                }
+                true
             }
-            true
         }
-    }
 
     private fun extractClassContext(element: PsiElement): ClassContext? {
         var current: PsiElement? = element

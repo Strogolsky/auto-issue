@@ -1,9 +1,9 @@
 package com.github.strogolsky.autoissue.integration.jira
 
-import com.github.strogolsky.autoissue.core.exceptions.IssueGenerationException
 import com.github.strogolsky.autoissue.core.context.components.JiraField
 import com.github.strogolsky.autoissue.core.context.components.JiraIssueType
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
+import com.github.strogolsky.autoissue.core.exceptions.IssueGenerationException
 import com.github.strogolsky.autoissue.core.output.JiraIssueRequest
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.config.JiraProjectSummary

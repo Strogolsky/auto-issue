@@ -29,38 +29,39 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
     override fun getDisplayName() = "LLM"
 
     override fun createComponent(): DialogPanel {
-        settingsPanel = panel {
-            row("Provider:") {
-                comboBox(resolver.providers().sorted())
-                    .bindItem(::llmProvider)
-                    .applyToComponent {
-                        addActionListener {
-                            val selected = selectedItem as? String
-                            // Обновляем список моделей только если провайдер реально изменился
-                            if (selected != null && selected != llmProvider) {
-                                llmProvider = selected
-                                loadModelsForProvider(selected)
+        settingsPanel =
+            panel {
+                row("Provider:") {
+                    comboBox(resolver.providers().sorted())
+                        .bindItem(::llmProvider)
+                        .applyToComponent {
+                            addActionListener {
+                                val selected = selectedItem as? String
+                                // Обновляем список моделей только если провайдер реально изменился
+                                if (selected != null && selected != llmProvider) {
+                                    llmProvider = selected
+                                    loadModelsForProvider(selected)
 
-                                // Автоматически выбираем первую модель из нового списка, чтобы поле не было пустым
-                                llmModel = if (modelsModel.size > 0) modelsModel.getElementAt(0) else ""
+                                    // Автоматически выбираем первую модель из нового списка, чтобы поле не было пустым
+                                    llmModel = if (modelsModel.size > 0) modelsModel.getElementAt(0) else ""
 
-                                // Заставляем UI обновиться с новыми значениями
-                                settingsPanel.reset()
+                                    // Заставляем UI обновиться с новыми значениями
+                                    settingsPanel.reset()
+                                }
                             }
                         }
-                    }
+                }
+                row("Model:") {
+                    comboBox(modelsModel)
+                        .columns(COLUMNS_LARGE)
+                        .bindItem(::llmModel)
+                }
+                row("API Key:") {
+                    passwordField()
+                        .columns(COLUMNS_LARGE)
+                        .bindText(::llmToken)
+                }
             }
-            row("Model:") {
-                comboBox(modelsModel)
-                    .columns(COLUMNS_LARGE)
-                    .bindItem(::llmModel)
-            }
-            row("API Key:") {
-                passwordField()
-                    .columns(COLUMNS_LARGE)
-                    .bindText(::llmToken)
-            }
-        }
         return settingsPanel
     }
 
@@ -78,13 +79,14 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
         settingsPanel.apply()
 
         val currentState = configService.getState()
-        val newState = LlmAgentState().apply {
-            provider = llmProvider ?: ""
-            modelName = llmModel ?: ""
-            systemPrompt = currentState.systemPrompt
-            temperature = currentState.temperature
-            maxIterations = currentState.maxIterations
-        }
+        val newState =
+            LlmAgentState().apply {
+                provider = llmProvider ?: ""
+                modelName = llmModel ?: ""
+                systemPrompt = currentState.systemPrompt
+                temperature = currentState.temperature
+                maxIterations = currentState.maxIterations
+            }
         configService.updateSettings(newState, llmToken.takeIf { it.isNotBlank() })
     }
 
