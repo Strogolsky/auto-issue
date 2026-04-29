@@ -3,7 +3,7 @@
   <llm>
     <default-provider>GOOGLE</default-provider>
     <default-model>gemini-2.5-flash-lite</default-model>
-    <default-strategy>prod-jira-reasoning-strategy</default-strategy>
+    <default-strategy>jira-direct-strategy</default-strategy>
     <temperature>0.0</temperature>
     <max-iterations>20</max-iterations>
     <system-prompt file="prompts/system-prompt.md"/>
@@ -13,18 +13,9 @@
   <rendering>
     <format>SIMPLE</format> <!-- MARKDOWN | XML -->
   </rendering>
-
-  <context>
-    <providers>
-      <provider enabled="true">FileContextComponentProvider</provider>
-      <provider enabled="true">JiraMetadataProvider</provider>
-      <!-- <provider enabled="false">GitHistoryProvider</provider> -->
-    </providers>
-  </context>
-
   <dev>
     <!-- set enabled="false" to disable the mechanism entirely -->
-    <local-properties enabled="true">local.properties</local-properties>
+    <local-properties enabled="false">local.properties</local-properties>
   </dev>
 
   <masking>

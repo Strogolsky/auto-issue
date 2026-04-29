@@ -6,35 +6,57 @@
 
     <depends>com.intellij.modules.platform</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+    <resource-bundle>messages.AutoIssueBundle</resource-bundle>
+
+    <extensionPoints>
+        <extensionPoint
+            name="llmProviderFactory"
+            interface="com.github.strogolsky.autoissue.core.agent.LlmProviderFactory"
+            dynamic="true"/>
+        <extensionPoint
+            name="contextComponentProvider"
+            interface="com.github.strogolsky.autoissue.core.context.providers.ContextComponentProvider"
+            dynamic="true"/>
+        <extensionPoint
+            name="promptRenderer"
+            interface="com.github.strogolsky.autoissue.core.context.render.PromptRenderer"
+            dynamic="true"/>
+    </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
 
-        <toolWindow factoryClass="com.github.strogolsky.autoissue.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-        <postStartupActivity implementation="com.github.strogolsky.autoissue.startup.PluginStartupActivity" />
+        <postStartupActivity implementation="com.github.strogolsky.autoissue.plugin.startup.PluginStartupActivity" />
 
         <codeInsight.lineMarkerProvider
                 language="JAVA"
-                implementationClass="com.github.strogolsky.autoissue.actions.TodoLineMarkerProvider"/>
+                implementationClass="com.github.strogolsky.autoissue.ui.action.TodoLineMarkerProvider"/>
 
         <notificationGroup id="AutoIssue Notifications" displayType="BALLOON"/>
 
-        <projectConfigurable
-                parentId="tools"
-                id="com.github.strogolsky.autoissue"
-                instance="com.github.strogolsky.autoissue.ui.AutoIssueSettingsConfigurable"
-                displayName="AutoIssue"/>
+        <projectConfigurable parentId="tools"
+                             id="com.github.strogolsky.autoissue.Main"
+                             displayName="AutoIssue"
+                             instance="com.github.strogolsky.autoissue.ui.components.AutoIssueMainConfigurable"/>
 
-        <projectConfigurable
-                parentId="com.github.strogolsky.autoissue"
-                id="com.github.strogolsky.autoissue.jira"
-                instance="com.github.strogolsky.autoissue.ui.JiraSettingsConfigurable"
-                displayName="Jira"/>
+        <projectConfigurable parentId="com.github.strogolsky.autoissue.Main"
+                             id="com.github.strogolsky.autoissue.Jira"
+                             displayName="Jira Integration"
+                             instance="com.github.strogolsky.autoissue.ui.components.JiraSettingsConfigurable"/>
 
-        <projectConfigurable
-                parentId="com.github.strogolsky.autoissue"
-                id="com.github.strogolsky.autoissue.llm"
-                instance="com.github.strogolsky.autoissue.ui.LlmSettingsConfigurable"
-                displayName="LLM"/>
+        <projectConfigurable parentId="com.github.strogolsky.autoissue.Main"
+                             id="com.github.strogolsky.autoissue.LLM"
+                             displayName="LLM Agent"
+                             instance="com.github.strogolsky.autoissue.ui.components.LlmSettingsConfigurable"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.github.strogolsky.autoissue">
+        <llmProviderFactory
+            implementation="com.github.strogolsky.autoissue.core.agent.GoogleLlmProviderFactory"/>
+        <contextComponentProvider
+            implementation="com.github.strogolsky.autoissue.core.context.providers.FileContextComponentProvider"/>
+        <contextComponentProvider
+            implementation="com.github.strogolsky.autoissue.core.context.providers.JiraMetadataProvider"/>
+        <promptRenderer
+            implementation="com.github.strogolsky.autoissue.core.context.render.PlainTextPromptRenderer"/>
     </extensions>
 </idea-plugin>

@@ -17,7 +17,21 @@
       "Bash(xargs -I{} sh -c 'name=$\\(basename \"{}\"\\); unzip -l \"{}\" 2>/dev/null | grep -q \"core/tools/ToolRegistry.kt\" && echo found in {}' echo \"Trying agents-core-jvm 0.7.3...\" unzip -p /c/Users/1/.gradle/caches/modules-2/files-2.1/ai.koog/agents-core-jvm/0.7.3/375abbdb5c2b2082a8126fa9f2ed5f3085dd2e21/agents-core-jvm-0.7.3-sources.jar commonMain/ai/koog/agents/core/tools/ToolRegistry.kt)",
       "Bash(unzip -p /c/Users/1/.gradle/caches/modules-2/files-2.1/ai.koog/agents-tools-jvm/0.7.3/4c3f9f9b77b7fb587f3abdceb798ab71840f8b9d/agents-tools-jvm-0.7.3-sources.jar commonMain/ai/koog/agents/core/tools/ToolRegistry.kt)",
       "Bash(./gradlew compileKotlin --quiet)",
-      "Bash(./gradlew build *)"
+      "Bash(./gradlew build *)",
+      "Bash(git mv *)",
+      "Bash(cp src/main/kotlin/com/github/strogolsky/autoissue/config/LlmDefaults.kt src/main/kotlin/com/github/strogolsky/autoissue/plugin/config/)",
+      "Bash(cp src/main/kotlin/com/github/strogolsky/autoissue/config/DevConfig.kt src/main/kotlin/com/github/strogolsky/autoissue/plugin/config/)",
+      "Bash(cp src/main/kotlin/com/github/strogolsky/autoissue/config/RenderingFormat.kt src/main/kotlin/com/github/strogolsky/autoissue/plugin/config/)",
+      "Bash(rm src/main/kotlin/com/github/strogolsky/autoissue/config/LlmDefaults.kt src/main/kotlin/com/github/strogolsky/autoissue/config/DevConfig.kt src/main/kotlin/com/github/strogolsky/autoissue/config/RenderingFormat.kt)",
+      "Bash(rmdir src/main/kotlin/com/github/strogolsky/autoissue/core/context src/main/kotlin/com/github/strogolsky/autoissue/core/output)",
+      "Bash(mkdir -p src/main/kotlin/com/github/strogolsky/autoissue/core/context)",
+      "Bash(xargs -I {} git mv {} src/main/kotlin/com/github/strogolsky/autoissue/plugin/state/)",
+      "Bash(rmdir src/main/kotlin/com/github/strogolsky/autoissue/orchestrator)",
+      "Bash(git add *)",
+      "Bash(./gradlew ktlintFormat)",
+      "Bash(./gradlew compileKotlin ktlintMainSourceSetCheck)",
+      "Bash(./gradlew ktlintMainSourceSetCheck --no-daemon)",
+      "Bash(git reset *)"
     ]
   }
 }
