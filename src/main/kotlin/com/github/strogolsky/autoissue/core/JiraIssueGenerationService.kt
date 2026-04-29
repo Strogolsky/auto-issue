@@ -43,11 +43,12 @@ class JiraIssueGenerationService(private val project: Project) {
         val input = IssueGenerationInput(listOf(taskInstruction) + contextComponents)
 
         thisLogger().info("Sending prompt to AI agent. Waiting for response...")
-        val result = agent.generate(input)
-            ?: run {
-                thisLogger().error("Task generation failed: AI Agent returned a null result.")
-                throw IssueGenerationException("The AI agent returned an empty response. Please check your prompt or API limits.")
-            }
+        val result =
+            agent.generate(input)
+                ?: run {
+                    thisLogger().error("Task generation failed: AI Agent returned a null result.")
+                    throw IssueGenerationException("The AI agent returned an empty response. Please check your prompt or API limits.")
+                }
 
         thisLogger().info("Successfully generated task candidate: '${result.title}', '${result.description}'")
         return result

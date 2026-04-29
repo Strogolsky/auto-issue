@@ -12,19 +12,19 @@ import kotlinx.coroutines.withContext
 
 @Service(Service.Level.PROJECT)
 class TodoUpdaterService(private val project: Project) {
-
     suspend fun appendKeyToCode(
         pointer: SmartPsiElementPointer<out PsiElement>,
         issueKey: String,
     ) {
         withContext(Dispatchers.Main) {
-
-            val element = pointer.element
-                ?: throw SourceCodeUpdateException("Cannot insert Jira key: the target line was deleted.")
+            val element =
+                pointer.element
+                    ?: throw SourceCodeUpdateException("Cannot insert Jira key: the target line was deleted.")
 
             val documentManager = PsiDocumentManager.getInstance(project)
-            val document = documentManager.getDocument(element.containingFile)
-                ?: throw SourceCodeUpdateException("Cannot insert Jira key: unable to access the source file.")
+            val document =
+                documentManager.getDocument(element.containingFile)
+                    ?: throw SourceCodeUpdateException("Cannot insert Jira key: unable to access the source file.")
 
             WriteCommandAction.runWriteCommandAction(project, "Update TODO with Jira Task", "AutoIssue", {
                 val textRange = element.textRange

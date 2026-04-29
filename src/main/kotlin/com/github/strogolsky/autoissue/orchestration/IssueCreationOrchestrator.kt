@@ -3,12 +3,10 @@ package com.github.strogolsky.autoissue.orchestration
 import com.github.strogolsky.autoissue.core.JiraIssueGenerationService
 import com.github.strogolsky.autoissue.core.context.ContextEnvironment
 import com.github.strogolsky.autoissue.core.exceptions.AutoIssueException
-import com.github.strogolsky.autoissue.core.exceptions.IssueGenerationException
 import com.github.strogolsky.autoissue.core.output.JiraIssueRequest
 import com.github.strogolsky.autoissue.integration.code.TodoUpdaterService
 import com.github.strogolsky.autoissue.integration.jira.JiraApiService
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
-import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
 import com.github.strogolsky.autoissue.plugin.config.validation.ConfigHealthChecker
 import com.github.strogolsky.autoissue.ui.components.IssueEditDialog
 import com.github.strogolsky.autoissue.ui.notifications.AutoIssueNotifier
@@ -85,7 +83,6 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
         } catch (e: AutoIssueException) {
             thisLogger().warn("Operation interrupted: ${e.message}", e)
             AutoIssueNotifier.notify(project, e.message ?: "An operation failed", NotificationType.ERROR)
-
         } catch (e: Exception) {
             thisLogger().error("Unexpected system error during issue creation", e)
             AutoIssueNotifier.notify(project, "Unexpected system error: ${e.message}", NotificationType.ERROR)
