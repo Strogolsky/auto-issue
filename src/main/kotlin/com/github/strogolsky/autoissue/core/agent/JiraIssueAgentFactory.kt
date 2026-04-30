@@ -2,10 +2,14 @@ package com.github.strogolsky.autoissue.core.agent
 
 import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
+import ai.koog.agents.features.opentelemetry.feature.OpenTelemetry
 import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
 import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
+import com.github.strogolsky.autoissue.integration.code.tools.ReadFileContentTool
+import com.github.strogolsky.autoissue.integration.code.tools.SearchFilesTool
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfig
+import com.github.strogolsky.autoissue.plugin.startup.LangfuseConfigLoader
 import com.github.strogolsky.autoissue.plugin.startup.PluginConfigLoader
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -32,7 +36,12 @@ class JiraIssueAgentFactory(private val project: Project) :
             "Agent components resolved. Provider: ${config.provider}, Model: ${config.modelName}, Strategy: ${pluginConfig.llm.strategyId}",
         )
 
-        val toolRegistry = ToolRegistry { }
+        val toolRegistry = ToolRegistry {
+            tools(SearchFilesTool(project))
+            tools(ReadFileContentTool(project))
+        }
+
+        val langfuseConfig = LangfuseConfigLoader.load()
 
         val rawKoogAgent =
             AIAgent(
@@ -43,6 +52,19 @@ class JiraIssueAgentFactory(private val project: Project) :
                 temperature = config.temperature,
                 maxIterations = config.maxIterations,
                 toolRegistry = toolRegistry,
+                installFeatures = {
+                    langfuseConfig?.let {
+                        install(OpenTelemetry) {
+                            setServiceInfo("auto-issue", "0.0.1")
+                            addLangfuseExporter(
+                                langfuseUrl = it.url,
+                                langfusePublicKey = it.publicKey,
+                                langfuseSecretKey = it.secretKey,
+                            )
+                            setVerbose(true)
+                        }
+                    }
+                },
             )
 
         thisLogger().info("Jira Issue Agent successfully created.")

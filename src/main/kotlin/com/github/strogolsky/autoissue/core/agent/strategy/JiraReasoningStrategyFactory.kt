@@ -96,8 +96,14 @@ class JiraReasoningStrategyFactory(
 
     private fun buildAnalysisPrompt(input: IssueGenerationInput): String =
         renderService.buildPrompt {
-            instruction("Stage 1 of 2 — analysis only. Do not produce the ticket yet; the next stage will.")
-            instruction("Write a concise technical analysis of the TODO based on the context below, in plain prose.")
+            instruction(
+                """
+                Stage 1 of 2 — Analysis. You are a technical analyst evaluating a TODO comment within its codebase context.
+                Do not generate the final ticket yet. Instead, thoroughly investigate the surrounding code to understand the implementation details and dependencies.
+                Use the available tools to explore the codebase as needed.
+                Once you have gathered sufficient information, output a concise technical analysis in plain prose.
+                """.trimIndent()
+            )
 
             components(input.components)
         }
