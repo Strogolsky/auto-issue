@@ -10,7 +10,7 @@ import com.github.strogolsky.autoissue.integration.code.tools.ReadFileContentToo
 import com.github.strogolsky.autoissue.integration.code.tools.SearchFilesTool
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfig
 import com.github.strogolsky.autoissue.plugin.startup.LangfuseConfigLoader
-import com.github.strogolsky.autoissue.plugin.startup.PluginConfigLoader
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -24,16 +24,19 @@ class JiraIssueAgentFactory(private val project: Project) :
     override fun createAgent(config: LlmAgentConfig): KoogAgentAdapter<IssueGenerationInput, JiraIssueCandidate> {
         thisLogger().info("Creating Jira Issue Agent...")
 
-        val modelResolver = project.service<LlmProviderRegistry>()
-        val strategyRegistry = project.service<JiraStrategyRegistry>()
-        val pluginConfig = PluginConfigLoader.load()
+        val providerRegistry = project.service<LlmProviderRegistry>()
+        val strategyRegistry = ApplicationManager.getApplication().service<JiraStrategyRegistry>()
 
-        val (executor, model) = modelResolver.resolve(config.provider, config.modelName, config.apiKey)
+        val provider = providerRegistry.getProvider(config.provider)
+        val executor = provider.createExecutor(config.apiKey)
 
-        val strategy = strategyRegistry.getStrategy(pluginConfig.llm.strategyId)
+        val factory =
+            strategyRegistry.findFactory(config.provider, config.strategyId)
+                ?: error("Strategy '${config.strategyId}' not found for provider '${config.provider}'")
+        val strategy = factory.createStrategy(project)
 
         thisLogger().debug(
-            "Agent components resolved. Provider: ${config.provider}, Model: ${config.modelName}, Strategy: ${pluginConfig.llm.strategyId}",
+            "Agent components resolved. Provider: ${config.provider}, Strategy: ${config.strategyId}",
         )
 
         val toolRegistry = ToolRegistry {
@@ -46,7 +49,7 @@ class JiraIssueAgentFactory(private val project: Project) :
         val rawKoogAgent =
             AIAgent(
                 promptExecutor = executor,
-                llmModel = model,
+                llmModel = provider.defaultModel,
                 strategy = strategy,
                 systemPrompt = config.systemPrompt,
                 temperature = config.temperature,

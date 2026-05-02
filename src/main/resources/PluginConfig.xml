@@ -2,8 +2,7 @@
 
   <llm>
     <default-provider>GOOGLE</default-provider>
-    <default-model>gemini-2.5-flash</default-model>
-    <default-strategy>jira-reasoning-strategy</default-strategy>
+    <default-strategy>jira-direct-strategy</default-strategy>
     <temperature>0.0</temperature>
     <max-iterations>50</max-iterations>
     <system-prompt file="prompts/system-prompt.md"/>

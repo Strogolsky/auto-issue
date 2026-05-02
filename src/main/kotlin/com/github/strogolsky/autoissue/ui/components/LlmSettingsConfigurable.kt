@@ -1,8 +1,13 @@
 package com.github.strogolsky.autoissue.ui.components
 
 import com.github.strogolsky.autoissue.core.agent.LlmProviderRegistry
+import com.github.strogolsky.autoissue.core.agent.strategy.IssueStrategyFactory
+import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
+import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
+import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
 import com.github.strogolsky.autoissue.plugin.state.LlmAgentState
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
@@ -12,19 +17,21 @@ import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.SimpleListCellRenderer
 import javax.swing.DefaultComboBoxModel
 
 class LlmSettingsConfigurable(private val project: Project) : Configurable {
     private val configService = project.service<LlmAgentConfigService>()
-    private val resolver = project.service<LlmProviderRegistry>()
+    private val providerRegistry = project.service<LlmProviderRegistry>()
+    private val strategyRegistry = ApplicationManager.getApplication().service<JiraStrategyRegistry>()
 
     private lateinit var settingsPanel: DialogPanel
 
     private var llmProvider: String? = ""
-    private var llmModel: String? = ""
+    private var llmStrategy: String? = ""
     private var llmToken = ""
 
-    private val modelsModel = DefaultComboBoxModel<String>()
+    private val strategiesModel = DefaultComboBoxModel<IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>>()
 
     override fun getDisplayName() = "LLM"
 
@@ -32,29 +39,34 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
         settingsPanel =
             panel {
                 row("Provider:") {
-                    comboBox(resolver.providers().sorted())
+                    comboBox(providerRegistry.providers().sorted())
                         .bindItem(::llmProvider)
                         .applyToComponent {
                             addActionListener {
                                 val selected = selectedItem as? String
-                                // Обновляем список моделей только если провайдер реально изменился
                                 if (selected != null && selected != llmProvider) {
                                     llmProvider = selected
-                                    loadModelsForProvider(selected)
-
-                                    // Автоматически выбираем первую модель из нового списка, чтобы поле не было пустым
-                                    llmModel = if (modelsModel.size > 0) modelsModel.getElementAt(0) else ""
-
-                                    // Заставляем UI обновиться с новыми значениями
+                                    loadStrategiesForProvider(selected)
+                                    llmStrategy = strategiesModel.getElementAt(0)?.id ?: ""
                                     settingsPanel.reset()
                                 }
                             }
                         }
                 }
-                row("Model:") {
-                    comboBox(modelsModel)
+                row("Strategy:") {
+                    comboBox(strategiesModel)
                         .columns(COLUMNS_LARGE)
-                        .bindItem(::llmModel)
+                        .applyToComponent {
+                            renderer = SimpleListCellRenderer.create("") { it.displayName }
+                        }
+                        .bindItem(
+                            getter = {
+                                strategiesModel.allElements().find { it.id == llmStrategy }
+                            },
+                            setter = { factory ->
+                                llmStrategy = factory?.id ?: ""
+                            },
+                        )
                 }
                 row("API Key:") {
                     passwordField()
@@ -65,12 +77,10 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
         return settingsPanel
     }
 
-    private fun loadModelsForProvider(provider: String?) {
-        modelsModel.removeAllElements()
+    private fun loadStrategiesForProvider(provider: String?) {
+        strategiesModel.removeAllElements()
         if (provider.isNullOrBlank()) return
-
-        val models = runCatching { resolver.modelsFor(provider) }.getOrDefault(emptyList())
-        models.forEach { modelsModel.addElement(it) }
+        strategyRegistry.strategiesFor(provider).forEach { strategiesModel.addElement(it) }
     }
 
     override fun isModified(): Boolean = settingsPanel.isModified()
@@ -82,7 +92,7 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
         val newState =
             LlmAgentState().apply {
                 provider = llmProvider ?: ""
-                modelName = llmModel ?: ""
+                strategyId = llmStrategy ?: ""
                 systemPrompt = currentState.systemPrompt
                 temperature = currentState.temperature
                 maxIterations = currentState.maxIterations
@@ -93,17 +103,16 @@ class LlmSettingsConfigurable(private val project: Project) : Configurable {
     override fun reset() {
         val state = configService.getState()
 
-        // 1. Сначала вытаскиваем данные из стейта
         llmProvider = state.provider
         llmToken = configService.getApiKey() ?: ""
 
-        // 2. Строго до применения модели, заполняем ComboBox нужным списком
-        loadModelsForProvider(state.provider)
+        loadStrategiesForProvider(state.provider)
 
-        // 3. Теперь, когда список заполнен, можно безопасно установить выбранную модель
-        llmModel = state.modelName
+        llmStrategy = state.strategyId
 
-        // 4. Синхронизируем переменные с интерфейсом
         settingsPanel.reset()
     }
+
+    private fun <T> DefaultComboBoxModel<T>.allElements(): List<T> =
+        (0 until size).map { getElementAt(it) }
 }

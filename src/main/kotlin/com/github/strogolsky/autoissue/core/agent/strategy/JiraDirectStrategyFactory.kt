@@ -12,13 +12,14 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 
-class JiraDirectStrategyFactory(
-    private val project: Project,
-) : IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate> {
-    private val renderService = project.service<PromptRenderService>()
+class JiraDirectStrategyFactory : GoogleIssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>() {
+    override val id = "jira-direct-strategy"
+    override val displayName = "Direct generation"
 
-    override fun createStrategy(): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> =
-        strategy("jira_issue_generation") {
+    override fun createStrategy(project: Project): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
+        val renderService = project.service<PromptRenderService>()
+
+        return strategy("jira_issue_generation") {
             val nodePrepareContext by node<IssueGenerationInput, String>("prepare_context") { input ->
                 thisLogger().debug("Preparing context for LLM prompt")
                 renderService.buildPrompt {
@@ -51,4 +52,5 @@ class JiraDirectStrategyFactory(
             edge(nodeCallLLM forwardTo nodeProcessResult)
             edge(nodeProcessResult forwardTo nodeFinish)
         }
+    }
 }

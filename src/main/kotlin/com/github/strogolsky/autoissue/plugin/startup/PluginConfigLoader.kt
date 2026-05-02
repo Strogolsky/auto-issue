@@ -24,7 +24,6 @@ object PluginConfigLoader {
         val llm =
             LlmDefaults(
                 provider = llmNode.text("default-provider"),
-                modelName = llmNode.text("default-model"),
                 strategyId = llmNode.text("default-strategy"),
                 temperature = llmNode.text("temperature").toDouble(),
                 maxIterations = llmNode.text("max-iterations").toInt(),
