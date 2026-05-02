@@ -4,9 +4,9 @@ import com.github.strogolsky.autoissue.integration.jira.JiraApiService
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.state.JiraState
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.components.JBLabel
@@ -24,9 +24,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.swing.DefaultComboBoxModel
 
-class JiraSettingsConfigurable(private val project: Project) : Configurable {
-    private val configService = project.service<JiraConfigService>()
-    private val apiService = project.service<JiraApiService>()
+class JiraSettingsConfigurable : Configurable {
+    private val configService = ApplicationManager.getApplication().service<JiraConfigService>()
+    private val apiService = ApplicationManager.getApplication().service<JiraApiService>()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var settingsPanel: DialogPanel

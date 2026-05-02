@@ -12,6 +12,7 @@ import com.github.strogolsky.autoissue.ui.components.IssueEditDialog
 import com.github.strogolsky.autoissue.ui.notifications.AutoIssueNotifier
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -29,7 +30,7 @@ import kotlinx.coroutines.withContext
 @Service(Service.Level.PROJECT)
 class IssueCreationOrchestrator(private val project: Project) : Disposable {
     private val cs = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val jiraApiService by lazy { project.service<JiraApiService>() }
+    private val jiraApiService by lazy { ApplicationManager.getApplication().service<JiraApiService>() }
     private val healthChecker by lazy { project.service<ConfigHealthChecker>() }
 
     override fun dispose() = cs.cancel()
@@ -50,7 +51,7 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
 
         try {
             // 2. Fetch Config
-            val jiraConfig = project.service<JiraConfigService>().getEffectiveConfig()
+            val jiraConfig = ApplicationManager.getApplication().service<JiraConfigService>().getEffectiveConfig()
 
             // 3. Fetch Jira metadata and run LLM
             val (metadata, candidate) =

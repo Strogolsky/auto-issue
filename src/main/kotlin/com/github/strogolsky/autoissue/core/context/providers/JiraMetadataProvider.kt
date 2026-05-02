@@ -4,12 +4,13 @@ import com.github.strogolsky.autoissue.core.context.ContextEnvironment
 import com.github.strogolsky.autoissue.core.context.components.ContextComponent
 import com.github.strogolsky.autoissue.integration.jira.JiraApiService
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 
 class JiraMetadataProvider : ContextComponentProvider {
     override suspend fun provide(env: ContextEnvironment): ContextComponent? {
-        val jiraClient = env.project.service<JiraApiService>()
-        val configService = env.project.service<JiraConfigService>()
+        val jiraClient = ApplicationManager.getApplication().service<JiraApiService>()
+        val configService = ApplicationManager.getApplication().service<JiraConfigService>()
 
         return try {
             val currentProjectKey = configService.state.defaultProjectKey

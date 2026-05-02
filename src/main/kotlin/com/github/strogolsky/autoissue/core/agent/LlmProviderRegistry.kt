@@ -3,7 +3,7 @@ package com.github.strogolsky.autoissue.core.agent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.extensions.ExtensionPointName
 
-@Service(Service.Level.PROJECT)
+@Service(Service.Level.APP)
 class LlmProviderRegistry {
     private val providers = mutableMapOf<String, LlmProvider>()
 

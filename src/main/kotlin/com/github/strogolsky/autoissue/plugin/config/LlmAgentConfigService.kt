@@ -13,7 +13,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 
-@Service(Service.Level.PROJECT)
+@Service(Service.Level.APP)
 @State(
     name = "JiraAgentConfiguration",
     storages = [Storage("AutoIssuePlugin.xml")],

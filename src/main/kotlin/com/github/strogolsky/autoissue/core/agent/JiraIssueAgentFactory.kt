@@ -24,7 +24,7 @@ class JiraIssueAgentFactory(private val project: Project) :
     override fun createAgent(config: LlmAgentConfig): KoogAgentAdapter<IssueGenerationInput, JiraIssueCandidate> {
         thisLogger().info("Creating Jira Issue Agent...")
 
-        val providerRegistry = project.service<LlmProviderRegistry>()
+        val providerRegistry = ApplicationManager.getApplication().service<LlmProviderRegistry>()
         val strategyRegistry = ApplicationManager.getApplication().service<JiraStrategyRegistry>()
 
         val provider = providerRegistry.getProvider(config.provider)

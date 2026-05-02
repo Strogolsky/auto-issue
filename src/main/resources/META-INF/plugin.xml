@@ -38,20 +38,20 @@
 
         <notificationGroup id="AutoIssue Notifications" displayType="BALLOON"/>
 
-        <projectConfigurable parentId="tools"
-                             id="com.github.strogolsky.autoissue.Main"
-                             displayName="AutoIssue"
-                             instance="com.github.strogolsky.autoissue.ui.components.AutoIssueMainConfigurable"/>
+        <applicationConfigurable parentId="tools"
+                                 id="com.github.strogolsky.autoissue.Main"
+                                 displayName="AutoIssue"
+                                 instance="com.github.strogolsky.autoissue.ui.components.AutoIssueMainConfigurable"/>
 
-        <projectConfigurable parentId="com.github.strogolsky.autoissue.Main"
-                             id="com.github.strogolsky.autoissue.Jira"
-                             displayName="Jira Integration"
-                             instance="com.github.strogolsky.autoissue.ui.components.JiraSettingsConfigurable"/>
+        <applicationConfigurable parentId="com.github.strogolsky.autoissue.Main"
+                                 id="com.github.strogolsky.autoissue.Jira"
+                                 displayName="Jira Integration"
+                                 instance="com.github.strogolsky.autoissue.ui.components.JiraSettingsConfigurable"/>
 
-        <projectConfigurable parentId="com.github.strogolsky.autoissue.Main"
-                             id="com.github.strogolsky.autoissue.LLM"
-                             displayName="LLM Agent"
-                             instance="com.github.strogolsky.autoissue.ui.components.LlmSettingsConfigurable"/>
+        <applicationConfigurable parentId="com.github.strogolsky.autoissue.Main"
+                                 id="com.github.strogolsky.autoissue.LLM"
+                                 displayName="LLM Agent"
+                                 instance="com.github.strogolsky.autoissue.ui.components.LlmSettingsConfigurable"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.github.strogolsky.autoissue">

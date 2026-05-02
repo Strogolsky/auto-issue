@@ -3,6 +3,7 @@ package com.github.strogolsky.autoissue.plugin.config.validation
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
 import com.github.strogolsky.autoissue.ui.notifications.AutoIssueNotifier
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -38,8 +39,8 @@ class LlmConfigValidator(private val llmService: LlmAgentConfigService) : Config
 class ConfigHealthChecker(private val project: Project) {
     private val validators: List<ConfigValidator> by lazy {
         listOf(
-            JiraConfigValidator(project.service<JiraConfigService>()),
-            LlmConfigValidator(project.service<LlmAgentConfigService>()),
+            JiraConfigValidator(ApplicationManager.getApplication().service<JiraConfigService>()),
+            LlmConfigValidator(ApplicationManager.getApplication().service<LlmAgentConfigService>()),
         )
     }
 
