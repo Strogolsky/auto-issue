@@ -3,6 +3,7 @@ package com.github.strogolsky.autoissue.integration.code.tools
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
 import ai.koog.agents.core.tools.reflect.ToolSet
+import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -26,6 +27,7 @@ class ReadFileContentTool(private val project: Project) : ToolSet {
         }
         val content = service.getWholeFileContent(filePath)
             ?: return ToolErrorResponse(errorDetails = "File not found at path: $filePath")
-        return FileContentResponse(filePath = filePath, content = content)
+        val maskedContent = project.service<PromptRenderService>().mask(content)
+        return FileContentResponse(filePath = filePath, content = maskedContent)
     }
 }
