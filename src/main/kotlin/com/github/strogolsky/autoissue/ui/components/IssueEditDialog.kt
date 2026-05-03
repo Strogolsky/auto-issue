@@ -15,7 +15,6 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.util.ui.JBUI
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -31,13 +30,7 @@ class IssueEditDialog(
     // Base text fields
     private val titleField = JBTextField(candidate.title, 40)
 
-    private val descriptionArea =
-        JBTextArea(candidate.description).apply {
-            rows = 8
-            columns = 40
-            lineWrap = true
-            wrapStyleWord = true
-        }
+    private lateinit var descriptionArea: JBTextArea
 
     // Dropdowns
     private val issueTypeCombo =
@@ -96,10 +89,14 @@ class IssueEditDialog(
             }
 
             row("Description:") {
-                scrollCell(descriptionArea)
+                textArea()
                     .align(Align.FILL)
                     .applyToComponent {
-                        preferredSize = JBUI.size(500, 150)
+                        descriptionArea = this
+                        text = candidate.description
+                        rows = 8
+                        lineWrap = true
+                        wrapStyleWord = true
                     }
             }.resizableRow()
 

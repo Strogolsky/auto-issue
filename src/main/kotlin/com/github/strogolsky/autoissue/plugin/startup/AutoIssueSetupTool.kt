@@ -7,7 +7,7 @@ import com.github.strogolsky.autoissue.core.masking.MaskingPatterns
 import com.github.strogolsky.autoissue.core.masking.RegexContentMasker
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
-import com.intellij.ide.util.PropertiesComponent
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -19,11 +19,7 @@ class AutoIssueSetupTool(private val project: Project) {
 
         initRendering(config)
 
-        val appProps = PropertiesComponent.getInstance()
-        if (!appProps.getBoolean("AutoIssue_FirstRun")) {
-            project.service<LlmAgentConfigService>().applyDefaults(config.llm)
-            appProps.setValue("AutoIssue_FirstRun", true)
-        }
+        ApplicationManager.getApplication().service<LlmAgentConfigService>().applyDefaults(config.llm)
 
         if (config.dev.localPropertiesEnabled) {
             applyLocalProperties()
@@ -42,8 +38,8 @@ class AutoIssueSetupTool(private val project: Project) {
     }
 
     private fun applyLocalProperties() {
-        val agentConfig = project.service<LlmAgentConfigService>()
-        val jiraConfig = project.service<JiraConfigService>()
+        val agentConfig = ApplicationManager.getApplication().service<LlmAgentConfigService>()
+        val jiraConfig = ApplicationManager.getApplication().service<JiraConfigService>()
 
         System.getProperty("autoissue.llm.api-key")?.takeIf { it.isNotBlank() }?.let { agentConfig.saveApiKey(it) }
         System.getProperty("autoissue.jira.api-token")?.takeIf { it.isNotBlank() }?.let { jiraConfig.saveApiToken(it) }

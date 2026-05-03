@@ -20,4 +20,6 @@ class PromptRenderService {
         val r = renderer ?: error("PromptRenderService was not initialized by AutoIssueSetupTool")
         return masker.mask(r.buildPrompt(block))
     }
+
+    fun mask(text: String): String = masker.mask(text)
 }

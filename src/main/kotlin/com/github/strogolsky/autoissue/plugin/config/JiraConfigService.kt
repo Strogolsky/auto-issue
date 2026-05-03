@@ -11,7 +11,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 
-@Service(Service.Level.PROJECT)
+@Service(Service.Level.APP)
 @State(name = "JiraIntegrationConfiguration", storages = [Storage("AutoIssue_Jira.xml")])
 class JiraConfigService : PersistentStateComponent<JiraState> {
     private var state = JiraState()

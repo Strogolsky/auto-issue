@@ -8,10 +8,10 @@ import com.github.strogolsky.autoissue.core.output.JiraIssueRequest
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.config.JiraProjectSummary
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
-import com.intellij.openapi.project.Project
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -45,9 +45,9 @@ import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 import java.util.Base64
 
-@Service(Service.Level.PROJECT)
-class JiraApiService(private val project: Project) : Disposable {
-    private val configService = project.service<JiraConfigService>()
+@Service(Service.Level.APP)
+class JiraApiService : Disposable {
+    private val configService = ApplicationManager.getApplication().service<JiraConfigService>()
     private val forgivingJson = Json { ignoreUnknownKeys = true }
 
     private val httpClient =

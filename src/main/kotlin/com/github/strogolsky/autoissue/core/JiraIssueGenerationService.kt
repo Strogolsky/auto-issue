@@ -8,6 +8,7 @@ import com.github.strogolsky.autoissue.core.exceptions.IssueGenerationException
 import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -17,7 +18,7 @@ import com.intellij.openapi.project.Project
 class JiraIssueGenerationService(private val project: Project) {
     private val factory = project.service<JiraIssueAgentFactory>()
     private val registry = project.service<ContextRegistry>()
-    private val agentConfigService = project.service<LlmAgentConfigService>()
+    private val agentConfigService = ApplicationManager.getApplication().service<LlmAgentConfigService>()
 
     suspend fun generateTask(
         instruction: String,

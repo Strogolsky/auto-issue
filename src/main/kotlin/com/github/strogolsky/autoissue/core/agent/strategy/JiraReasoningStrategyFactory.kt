@@ -10,6 +10,7 @@ import ai.koog.agents.core.dsl.extension.nodeLLMRequestStructured
 import ai.koog.agents.core.dsl.extension.nodeLLMSendToolResult
 import ai.koog.agents.core.dsl.extension.onAssistantMessage
 import ai.koog.agents.core.dsl.extension.onToolCall
+import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.structure.StructuredResponse
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
@@ -18,22 +19,23 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 
-class JiraReasoningStrategyFactory(
-    private val project: Project,
-) : IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate> {
-    private val renderService = project.service<PromptRenderService>()
+class JiraReasoningStrategyFactory : GoogleIssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>() {
+    override val id = "jira-reasoning-strategy"
+    override val displayName = "Reasoning (analysis + structuring)"
 
-    override fun createStrategy(): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
+    override fun createStrategy(project: Project): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
+        val renderService = project.service<PromptRenderService>()
         var originalInput: IssueGenerationInput? = null
 
         return strategy("jira_reasoning_strategy") {
             val analysisSubgraph by subgraph<IssueGenerationInput, AnalysisStageResult>(
                 name = "analysis",
+                llmModel = GoogleModels.Gemini2_5Flash,
             ) {
                 val nodePrepare by node<IssueGenerationInput, String>("prepare_analysis_prompt") { input ->
                     originalInput = input
                     thisLogger().debug("Analysis stage: preparing prompt")
-                    buildAnalysisPrompt(input)
+                    buildAnalysisPrompt(renderService, input)
                 }
 
                 val nodeAnalyze by nodeLLMRequest(name = "analyze")
@@ -60,9 +62,10 @@ class JiraReasoningStrategyFactory(
 
             val structuringSubgraph by subgraph<AnalysisStageResult, JiraIssueCandidate>(
                 name = "structuring",
+                llmModel = GoogleModels.Gemini2_5FlashLite,
             ) {
                 val nodeBuildPrompt by node<AnalysisStageResult, String>("build_structuring_prompt") { context ->
-                    buildStructuringPrompt(context)
+                    buildStructuringPrompt(renderService, context)
                 }
 
                 val nodeStructured by nodeLLMRequestStructured<JiraIssueCandidate>(
@@ -94,15 +97,27 @@ class JiraReasoningStrategyFactory(
         }
     }
 
-    private fun buildAnalysisPrompt(input: IssueGenerationInput): String =
+    private fun buildAnalysisPrompt(
+        renderService: PromptRenderService,
+        input: IssueGenerationInput,
+    ): String =
         renderService.buildPrompt {
-            instruction("Stage 1 of 2 — analysis only. Do not produce the ticket yet; the next stage will.")
-            instruction("Write a concise technical analysis of the TODO based on the context below, in plain prose.")
+            instruction(
+                """
+                Stage 1 of 2 — Analysis. You are a technical analyst evaluating a TODO comment within its codebase context.
+                Do not generate the final ticket yet. Instead, thoroughly investigate the surrounding code to understand the implementation details and dependencies.
+                Use the available tools to explore the codebase as needed.
+                Once you have gathered sufficient information, output a concise technical analysis in plain prose.
+                """.trimIndent(),
+            )
 
             components(input.components)
         }
 
-    private fun buildStructuringPrompt(context: AnalysisStageResult): String =
+    private fun buildStructuringPrompt(
+        renderService: PromptRenderService,
+        context: AnalysisStageResult,
+    ): String =
         renderService.buildPrompt {
             instruction("Stage 2 of 2 — produce the ticket now, strictly according to the schema and the rules in the system prompt.")
             instruction("Use the analysis below as input; the original context is included again for reference.")

@@ -3,12 +3,11 @@ package com.github.strogolsky.autoissue.ui.components
 import com.intellij.ide.DataManager
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ex.Settings
-import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.panel
 import java.awt.event.ActionEvent
 import javax.swing.JComponent
 
-class AutoIssueMainConfigurable(private val project: Project) : Configurable {
+class AutoIssueMainConfigurable : Configurable {
     override fun getDisplayName() = "AutoIssue"
 
     override fun createComponent(): JComponent =

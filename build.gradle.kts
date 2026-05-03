@@ -42,6 +42,7 @@ repositories {
 dependencies {
     // Koog dependencies
     implementation(libs.koog.agents)
+    implementation(libs.koog.agents.opentelemetry)
     compileOnly(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.core)
     testImplementation(libs.junit)
@@ -160,6 +161,9 @@ tasks {
         systemProperty("autoissue.jira.username", localProperties.getProperty("jira.username", ""))
         systemProperty("autoissue.jira.api-token", localProperties.getProperty("jira.api.token", ""))
         systemProperty("autoissue.jira.project-key", localProperties.getProperty("jira.project-key", ""))
+        systemProperty("autoissue.langfuse.url", localProperties.getProperty("langfuse.url", ""))
+        systemProperty("autoissue.langfuse.public-key", localProperties.getProperty("langfuse.public-key", ""))
+        systemProperty("autoissue.langfuse.secret-key", localProperties.getProperty("langfuse.secret-key", ""))
     }
 }
 

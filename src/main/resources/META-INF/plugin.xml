@@ -11,7 +11,11 @@
     <extensionPoints>
         <extensionPoint
             name="llmProviderFactory"
-            interface="com.github.strogolsky.autoissue.core.agent.LlmProviderFactory"
+            interface="com.github.strogolsky.autoissue.core.agent.LlmProvider"
+            dynamic="true"/>
+        <extensionPoint
+            name="issueStrategyFactory"
+            interface="com.github.strogolsky.autoissue.core.agent.strategy.IssueStrategyFactory"
             dynamic="true"/>
         <extensionPoint
             name="contextComponentProvider"
@@ -27,31 +31,36 @@
 
         <postStartupActivity implementation="com.github.strogolsky.autoissue.plugin.startup.PluginStartupActivity" />
 
+
         <codeInsight.lineMarkerProvider
                 language="JAVA"
                 implementationClass="com.github.strogolsky.autoissue.ui.action.TodoLineMarkerProvider"/>
 
         <notificationGroup id="AutoIssue Notifications" displayType="BALLOON"/>
 
-        <projectConfigurable parentId="tools"
-                             id="com.github.strogolsky.autoissue.Main"
-                             displayName="AutoIssue"
-                             instance="com.github.strogolsky.autoissue.ui.components.AutoIssueMainConfigurable"/>
+        <applicationConfigurable parentId="tools"
+                                 id="com.github.strogolsky.autoissue.Main"
+                                 displayName="AutoIssue"
+                                 instance="com.github.strogolsky.autoissue.ui.components.AutoIssueMainConfigurable"/>
 
-        <projectConfigurable parentId="com.github.strogolsky.autoissue.Main"
-                             id="com.github.strogolsky.autoissue.Jira"
-                             displayName="Jira Integration"
-                             instance="com.github.strogolsky.autoissue.ui.components.JiraSettingsConfigurable"/>
+        <applicationConfigurable parentId="com.github.strogolsky.autoissue.Main"
+                                 id="com.github.strogolsky.autoissue.Jira"
+                                 displayName="Jira Integration"
+                                 instance="com.github.strogolsky.autoissue.ui.components.JiraSettingsConfigurable"/>
 
-        <projectConfigurable parentId="com.github.strogolsky.autoissue.Main"
-                             id="com.github.strogolsky.autoissue.LLM"
-                             displayName="LLM Agent"
-                             instance="com.github.strogolsky.autoissue.ui.components.LlmSettingsConfigurable"/>
+        <applicationConfigurable parentId="com.github.strogolsky.autoissue.Main"
+                                 id="com.github.strogolsky.autoissue.LLM"
+                                 displayName="LLM Agent"
+                                 instance="com.github.strogolsky.autoissue.ui.components.LlmSettingsConfigurable"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.github.strogolsky.autoissue">
         <llmProviderFactory
-            implementation="com.github.strogolsky.autoissue.core.agent.GoogleLlmProviderFactory"/>
+            implementation="com.github.strogolsky.autoissue.core.agent.GoogleLlmProvider"/>
+        <issueStrategyFactory
+            implementation="com.github.strogolsky.autoissue.core.agent.strategy.JiraDirectStrategyFactory"/>
+        <issueStrategyFactory
+            implementation="com.github.strogolsky.autoissue.core.agent.strategy.JiraReasoningStrategyFactory"/>
         <contextComponentProvider
             implementation="com.github.strogolsky.autoissue.core.context.providers.FileContextComponentProvider"/>
         <contextComponentProvider
