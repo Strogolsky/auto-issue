@@ -15,7 +15,6 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.util.ui.JBUI
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date

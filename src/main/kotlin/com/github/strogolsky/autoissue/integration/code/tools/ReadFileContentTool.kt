@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project
 
 @LLMDescription("Tools for reading source file content.")
 class ReadFileContentTool(private val project: Project) : ToolSet {
-
     @Tool
     @LLMDescription(
         "Reads the entire content of a source file. " +
@@ -25,8 +24,9 @@ class ReadFileContentTool(private val project: Project) : ToolSet {
         if (service.isBinaryFile(filePath)) {
             return ToolErrorResponse(errorDetails = "Cannot read binary files.")
         }
-        val content = service.getWholeFileContent(filePath)
-            ?: return ToolErrorResponse(errorDetails = "File not found at path: $filePath")
+        val content =
+            service.getWholeFileContent(filePath)
+                ?: return ToolErrorResponse(errorDetails = "File not found at path: $filePath")
         val maskedContent = project.service<PromptRenderService>().mask(content)
         return FileContentResponse(filePath = filePath, content = maskedContent)
     }

@@ -11,12 +11,12 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.SimpleListCellRenderer
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.SimpleListCellRenderer
 import javax.swing.DefaultComboBoxModel
 
 class LlmSettingsConfigurable : Configurable {
@@ -112,6 +112,5 @@ class LlmSettingsConfigurable : Configurable {
         settingsPanel.reset()
     }
 
-    private fun <T> DefaultComboBoxModel<T>.allElements(): List<T> =
-        (0 until size).map { getElementAt(it) }
+    private fun <T> DefaultComboBoxModel<T>.allElements(): List<T> = (0 until size).map { getElementAt(it) }
 }

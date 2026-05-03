@@ -21,6 +21,5 @@ class JiraStrategyRegistry {
     fun findFactory(
         providerKey: String,
         strategyId: String,
-    ): IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>? =
-        strategiesFor(providerKey).find { it.id == strategyId }
+    ): IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>? = strategiesFor(providerKey).find { it.id == strategyId }
 }

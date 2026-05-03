@@ -108,7 +108,7 @@ class JiraReasoningStrategyFactory : GoogleIssueStrategyFactory<IssueGenerationI
                 Do not generate the final ticket yet. Instead, thoroughly investigate the surrounding code to understand the implementation details and dependencies.
                 Use the available tools to explore the codebase as needed.
                 Once you have gathered sufficient information, output a concise technical analysis in plain prose.
-                """.trimIndent()
+                """.trimIndent(),
             )
 
             components(input.components)

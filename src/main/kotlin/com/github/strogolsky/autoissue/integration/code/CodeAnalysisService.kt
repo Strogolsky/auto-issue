@@ -26,12 +26,16 @@ class CodeAnalysisService(private val project: Project) {
 
     fun isBinaryFile(filePath: String): Boolean =
         ReadAction.compute<Boolean, Throwable> {
-            val virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath)
-                ?: return@compute false
+            val virtualFile =
+                LocalFileSystem.getInstance().findFileByPath(filePath)
+                    ?: return@compute false
             virtualFile.fileType.isBinary
         }
 
-    fun searchFilesByName(query: String, maxResults: Int = 10): List<String> =
+    fun searchFilesByName(
+        query: String,
+        maxResults: Int = 10,
+    ): List<String> =
         ReadAction.compute<List<String>, Throwable> {
             val projectDir = project.guessProjectDir()?.path ?: return@compute emptyList()
             val scope = GlobalSearchScope.projectScope(project)
@@ -54,8 +58,9 @@ class CodeAnalysisService(private val project: Project) {
                 LocalFileSystem.getInstance().findFileByPath(filePath)
                     ?: projectDir?.let { LocalFileSystem.getInstance().findFileByPath("$it/$filePath") }
                     ?: return@compute null
-            val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-                ?: return@compute null
+            val psiFile =
+                PsiManager.getInstance(project).findFile(virtualFile)
+                    ?: return@compute null
             val text = psiFile.text
             if (text.length > MAX_CONTENT_CHARS) text.take(MAX_CONTENT_CHARS) + TRUNCATION_NOTICE else text
         }

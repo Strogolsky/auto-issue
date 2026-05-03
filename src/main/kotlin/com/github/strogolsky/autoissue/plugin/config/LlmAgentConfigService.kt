@@ -74,8 +74,9 @@ class LlmAgentConfigService : PersistentStateComponent<LlmAgentState> {
 
     private fun ensureStrategyValid() {
         val strategyRegistry = ApplicationManager.getApplication().service<JiraStrategyRegistry>()
-        val isValid = state.strategyId.isNotBlank() &&
-            strategyRegistry.findFactory(state.provider, state.strategyId) != null
+        val isValid =
+            state.strategyId.isNotBlank() &&
+                strategyRegistry.findFactory(state.provider, state.strategyId) != null
         if (!isValid) {
             val fallback = strategyRegistry.strategiesFor(state.provider).firstOrNull()
             if (fallback != null) {

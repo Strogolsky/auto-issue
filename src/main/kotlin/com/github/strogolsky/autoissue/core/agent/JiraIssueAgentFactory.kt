@@ -39,10 +39,11 @@ class JiraIssueAgentFactory(private val project: Project) :
             "Agent components resolved. Provider: ${config.provider}, Strategy: ${config.strategyId}",
         )
 
-        val toolRegistry = ToolRegistry {
-            tools(SearchFilesTool(project))
-            tools(ReadFileContentTool(project))
-        }
+        val toolRegistry =
+            ToolRegistry {
+                tools(SearchFilesTool(project))
+                tools(ReadFileContentTool(project))
+            }
 
         val langfuseConfig = LangfuseConfigLoader.load()
 

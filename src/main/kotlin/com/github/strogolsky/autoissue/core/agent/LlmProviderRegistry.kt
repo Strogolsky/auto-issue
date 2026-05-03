@@ -18,6 +18,5 @@ class LlmProviderRegistry {
 
     fun providers(): Set<String> = providers.keys
 
-    fun getProvider(key: String): LlmProvider =
-        providers[key.uppercase()] ?: error("Unknown LLM provider: $key")
+    fun getProvider(key: String): LlmProvider = providers[key.uppercase()] ?: error("Unknown LLM provider: $key")
 }
