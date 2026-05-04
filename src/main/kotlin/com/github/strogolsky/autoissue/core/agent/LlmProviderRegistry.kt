@@ -2,6 +2,7 @@ package com.github.strogolsky.autoissue.core.agent
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.annotations.TestOnly
 
 @Service(Service.Level.APP)
 class LlmProviderRegistry {
@@ -12,8 +13,17 @@ class LlmProviderRegistry {
             ExtensionPointName.create("com.github.strogolsky.autoissue.llmProviderFactory")
     }
 
-    init {
-        EP_NAME.extensionList.forEach { providers[it.providerKey.uppercase()] = it }
+    constructor() {
+        loadExtensions(EP_NAME.extensionList)
+    }
+
+    @TestOnly
+    internal constructor(testProviders: List<LlmProvider>) {
+        loadExtensions(testProviders)
+    }
+
+    private fun loadExtensions(extensions: List<LlmProvider>) {
+        extensions.forEach { providers[it.providerKey.uppercase()] = it }
     }
 
     fun providers(): Set<String> = providers.keys

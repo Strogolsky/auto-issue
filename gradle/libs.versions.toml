@@ -5,6 +5,7 @@ opentest4j = "1.3.0"
 koog = "0.8.0"
 kotlinx-coroutines = "1.10.2"
 kotlinx-serialization = "1.10.0"
+mockk = "1.13.12"
 
 # plugins
 changelog = "2.5.0"
@@ -16,6 +17,7 @@ ktlint = "14.2.0"
 ktor = "3.4.1"
 
 [libraries]
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 opentest4j = { group = "org.opentest4j", name = "opentest4j", version.ref = "opentest4j" }
 koog-agents = { group = "ai.koog", name = "koog-agents-jvm", version.ref = "koog" }

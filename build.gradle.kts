@@ -45,9 +45,13 @@ dependencies {
     implementation(libs.koog.agents.opentelemetry)
     compileOnly(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.core)
+
+    // Tests
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
+    testImplementation(libs.mockk)
 
+    // Ktor
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.apache5)
 
