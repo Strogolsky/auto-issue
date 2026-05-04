@@ -17,8 +17,13 @@ class ContextRegistry {
             ExtensionPointName.create("com.github.strogolsky.autoissue.contextComponentProvider")
     }
 
-    init {
+    constructor() {
         EP_NAME.extensionList.forEach { providers.add(it) }
+    }
+
+    @TestOnly
+    internal constructor(testProviders: List<ContextComponentProvider>) {
+        providers.addAll(testProviders)
     }
 
     fun register(provider: ContextComponentProvider) {
