@@ -46,15 +46,18 @@ import kotlinx.serialization.json.putJsonObject
 import java.util.Base64
 
 @Service(Service.Level.APP)
-class JiraApiService : Disposable {
-    private val configService = ApplicationManager.getApplication().service<JiraConfigService>()
+class JiraApiService(
+    private val httpClient: HttpClient = createDefaultClient(),
+    private val configService: JiraConfigService = ApplicationManager.getApplication().service<JiraConfigService>()
+    ) : Disposable {
     private val forgivingJson = Json { ignoreUnknownKeys = true }
 
-    private val httpClient =
-        HttpClient(CIO) {
+    companion object {
+        private fun createDefaultClient() = HttpClient(CIO) {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
             expectSuccess = true
         }
+    }
 
     override fun dispose() {
         httpClient.close()
@@ -197,10 +200,10 @@ class JiraApiService : Disposable {
                 ?: error("Key missing in Jira response")
         } catch (e: ClientRequestException) {
             val errorBody = e.response.bodyAsText()
-            thisLogger().error("Failed to create issue. Status: ${e.response.status}. Body: $errorBody")
+            thisLogger().warn("Failed to create issue. Status: ${e.response.status}. Body: $errorBody")
             throw JiraApiException("Failed to create issue in Jira: ${e.message}", e)
         } catch (e: Exception) {
-            thisLogger().error("Unexpected network error while fetching Jira metadata", e)
+            thisLogger().warn("Unexpected network error while fetching Jira metadata", e)
             throw JiraApiException("Failed to connect to Jira. Please check your network or Base URL. Error: ${e.localizedMessage}", e)
         }
     }

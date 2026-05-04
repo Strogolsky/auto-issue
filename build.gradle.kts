@@ -50,6 +50,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
     testImplementation(libs.mockk)
+    testImplementation(libs.ktor.client.mock)
 
     // Ktor
     implementation(libs.ktor.client.core)
