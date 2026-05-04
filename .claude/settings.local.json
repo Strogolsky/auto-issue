@@ -31,7 +31,9 @@
       "Bash(./gradlew ktlintFormat)",
       "Bash(./gradlew compileKotlin ktlintMainSourceSetCheck)",
       "Bash(./gradlew ktlintMainSourceSetCheck --no-daemon)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(xargs wc *)",
+      "Bash(xargs ls *)"
     ]
   }
 }

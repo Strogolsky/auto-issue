@@ -51,6 +51,7 @@ dependencies {
     testImplementation(libs.opentest4j)
     testImplementation(libs.mockk)
     testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Ktor
     implementation(libs.ktor.client.core)
@@ -61,6 +62,8 @@ dependencies {
     // IntelliJ Platform Gradle Plugin Dependencies Extension
     intellijPlatform {
         intellijIdea(providers.gradleProperty("platformVersion"))
+
+        bundledPlugins("com.intellij.java")
 
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
