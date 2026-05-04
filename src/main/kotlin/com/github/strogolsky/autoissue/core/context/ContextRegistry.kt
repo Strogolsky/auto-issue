@@ -5,6 +5,7 @@ import com.github.strogolsky.autoissue.core.context.providers.ContextComponentPr
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
+import org.jetbrains.annotations.TestOnly
 import java.util.concurrent.CopyOnWriteArrayList
 
 @Service(Service.Level.PROJECT)
