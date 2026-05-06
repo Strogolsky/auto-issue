@@ -22,8 +22,9 @@ ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 opentest4j = { group = "org.opentest4j", name = "opentest4j", version.ref = "opentest4j" }
-koog-agents = { group = "ai.koog", name = "koog-agents-jvm", version.ref = "koog" }
 koog-agents-opentelemetry = { group = "ai.koog", name = "agents-features-opentelemetry-jvm", version.ref = "koog" }
+koog-agents = { group = "ai.koog", name = "koog-agents-jvm", version.ref = "koog" }
+koog-agents-test = { group = "ai.koog", name = "agents-test-jvm", version.ref = "koog" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 

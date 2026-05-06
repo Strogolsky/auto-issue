@@ -52,6 +52,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.koog.agents.test)
 
     // Ktor
     implementation(libs.ktor.client.core)
