@@ -3,7 +3,10 @@ package com.github.strogolsky.autoissue.integration.code.tools
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.project.Project
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.unmockkAll
+import io.mockk.verify
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -11,7 +14,6 @@ import org.junit.Before
 import org.junit.Test
 
 class ReadFileContentToolTest {
-
     private val project = mockk<Project>()
     private val codeService = mockk<CodeAnalysisService>()
     private val renderService = mockk<PromptRenderService>()
@@ -30,7 +32,7 @@ class ReadFileContentToolTest {
     }
 
     @Test
-    fun should_ReturnFileContent_When_FileIsValid() {
+    fun shouldReturnFileContentWhenFileIsValid() {
         // --- TEST FLOW ---
         // 1. ARRANGE
         val path = "src/Main.kt"
@@ -52,7 +54,7 @@ class ReadFileContentToolTest {
     }
 
     @Test
-    fun should_ReturnError_When_FileIsBinary() {
+    fun shouldReturnErrorWhenFileIsBinary() {
         // --- TEST FLOW ---
         // 1. ARRANGE
         val path = "image.png"
@@ -68,7 +70,7 @@ class ReadFileContentToolTest {
     }
 
     @Test
-    fun should_ReturnError_When_FileNotFound() {
+    fun shouldReturnErrorWhenFileNotFound() {
         // --- TEST FLOW ---
         // 1. ARRANGE
         val path = "missing.kt"

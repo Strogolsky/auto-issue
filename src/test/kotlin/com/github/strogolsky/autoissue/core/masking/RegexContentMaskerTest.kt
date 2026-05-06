@@ -4,7 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class RegexContentMaskerTest {
-
     private val masker = RegexContentMasker(MaskingPatterns.ALL)
 
     @Test
@@ -30,21 +29,23 @@ class RegexContentMaskerTest {
     fun should_MaskBearerToken_When_TextContainsAuthorizationHeader() {
         // --- TEST FLOW ---
         // 1. ARRANGE: Prepare a multiline HTTP request containing a Bearer token.
-        val multilineRequest = """
+        val multilineRequest =
+            """
             GET /api HTTP/1.1
             Authorization: Bearer secret-token-xyz
             Host: example.com
-        """.trimIndent()
+            """.trimIndent()
 
         // 2. ACT: Mask the text.
         val result = masker.mask(multilineRequest)
 
         // 3. ASSERT: Verify only the token is replaced, while the 'Bearer' prefix remains.
-        val expected = """
+        val expected =
+            """
             GET /api HTTP/1.1
             Authorization: Bearer ****
             Host: example.com
-        """.trimIndent()
+            """.trimIndent()
         assertEquals(expected, result)
     }
 

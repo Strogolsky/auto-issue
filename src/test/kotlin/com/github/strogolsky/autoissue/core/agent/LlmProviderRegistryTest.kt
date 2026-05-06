@@ -8,7 +8,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LlmProviderRegistryTest {
-
     @Test
     fun should_ReturnEmptySet_When_NoProvidersRegistered() {
         // --- TEST FLOW ---
@@ -23,12 +22,14 @@ class LlmProviderRegistryTest {
     fun should_RegisterAndReturnProviders_When_ValidExtensionsExist() {
         // --- TEST FLOW ---
         // 1. ARRANGE: Create mock providers.
-        val googleProvider = mockk<LlmProvider> {
-            every { providerKey } returns "google"
-        }
-        val customProvider = mockk<LlmProvider> {
-            every { providerKey } returns "CUSTOM_AI"
-        }
+        val googleProvider =
+            mockk<LlmProvider> {
+                every { providerKey } returns "google"
+            }
+        val customProvider =
+            mockk<LlmProvider> {
+                every { providerKey } returns "CUSTOM_AI"
+            }
 
         // 2. ACT: Initialize registry with injected providers.
         val registry = LlmProviderRegistry(listOf(googleProvider, customProvider))
@@ -47,9 +48,10 @@ class LlmProviderRegistryTest {
     fun should_FindProvider_When_KeyCaseDiffers() {
         // --- TEST FLOW ---
         // 1. ARRANGE: Register a provider with a mixed-case key.
-        val openAiProvider = mockk<LlmProvider> {
-            every { providerKey } returns "oPeNaI"
-        }
+        val openAiProvider =
+            mockk<LlmProvider> {
+                every { providerKey } returns "oPeNaI"
+            }
 
         // 2. ACT: Initialize registry and fetch using a different case.
         val registry = LlmProviderRegistry(listOf(openAiProvider))
@@ -66,13 +68,14 @@ class LlmProviderRegistryTest {
         val registry = LlmProviderRegistry(emptyList())
 
         // 2. ASSERT: Attempt to get an unknown provider and verify the exception.
-        val exception = assertThrows(IllegalStateException::class.java) {
-            registry.getProvider("unknown_provider")
-        }
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                registry.getProvider("unknown_provider")
+            }
 
         assertTrue(
             "Exception message should contain the unknown key",
-            exception.message!!.contains("Unknown LLM provider: unknown_provider")
+            exception.message!!.contains("Unknown LLM provider: unknown_provider"),
         )
     }
 }

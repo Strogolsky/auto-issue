@@ -13,7 +13,6 @@ import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class TodoUpdaterServiceTest : BasePlatformTestCase() {
-
     private lateinit var service: TodoUpdaterService
 
     override fun setUp() {
@@ -28,71 +27,74 @@ class TodoUpdaterServiceTest : BasePlatformTestCase() {
     }
 
     // UC-C6
-    fun test_should_InjectKey_When_SingleLineTodoExists() {
+    fun testShouldInjectKeyWhenSingleLineTodoExists() {
         // --- TEST FLOW ---
-        // 1. ARRANGE: Prepare code with a single-line TODO and place a caret.
-        val code = """
+        // 1. ARRANGE
+        val code =
+            """
             class Calc {
                 void calculate() {
                     // TODO<caret> fix calculation bug
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
         val psiFile = myFixture.configureByText("Calc.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
         val pointer = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(elementAtCaret!!)
 
-        // 2. ACT: Trigger the code update with a specific issue key.
+        // 2. ACT
         runBlocking {
             service.appendKeyToCode(pointer, "PROJ-123")
         }
 
-        // 3. ASSERT: Verify the virtual file text has been modified correctly.
+        // 3. ASSERT
         val updatedText = myFixture.file.text
         assertTrue("Key should be injected", updatedText.contains("// TODO [PROJ-123]"))
     }
 
     // UC-C7
-    fun test_should_InjectKeyAndKeepSyntax_When_MultilineTodoExists() {
+    fun testShouldInjectKeyAndKeepSyntaxWhenMultilineTodoExists() {
         // --- TEST FLOW ---
-        // 1. ARRANGE: Prepare code with a multi-line TODO block and place a caret.
-        val code = """
+        // 1. ARRANGE
+        val code =
+            """
             class Init {
                 void start() {
                     /* TODO implement database connection <caret>*/
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
         val psiFile = myFixture.configureByText("Init.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
         val pointer = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(elementAtCaret!!)
 
-        // 2. ACT: Trigger the code update.
+        // 2. ACT
         runBlocking {
             service.appendKeyToCode(pointer, "PROJ-999")
         }
 
-        // 3. ASSERT: Verify the key is injected and the closing tag */ is preserved.
+        // 3. ASSERT
         val updatedText = myFixture.file.text
         assertTrue("Closing tag should be preserved", updatedText.contains("/* TODO [PROJ-999] */"))
     }
 
     // UC-C8
-    fun test_should_ThrowException_When_TodoMarkerIsMissing() {
+    fun testShouldThrowExceptionWhenTodoMarkerIsMissing() {
         // --- TEST FLOW ---
-        // 1. ARRANGE: Prepare a comment without the 'TODO' keyword.
-        val code = """
+        // 1. ARRANGE
+        val code =
+            """
             class Api {
                 void fetch() {
                     // FIXME:<caret> broken api
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
         val psiFile = myFixture.configureByText("Api.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
         val pointer = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(elementAtCaret!!)
 
-        // 2. ACT & ASSERT: Attempt to update and expect a specific exception.
+        // 2. ACT & ASSERT
         try {
             runBlocking {
                 service.appendKeyToCode(pointer, "PROJ-123")

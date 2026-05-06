@@ -48,15 +48,16 @@ import java.util.Base64
 @Service(Service.Level.APP)
 class JiraApiService(
     private val httpClient: HttpClient = createDefaultClient(),
-    private val configService: JiraConfigService = ApplicationManager.getApplication().service<JiraConfigService>()
-    ) : Disposable {
+    private val configService: JiraConfigService = ApplicationManager.getApplication().service<JiraConfigService>(),
+) : Disposable {
     private val forgivingJson = Json { ignoreUnknownKeys = true }
 
     companion object {
-        private fun createDefaultClient() = HttpClient(CIO) {
-            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
-            expectSuccess = true
-        }
+        private fun createDefaultClient() =
+            HttpClient(CIO) {
+                install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+                expectSuccess = true
+            }
     }
 
     override fun dispose() {

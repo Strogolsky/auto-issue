@@ -5,7 +5,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -26,8 +25,9 @@ class CodeAnalysisService(private val project: Project) {
 
     fun isBinaryFile(filePath: String): Boolean =
         ReadAction.compute<Boolean, Throwable> {
-            val virtualFile = project.guessProjectDir()?.findFileByRelativePath(filePath)
-                ?: return@compute false
+            val virtualFile =
+                project.guessProjectDir()?.findFileByRelativePath(filePath)
+                    ?: return@compute false
             virtualFile.fileType.isBinary
         }
 
@@ -52,12 +52,13 @@ class CodeAnalysisService(private val project: Project) {
 
     fun getWholeFileContent(filePath: String): String? =
         ReadAction.compute<String?, Throwable> {
-            val virtualFile = project.guessProjectDir()?.findFileByRelativePath(filePath)
-                ?: return@compute null
+            val virtualFile =
+                project.guessProjectDir()?.findFileByRelativePath(filePath)
+                    ?: return@compute null
 
-            val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-                ?: return@compute null
-
+            val psiFile =
+                PsiManager.getInstance(project).findFile(virtualFile)
+                    ?: return@compute null
 
             val text = psiFile.text
             if (text.length > MAX_CONTENT_CHARS) text.take(MAX_CONTENT_CHARS) + TRUNCATION_NOTICE else text

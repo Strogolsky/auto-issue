@@ -7,7 +7,6 @@ import io.mockk.every
 import io.mockk.mockk
 
 class TodoLineMarkerProviderTest : BasePlatformTestCase() {
-
     private lateinit var provider: TodoLineMarkerProvider
 
     override fun setUp() {
@@ -16,15 +15,16 @@ class TodoLineMarkerProviderTest : BasePlatformTestCase() {
     }
 
     // UC-L1
-    fun test_should_ReturnMarkerInfo_When_CommentContainsTodo() {
+    fun testShouldReturnMarkerInfoWhenCommentContainsTodo() {
         // --- TEST FLOW ---
         // 1. ARRANGE
-        val code = """
+        val code =
+            """
             class Test {
                 // TODO:<caret> Need to fix authentication
                 void auth() {}
             }
-        """.trimIndent()
+            """.trimIndent()
         val psiFile = myFixture.configureByText("Test.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
 
@@ -37,14 +37,15 @@ class TodoLineMarkerProviderTest : BasePlatformTestCase() {
     }
 
     // UC-L2
-    fun test_should_ReturnNull_When_ElementIsNotAComment() {
+    fun testShouldReturnNullWhenElementIsNotAComment() {
         // --- TEST FLOW ---
         // 1. ARRANGE
-        val code = """
+        val code =
+            """
             class Test {
                 String fakeTodo = "TODO:<caret> this is a string";
             }
-        """.trimIndent()
+            """.trimIndent()
         val psiFile = myFixture.configureByText("Test.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
 
@@ -56,15 +57,16 @@ class TodoLineMarkerProviderTest : BasePlatformTestCase() {
     }
 
     // UC-L3
-    fun test_should_ReturnNull_When_CommentDoesNotContainTodo() {
+    fun testShouldReturnNullWhenCommentDoesNotContainTodo() {
         // --- TEST FLOW ---
         // 1. ARRANGE
-        val code = """
+        val code =
+            """
             class Test {
                 // Just a regular comment explaining<caret> code
                 void method() {}
             }
-        """.trimIndent()
+            """.trimIndent()
         val psiFile = myFixture.configureByText("Test.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
 
@@ -76,15 +78,16 @@ class TodoLineMarkerProviderTest : BasePlatformTestCase() {
     }
 
     // UC-L4
-    fun test_should_ReturnNull_When_CommentAlreadyHasJiraId() {
+    fun testShouldReturnNullWhenCommentAlreadyHasJiraId() {
         // --- TEST FLOW ---
         // 1. ARRANGE
-        val code = """
+        val code =
+            """
             class Test {
                 // TODO [PROJ-123]: Fix<caret> database connection
                 void connect() {}
             }
-        """.trimIndent()
+            """.trimIndent()
         val psiFile = myFixture.configureByText("Test.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
 
@@ -96,14 +99,15 @@ class TodoLineMarkerProviderTest : BasePlatformTestCase() {
     }
 
     // UC-L5
-    fun test_should_ReturnNull_When_DumbModeIsActive() {
+    fun testShouldReturnNullWhenDumbModeIsActive() {
         // --- TEST FLOW ---
         // 1. ARRANGE
-        val code = """
+        val code =
+            """
             class Test {
                 // TODO: Refactor<caret> this
             }
-        """.trimIndent()
+            """.trimIndent()
         val psiFile = myFixture.configureByText("Test.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
 

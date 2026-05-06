@@ -6,27 +6,28 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class XmlPromptRendererTest {
-
     private val renderer = XmlPromptRenderer()
 
     @Test // UC-R5
     fun should_WrapCodeInCdataAndUseAttributes_When_RenderingFileContextToXml() {
         // --- TEST FLOW ---
         // 1. ARRANGE: Create context with code containing XML-like characters.
-        val fileContext = FileContextComponent(
-            fileName = "XmlParser.kt",
-            language = "Kotlin",
-            imports = emptyList(),
-            className = "XmlParser",
-            classFields = emptyList(),
-            methodSignature = "fun parse()",
-            methodBody = "fun parse() { println(\"<test>\") }"
-        )
+        val fileContext =
+            FileContextComponent(
+                fileName = "XmlParser.kt",
+                language = "Kotlin",
+                imports = emptyList(),
+                className = "XmlParser",
+                classFields = emptyList(),
+                methodSignature = "fun parse()",
+                methodBody = "fun parse() { println(\"<test>\") }",
+            )
 
         // 2. ACT: Build XML prompt.
-        val result = renderer.buildPrompt {
-            components(listOf(fileContext))
-        }
+        val result =
+            renderer.buildPrompt {
+                components(listOf(fileContext))
+            }
 
         // 3. ASSERT: Verify XML tags, attributes, and CDATA wrapping.
         assertTrue("Should contain root tag", result.contains("<prompt>"))
@@ -40,10 +41,11 @@ class XmlPromptRendererTest {
         // --- TEST FLOW ---
         // 1. ARRANGE: No components.
         // 2. ACT: Build prompt.
-        val result = renderer.buildPrompt {
-            components(emptyList())
-            instruction("Do something")
-        }
+        val result =
+            renderer.buildPrompt {
+                components(emptyList())
+                instruction("Do something")
+            }
 
         // 3. ASSERT: Verify context block is skipped entirely.
         assertFalse("Should not contain empty context tag", result.contains("<context>"))

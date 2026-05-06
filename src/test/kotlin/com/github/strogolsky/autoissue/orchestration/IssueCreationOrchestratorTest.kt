@@ -19,12 +19,16 @@ import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.replaceService
 import com.intellij.util.ui.UIUtil
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkConstructor
+import io.mockk.unmockkAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
 
 class IssueCreationOrchestratorTest : BasePlatformTestCase() {
-
     private lateinit var orchestrator: IssueCreationOrchestrator
 
     private lateinit var mockHealthChecker: ConfigHealthChecker
@@ -51,8 +55,10 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
         project.replaceService(JiraIssueGenerationService::class.java, mockIssueGenerationService, testRootDisposable)
         project.replaceService(TodoUpdaterService::class.java, mockTodoUpdaterService, testRootDisposable)
 
-        ApplicationManager.getApplication().replaceService(JiraApiService::class.java, mockJiraApiService, testRootDisposable)
-        ApplicationManager.getApplication().replaceService(JiraConfigService::class.java, mockJiraConfigService, testRootDisposable)
+        ApplicationManager.getApplication()
+            .replaceService(JiraApiService::class.java, mockJiraApiService, testRootDisposable)
+        ApplicationManager.getApplication()
+            .replaceService(JiraConfigService::class.java, mockJiraConfigService, testRootDisposable)
 
         project.messageBus.connect(testRootDisposable).subscribe(
             Notifications.TOPIC,
@@ -60,7 +66,7 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
                 override fun notify(notification: Notification) {
                     capturedNotifications.add(notification)
                 }
-            }
+            },
         )
 
         mockkConstructor(IssueEditDialog::class)
@@ -70,12 +76,11 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
 
     override fun tearDown() {
         unmockkAll()
-
         orchestrator.dispose()
         super.tearDown()
     }
 
-    fun test_should_AbortPipeline_When_ConfigIsInvalid() {
+    fun testShouldAbortPipelineWhenConfigIsInvalid() {
         // --- PREPARE ---
         every { mockHealthChecker.validateAndNotify() } returns false
 
@@ -92,14 +97,13 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
         coVerify(exactly = 0) { mockJiraApiService.getMetadata(any()) }
     }
 
-    fun test_should_CompletePipelineSuccessfully() {
+    fun testShouldCompletePipelineSuccessfully() {
         // --- PREPARE ---
         every { mockHealthChecker.validateAndNotify() } returns true
         coEvery { mockJiraApiService.getMetadata(any()) } returns mockk<JiraProjectMetadata>(relaxed = true)
         coEvery { mockIssueGenerationService.generateTask(any(), any()) } returns mockk<JiraIssueCandidate>(relaxed = true)
         every { anyConstructed<IssueEditDialog>().showAndGetResult() } returns mockk<JiraIssueRequest>(relaxed = true)
         coEvery { mockJiraApiService.createIssue(any()) } returns "PROJ-123"
-
 
         // --- ACT ---
         orchestrator.launch("Implement auth", mockPointer)
@@ -117,7 +121,7 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
         assertTrue(notification.content.contains("PROJ-123"))
     }
 
-    fun test_should_AbortPipeline_When_UserCancelsDialog() {
+    fun testShouldAbortPipelineWhenUserCancelsDialog() {
         // --- PREPARE ---
         every { mockHealthChecker.validateAndNotify() } returns true
         coEvery { mockJiraApiService.getMetadata(any()) } returns mockk(relaxed = true)
@@ -144,7 +148,7 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
         coVerify(exactly = 0) { mockJiraApiService.createIssue(any()) }
     }
 
-    fun test_should_ShowErrorNotification_When_BusinessExceptionThrown() {
+    fun testShouldShowErrorNotificationWhenBusinessExceptionThrown() {
         // --- PREPARE ---
         every { mockHealthChecker.validateAndNotify() } returns true
 
@@ -168,7 +172,7 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
         assertTrue(notification.content.contains("LLM Agent failed to respond"))
     }
 
-    fun test_should_CancelCoroutines_When_Disposed() {
+    fun testShouldCancelCoroutinesWhenDisposed() {
         val scopeField = orchestrator.javaClass.getDeclaredField("cs")
         scopeField.isAccessible = true
         val scope = scopeField.get(orchestrator) as CoroutineScope

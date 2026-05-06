@@ -13,14 +13,19 @@ import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.mockkStatic
+import io.mockk.unmockkAll
+import io.mockk.verify
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 
 class JiraIssueAgentFactoryTest {
-
     private val project = mockk<Project>()
     private val application = mockk<Application>()
 
@@ -34,14 +39,15 @@ class JiraIssueAgentFactoryTest {
     private val strategyFactory = mockk<IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>>()
     private val strategy = mockk<AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate>>()
 
-    private val config = LlmAgentConfig(
-        apiKey = "test-key",
-        provider = "google",
-        systemPrompt = "prompt",
-        temperature = 0.7,
-        maxIterations = 5,
-        strategyId = "jira-strategy"
-    )
+    private val config =
+        LlmAgentConfig(
+            apiKey = "test-key",
+            provider = "google",
+            systemPrompt = "prompt",
+            temperature = 0.7,
+            maxIterations = 5,
+            strategyId = "jira-strategy",
+        )
 
     private lateinit var factory: JiraIssueAgentFactory
 
@@ -71,7 +77,7 @@ class JiraIssueAgentFactoryTest {
     }
 
     @Test
-    fun should_CreateAgentAdapter_When_ConfigIsValid() {
+    fun shouldCreateAgentAdapterWhenConfigIsValid() {
         // --- TEST FLOW ---
         // 1. ARRANGE
         every { providerRegistry.getProvider(config.provider) } returns provider
@@ -91,7 +97,7 @@ class JiraIssueAgentFactoryTest {
     }
 
     @Test
-    fun should_ThrowError_When_StrategyIsNotFound() {
+    fun shouldThrowErrorWhenStrategyIsNotFound() {
         // --- TEST FLOW ---
         // 1. ARRANGE
         every { providerRegistry.getProvider(any()) } returns provider

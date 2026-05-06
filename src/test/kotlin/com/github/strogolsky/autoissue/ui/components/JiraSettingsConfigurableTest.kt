@@ -7,7 +7,9 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.replaceService
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -16,7 +18,6 @@ import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class JiraSettingsConfigurableTest : BasePlatformTestCase() {
-
     private lateinit var configurable: JiraSettingsConfigurable
     private lateinit var realConfigService: JiraConfigService
     private lateinit var apiServiceMock: JiraApiService
@@ -30,7 +31,11 @@ class JiraSettingsConfigurableTest : BasePlatformTestCase() {
         realConfigService.loadState(JiraState())
 
         apiServiceMock = mockk(relaxed = true)
-        ApplicationManager.getApplication().replaceService(JiraApiService::class.java, apiServiceMock, testRootDisposable)
+        ApplicationManager.getApplication().replaceService(
+            JiraApiService::class.java,
+            apiServiceMock,
+            testRootDisposable,
+        )
 
         configurable = JiraSettingsConfigurable()
         configurable.createComponent()
@@ -42,13 +47,14 @@ class JiraSettingsConfigurableTest : BasePlatformTestCase() {
         super.tearDown()
     }
 
-    fun test_should_LoadDataIntoFields_When_ResetCalled() {
+    fun testShouldLoadDataIntoFieldsWhenResetCalled() {
         // --- TEST FLOW ---
-        val savedState = JiraState().apply {
-            baseUrl = "https://jira.custom.com"
-            username = "admin"
-            defaultProjectKey = "PROJ"
-        }
+        val savedState =
+            JiraState().apply {
+                baseUrl = "https://jira.custom.com"
+                username = "admin"
+                defaultProjectKey = "PROJ"
+            }
         realConfigService.loadState(savedState)
 
         configurable.reset()
@@ -59,7 +65,7 @@ class JiraSettingsConfigurableTest : BasePlatformTestCase() {
         assertEquals("admin", currentState.username)
     }
 
-    fun test_should_SaveNewSettings_When_ApplyCalled() {
+    fun testShouldSaveNewSettingsWhenApplyCalled() {
         // --- TEST FLOW ---
         setPrivateField("jiraUrl", "https://new-jira.com")
         setPrivateField("jiraUser", "new-user")
@@ -76,7 +82,7 @@ class JiraSettingsConfigurableTest : BasePlatformTestCase() {
         assertEquals("new-token", realConfigService.getApiToken())
     }
 
-    fun test_should_ShowWarning_When_TestConnectionClickedWithEmptyFields() {
+    fun testShouldShowWarningWhenTestConnectionClickedWithEmptyFields() {
         // --- TEST FLOW ---
         setPrivateField("jiraUrl", "")
         setPrivateField("jiraUser", "")
@@ -92,7 +98,7 @@ class JiraSettingsConfigurableTest : BasePlatformTestCase() {
         coVerify(exactly = 0) { apiServiceMock.testConnection(any(), any(), any()) }
     }
 
-    fun test_should_ShowSuccessStatus_When_ConnectionIsSuccessful() {
+    fun testShouldShowSuccessStatusWhenConnectionIsSuccessful() {
         // --- TEST FLOW ---
         coEvery { apiServiceMock.testConnection(any(), any(), any()) } returns true
 
@@ -115,7 +121,10 @@ class JiraSettingsConfigurableTest : BasePlatformTestCase() {
         assertEquals("Connection successful", statusLabel.text)
     }
 
-    private fun setPrivateField(fieldName: String, value: Any?) {
+    private fun setPrivateField(
+        fieldName: String,
+        value: Any?,
+    ) {
         val field = configurable.javaClass.getDeclaredField(fieldName)
         field.isAccessible = true
         field.set(configurable, value)
@@ -127,7 +136,10 @@ class JiraSettingsConfigurableTest : BasePlatformTestCase() {
         return field.get(configurable)
     }
 
-    private fun invokePrivateMethod(methodName: String, vararg args: Any?) {
+    private fun invokePrivateMethod(
+        methodName: String,
+        vararg args: Any?,
+    ) {
         val method = configurable.javaClass.getDeclaredMethods().find { it.name == methodName }
         method?.let {
             it.isAccessible = true

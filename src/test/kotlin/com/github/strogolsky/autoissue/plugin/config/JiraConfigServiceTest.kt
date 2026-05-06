@@ -8,7 +8,6 @@ import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 class JiraConfigServiceTest : BasePlatformTestCase() {
-
     private lateinit var service: JiraConfigService
     private lateinit var tokenKey: CredentialAttributes
 
@@ -25,13 +24,14 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
         super.tearDown()
     }
 
-    fun testShould_UpdateInternalState_When_LoadStateCalled() {
+    fun testShouldUpdateInternalStateWhenLoadStateCalled() {
         // 1. ARRANGE
-        val newState = JiraState().apply {
-            baseUrl = "https://jira.test"
-            username = "testuser"
-            defaultProjectKey = "TEST"
-        }
+        val newState =
+            JiraState().apply {
+                baseUrl = "https://jira.test"
+                username = "testuser"
+                defaultProjectKey = "TEST"
+            }
 
         // 2. ACT
         service.loadState(newState)
@@ -43,7 +43,7 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
         assertEquals("TEST", state.defaultProjectKey)
     }
 
-    fun testShould_SaveToPasswordSafe_When_UpdateSettingsWithNewToken() {
+    fun testShouldSaveToPasswordSafeWhenUpdateSettingsWithNewToken() {
         // 1. ARRANGE
         val newState = JiraState().apply { username = "testuser" }
 
@@ -51,13 +51,12 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
         service.updateSettings(newState, "new-secret-token")
 
         // 3. ASSERT
-        // Проверяем реальный PasswordSafe!
         val savedPassword = PasswordSafe.instance.getPassword(tokenKey)
         assertEquals("new-secret-token", savedPassword)
         assertEquals("testuser", service.state.username)
     }
 
-    fun testShould_NotOverwritePasswordSafe_When_UpdateSettingsWithoutToken() {
+    fun testShouldNotOverwritePasswordSafeWhenUpdateSettingsWithoutToken() {
         // 1. ARRANGE
         PasswordSafe.instance.setPassword(tokenKey, "old-token")
         val newState = JiraState().apply { username = "testuser" }
@@ -67,16 +66,18 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
 
         // 3. ASSERT
         val savedPassword = PasswordSafe.instance.getPassword(tokenKey)
-        assertEquals("old-token", savedPassword) // Убеждаемся, что он не стерся
+        assertEquals("old-token", savedPassword)
         assertEquals("testuser", service.state.username)
     }
 
-    fun testShould_ReturnFalse_When_FieldsAreMissing() {
+    fun testShouldReturnFalseWhenFieldsAreMissing() {
         // 1. ARRANGE
-        service.loadState(JiraState().apply {
-            baseUrl = ""
-            username = ""
-        })
+        service.loadState(
+            JiraState().apply {
+                baseUrl = ""
+                username = ""
+            },
+        )
 
         // 2. ACT
         val isReady = service.isReady()
@@ -85,13 +86,15 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
         assertFalse(isReady)
     }
 
-    fun testShould_ReturnTrue_When_SystemIsReady() {
+    fun testShouldReturnTrueWhenSystemIsReady() {
         // 1. ARRANGE
         PasswordSafe.instance.setPassword(tokenKey, "token")
-        service.loadState(JiraState().apply {
-            baseUrl = "https://jira.test"
-            username = "user"
-        })
+        service.loadState(
+            JiraState().apply {
+                baseUrl = "https://jira.test"
+                username = "user"
+            },
+        )
 
         // 2. ACT
         val isReady = service.isReady()
@@ -100,14 +103,16 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
         assertTrue(isReady)
     }
 
-    fun testShould_ReturnValidDto_When_SystemIsReady() {
+    fun testShouldReturnValidDtoWhenSystemIsReady() {
         // 1. ARRANGE
         PasswordSafe.instance.setPassword(tokenKey, "my-token")
-        service.loadState(JiraState().apply {
-            baseUrl = "https://jira"
-            username = "admin"
-            defaultProjectKey = "PROJ"
-        })
+        service.loadState(
+            JiraState().apply {
+                baseUrl = "https://jira"
+                username = "admin"
+                defaultProjectKey = "PROJ"
+            },
+        )
 
         // 2. ACT
         val config = service.getEffectiveConfig()
@@ -119,18 +124,21 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
         assertEquals("PROJ", config.projectKey)
     }
 
-    fun testShould_ThrowException_When_TokenIsMissing() {
+    fun testShouldThrowExceptionWhenTokenIsMissing() {
         // 1. ARRANGE
-        service.loadState(JiraState().apply {
-            baseUrl = "https://jira"
-            username = "admin"
-        })
+        service.loadState(
+            JiraState().apply {
+                baseUrl = "https://jira"
+                username = "admin"
+            },
+        )
 
         // 2. ACT & 3. ASSERT
         try {
             service.getEffectiveConfig()
             fail("Expected ConfigurationException to be thrown")
         } catch (e: ConfigurationException) {
+            // Success
         }
     }
 }

@@ -33,7 +33,9 @@
       "Bash(./gradlew ktlintMainSourceSetCheck --no-daemon)",
       "Bash(git reset *)",
       "Bash(xargs wc *)",
-      "Bash(xargs ls *)"
+      "Bash(xargs ls *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(v.get\\('group',''\\),v.get\\('module',''\\),v.get\\('version',''\\)\\) for v in d.get\\('variants',[]\\)[0].get\\('dependencies',[]\\)]\")",
+      "Bash(./gradlew koverHtmlReport --no-daemon)"
     ]
   }
 }

@@ -12,7 +12,6 @@ import org.junit.Before
 import org.junit.Test
 
 class SearchFilesToolTest {
-
     private val project = mockk<Project>()
     private val codeService = mockk<CodeAnalysisService>()
     private lateinit var tool: SearchFilesTool

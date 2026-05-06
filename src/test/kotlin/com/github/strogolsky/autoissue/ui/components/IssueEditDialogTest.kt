@@ -19,7 +19,6 @@ import java.util.Date
 import javax.swing.JSpinner
 
 class IssueEditDialogTest : BasePlatformTestCase() {
-
     private lateinit var candidate: JiraIssueCandidate
     private lateinit var metadata: JiraProjectMetadata
     private lateinit var dialog: IssueEditDialog
@@ -28,24 +27,27 @@ class IssueEditDialogTest : BasePlatformTestCase() {
         super.setUp()
 
         // --- PREPARE TEST DATA ---
-        candidate = JiraIssueCandidate(
-            title = "Test Issue",
-            description = "Test Description",
-            labels = listOf("bug", "ui")
-        )
+        candidate =
+            JiraIssueCandidate(
+                title = "Test Issue",
+                description = "Test Description",
+                labels = listOf("bug", "ui"),
+            )
 
-        metadata = JiraProjectMetadata(
-            projectKey = "PROJ",
-            projectId = "10000",
-            issueTypes = listOf(
-                JiraIssueType("1", "Bug", false),
-                JiraIssueType("2", "Task", false)
-            ),
-            priorities = listOf(JiraField("3", "High"), JiraField("4", "Low")),
-            components = listOf(JiraField("comp-1", "Backend")),
-            assignees = listOf(JiraField("acc-1", "John Doe")),
-            labels = listOf("bug", "ui", "feature")
-        )
+        metadata =
+            JiraProjectMetadata(
+                projectKey = "PROJ",
+                projectId = "10000",
+                issueTypes =
+                    listOf(
+                        JiraIssueType("1", "Bug", false),
+                        JiraIssueType("2", "Task", false),
+                    ),
+                priorities = listOf(JiraField("3", "High"), JiraField("4", "Low")),
+                components = listOf(JiraField("comp-1", "Backend")),
+                assignees = listOf(JiraField("acc-1", "John Doe")),
+                labels = listOf("bug", "ui", "feature"),
+            )
 
         // Native IntelliJ approach for EDT execution in Kotlin
         ApplicationManager.getApplication().invokeAndWait {
@@ -63,7 +65,7 @@ class IssueEditDialogTest : BasePlatformTestCase() {
         super.tearDown()
     }
 
-    fun test_should_InitializeFieldsWithCandidateData() {
+    fun testShouldInitializeFieldsWithCandidateData() {
         val titleField = getPrivateField("titleField") as JBTextField
         val descriptionArea = getPrivateField("descriptionArea") as JBTextArea
         val issueTypeCombo = getPrivateField("issueTypeCombo") as ComboBox<*>
@@ -78,7 +80,7 @@ class IssueEditDialogTest : BasePlatformTestCase() {
         assertEquals("None", (assigneeCombo.getItemAt(0) as JiraField).name)
     }
 
-    fun test_should_BuildRequest_When_ValidDataEntered() {
+    fun testShouldBuildRequestWhenValidDataEntered() {
         val request = dialog.showAndGetResult()
 
         assertNotNull(request)
@@ -96,7 +98,7 @@ class IssueEditDialogTest : BasePlatformTestCase() {
         assertEquals(expectedDate, request.dueDate)
     }
 
-    fun test_should_ParseComplexLabelsStringCorrectly() {
+    fun testShouldParseComplexLabelsStringCorrectly() {
         val labelsField = getPrivateField("labelsField") as TextFieldWithAutoCompletion<*>
 
         ApplicationManager.getApplication().invokeAndWait {
@@ -109,10 +111,15 @@ class IssueEditDialogTest : BasePlatformTestCase() {
         assertEquals(listOf("urgent", "frontend", "backend"), request!!.labels)
     }
 
-    fun test_should_FormatDueDateAsIsoDate() {
+    fun testShouldFormatDueDateAsIsoDate() {
         val dueDatePicker = getPrivateField("dueDatePicker") as JSpinner
 
-        val testDate = Date.from(LocalDate.of(2026, 5, 15).atStartOfDay(ZoneId.systemDefault()).toInstant())
+        val testDate =
+            Date.from(
+                LocalDate.of(2026, 5, 15)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant(),
+            )
 
         ApplicationManager.getApplication().invokeAndWait {
             dueDatePicker.value = testDate
@@ -124,7 +131,7 @@ class IssueEditDialogTest : BasePlatformTestCase() {
         assertEquals("2026-05-15", request!!.dueDate)
     }
 
-    fun test_should_ReturnNull_When_DialogCanceled() {
+    fun testShouldReturnNullWhenDialogCanceled() {
         every { dialog.showAndGet() } returns false
 
         val request = dialog.showAndGetResult()

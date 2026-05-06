@@ -5,13 +5,16 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.options.ex.Settings
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import io.mockk.verify
 import java.awt.event.ActionEvent
 import javax.swing.JComponent
 import javax.swing.JPanel
 
 class AutoIssueMainConfigurableTest : BasePlatformTestCase() {
-
     private lateinit var configurable: AutoIssueMainConfigurable
 
     override fun setUp() {
@@ -24,26 +27,26 @@ class AutoIssueMainConfigurableTest : BasePlatformTestCase() {
         super.tearDown()
     }
 
-    fun test_should_ReturnCorrectDisplayName() {
+    fun testShouldReturnCorrectDisplayName() {
         assertEquals("AutoIssue", configurable.displayName)
     }
 
-    fun test_should_NotBeModified() {
+    fun testShouldNotBeModified() {
         assertFalse(configurable.isModified)
     }
 
-    fun test_should_CreateComponentWithoutErrors() {
+    fun testShouldCreateComponentWithoutErrors() {
         val component = configurable.createComponent()
 
         assertNotNull(component)
         assertTrue(component is JPanel)
     }
 
-    fun test_should_NavigateToJiraSettings_When_LinkActionTriggered() {
+    fun testShouldNavigateToJiraSettingsWhenLinkActionTriggered() {
         verifyNavigation("com.github.strogolsky.autoissue.Jira")
     }
 
-    fun test_should_NavigateToLLMSettings_When_LinkActionTriggered() {
+    fun testShouldNavigateToLLMSettingsWhenLinkActionTriggered() {
         verifyNavigation("com.github.strogolsky.autoissue.LLM")
     }
 
@@ -76,7 +79,10 @@ class AutoIssueMainConfigurableTest : BasePlatformTestCase() {
         unmockkStatic(DataManager::class)
     }
 
-    private fun invokePrivateMethod(methodName: String, vararg args: Any?) {
+    private fun invokePrivateMethod(
+        methodName: String,
+        vararg args: Any?,
+    ) {
         val method = configurable.javaClass.getDeclaredMethods().find { it.name == methodName }
         method?.let {
             it.isAccessible = true

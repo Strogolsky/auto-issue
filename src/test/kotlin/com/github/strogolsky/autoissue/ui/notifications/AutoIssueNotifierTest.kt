@@ -6,7 +6,6 @@ import com.intellij.notification.Notifications
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 class AutoIssueNotifierTest : BasePlatformTestCase() {
-
     private val capturedNotifications = mutableListOf<Notification>()
 
     override fun setUp() {
@@ -19,11 +18,11 @@ class AutoIssueNotifierTest : BasePlatformTestCase() {
                 override fun notify(notification: Notification) {
                     capturedNotifications.add(notification)
                 }
-            }
+            },
         )
     }
 
-    fun test_should_SendBasicNotification() {
+    fun testShouldSendBasicNotification() {
         AutoIssueNotifier.notify(project, "Task successfully created", NotificationType.INFORMATION)
 
         assertEquals(1, capturedNotifications.size)
@@ -37,7 +36,7 @@ class AutoIssueNotifierTest : BasePlatformTestCase() {
         assertTrue(notification.actions.isEmpty())
     }
 
-    fun test_should_SendMissingConfigNotificationWithAction() {
+    fun testShouldSendMissingConfigNotificationWithAction() {
         AutoIssueNotifier.notifyMissingConfig(project, "API Token is missing", "jira.settings.id")
 
         assertEquals(1, capturedNotifications.size)
@@ -52,6 +51,5 @@ class AutoIssueNotifierTest : BasePlatformTestCase() {
 
         val action = notification.actions.first()
         assertEquals("Open Settings", action.templatePresentation.text)
-
     }
 }

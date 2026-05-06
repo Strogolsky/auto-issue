@@ -6,27 +6,28 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MarkdownPromptRendererTest {
-
     private val renderer = MarkdownPromptRenderer()
 
     @Test // UC-R7
     fun should_FormatHeadersAndCodeBlocks_When_RenderingFileContextToMarkdown() {
         // --- TEST FLOW ---
         // 1. ARRANGE: Create file context.
-        val fileContext = FileContextComponent(
-            fileName = "MarkdownGen.kt",
-            language = "Kotlin",
-            imports = emptyList(),
-            className = "MarkdownGen",
-            classFields = listOf("private val id: Int"),
-            methodSignature = "fun generate()",
-            methodBody = "fun generate() = Unit"
-        )
+        val fileContext =
+            FileContextComponent(
+                fileName = "MarkdownGen.kt",
+                language = "Kotlin",
+                imports = emptyList(),
+                className = "MarkdownGen",
+                classFields = listOf("private val id: Int"),
+                methodSignature = "fun generate()",
+                methodBody = "fun generate() = Unit",
+            )
 
         // 2. ACT: Build Markdown prompt.
-        val result = renderer.buildPrompt {
-            components(listOf(fileContext))
-        }
+        val result =
+            renderer.buildPrompt {
+                components(listOf(fileContext))
+            }
 
         // 3. ASSERT: Verify Markdown syntax.
         assertTrue("Should use h2 for context section", result.contains("## Context"))
@@ -41,19 +42,21 @@ class MarkdownPromptRendererTest {
     fun should_FormatArraysAsBulletedLists_When_RenderingJiraMetadataToMarkdown() {
         // --- TEST FLOW ---
         // 1. ARRANGE: Create Jira metadata.
-        val jiraMetadata = JiraProjectMetadata(
-            projectKey = "PROJ",
-            projectId = "10001",
-            issueTypes = emptyList(),
-            priorities = emptyList(),
-            components = emptyList(),
-            labels = listOf("bug", "ui")
-        )
+        val jiraMetadata =
+            JiraProjectMetadata(
+                projectKey = "PROJ",
+                projectId = "10001",
+                issueTypes = emptyList(),
+                priorities = emptyList(),
+                components = emptyList(),
+                labels = listOf("bug", "ui"),
+            )
 
         // 2. ACT: Build Markdown prompt.
-        val result = renderer.buildPrompt {
-            components(listOf(jiraMetadata))
-        }
+        val result =
+            renderer.buildPrompt {
+                components(listOf(jiraMetadata))
+            }
 
         // 3. ASSERT: Verify list rendering.
         assertTrue("Should contain project key", result.contains("Project Key: PROJ"))

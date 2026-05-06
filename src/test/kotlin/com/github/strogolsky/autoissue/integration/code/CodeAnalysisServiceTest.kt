@@ -5,7 +5,6 @@ import com.intellij.psi.SmartPointerManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 class CodeAnalysisServiceTest : BasePlatformTestCase() {
-
     private lateinit var service: CodeAnalysisService
 
     override fun setUp() {
@@ -13,43 +12,41 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         service = project.service<CodeAnalysisService>()
     }
 
-    // UC-C2
-    fun test_should_RespectMaxResultsLimit_When_SearchFilesByNameCalled() {
+    fun testShouldRespectMaxResultsLimitWhenSearchFilesByNameCalled() {
         // --- TEST FLOW ---
-        // 1. ARRANGE: Create virtual files in the project memory.
+        // 1. ARRANGE
         myFixture.addFileToProject("src/TestAuth.java", "class TestAuth {}")
         myFixture.addFileToProject("src/TestUser.java", "class TestUser {}")
         myFixture.addFileToProject("src/TestConfig.java", "class TestConfig {}")
 
-        // 2. ACT: Search for files containing "Test", limited to 2 results.
+        // 2. ACT
         val results = service.searchFilesByName("Test", maxResults = 2)
 
-        // 3. ASSERT: Verify exactly 2 files are returned.
+        // 3. ASSERT
         assertEquals(2, results.size)
         assertTrue(results.all { it.contains("Test") })
     }
 
-    // UC-C3
-    fun test_should_TruncateContent_When_FileExceedsSizeLimit() {
+    fun testShouldTruncateContentWhenFileExceedsSizeLimit() {
         // --- TEST FLOW ---
-        // 1. ARRANGE: Create a string of 25,000 characters (exceeding the 20,000 limit).
+        // 1. ARRANGE
         val giantContent = "A".repeat(25_000)
         myFixture.addFileToProject("GiantFile.txt", giantContent)
 
-        // 2. ACT: Read the file content.
+        // 2. ACT
         val content = service.getWholeFileContent("GiantFile.txt")
 
-        // 3. ASSERT: Verify the text is truncated and contains the truncation notice.
+        // 3. ASSERT
         assertNotNull("Content should not be null", content)
         assertTrue("Content should be truncated", content!!.length < 25_000)
         assertTrue(content.contains("CONTENT TRUNCATED DUE TO SIZE LIMIT"))
     }
 
-    // UC-C4
-    fun test_should_ExtractFullContext_When_CaretIsInsideMethod() {
+    fun testShouldExtractFullContextWhenCaretIsInsideMethod() {
         // --- TEST FLOW ---
-        // 1. ARRANGE: Source code with imports, class, method, and a cursor (<caret>).
-        val code = """
+        // 1. ARRANGE
+        val code =
+            """
             import java.util.Date;
             import java.util.List;
 
@@ -59,16 +56,16 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
                     System.out.println("Logging in");
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val psiFile = myFixture.configureByText("Auth.java", code)
         val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
         val pointer = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(elementAtCaret!!)
 
-        // 2. ACT: Extract the detailed context using the PSI pointer.
+        // 2. ACT
         val context = service.extractDetailedContext(pointer)
 
-        // 3. ASSERT: Verify that the parser correctly traversed up the AST to find all components.
+        // 3. ASSERT
         assertNotNull("Context should be extracted", context)
         assertEquals("Auth.java", context!!.fileName)
 

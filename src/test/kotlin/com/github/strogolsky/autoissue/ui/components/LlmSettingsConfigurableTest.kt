@@ -1,8 +1,8 @@
 package com.github.strogolsky.autoissue.ui.components
 
 import com.github.strogolsky.autoissue.core.agent.LlmProviderRegistry
-import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
 import com.github.strogolsky.autoissue.core.agent.strategy.IssueStrategyFactory
+import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
 import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
@@ -11,7 +11,8 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.replaceService
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -21,7 +22,6 @@ import javax.swing.DefaultComboBoxModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LlmSettingsConfigurableTest : BasePlatformTestCase() {
-
     private lateinit var configurable: LlmSettingsConfigurable
     private lateinit var realConfigService: LlmAgentConfigService
     private lateinit var providerRegistryMock: LlmProviderRegistry
@@ -51,8 +51,16 @@ class LlmSettingsConfigurableTest : BasePlatformTestCase() {
         every { strategyRegistryMock.strategiesFor("openai") } returns listOf(mockFactory)
         every { strategyRegistryMock.strategiesFor("anthropic") } returns listOf(mockFactoryDirect)
 
-        ApplicationManager.getApplication().replaceService(LlmProviderRegistry::class.java, providerRegistryMock, testRootDisposable)
-        ApplicationManager.getApplication().replaceService(JiraStrategyRegistry::class.java, strategyRegistryMock, testRootDisposable)
+        ApplicationManager.getApplication().replaceService(
+            LlmProviderRegistry::class.java,
+            providerRegistryMock,
+            testRootDisposable,
+        )
+        ApplicationManager.getApplication().replaceService(
+            JiraStrategyRegistry::class.java,
+            strategyRegistryMock,
+            testRootDisposable,
+        )
 
         configurable = LlmSettingsConfigurable()
         configurable.createComponent()
@@ -63,12 +71,13 @@ class LlmSettingsConfigurableTest : BasePlatformTestCase() {
         super.tearDown()
     }
 
-    fun test_should_LoadDataIntoFields_When_ResetCalled() {
+    fun testShouldLoadDataIntoFieldsWhenResetCalled() {
         // --- TEST FLOW ---
-        val savedState = LlmAgentState().apply {
-            provider = "openai"
-            strategyId = "chain-of-thought"
-        }
+        val savedState =
+            LlmAgentState().apply {
+                provider = "openai"
+                strategyId = "chain-of-thought"
+            }
         realConfigService.loadState(savedState)
 
         configurable.reset()
@@ -84,7 +93,7 @@ class LlmSettingsConfigurableTest : BasePlatformTestCase() {
     }
 
     // UC-U3
-    fun test_should_SaveNewSettings_When_ApplyCalled() {
+    fun testShouldSaveNewSettingsWhenApplyCalled() {
         // --- TEST FLOW ---
         setPrivateField("llmProvider", "anthropic")
         setPrivateField("llmStrategy", "direct")
@@ -101,7 +110,7 @@ class LlmSettingsConfigurableTest : BasePlatformTestCase() {
         assertEquals("sk-token", realConfigService.getApiKey())
     }
 
-    fun test_should_UpdateStrategiesModel_When_ProviderChanged() {
+    fun testShouldUpdateStrategiesModelWhenProviderChanged() {
         // --- TEST FLOW ---
         val mockFactory = mockk<IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>>()
         every { mockFactory.id } returns "new-strategy"
@@ -118,7 +127,10 @@ class LlmSettingsConfigurableTest : BasePlatformTestCase() {
         assertEquals("new-strategy", firstElement.id)
     }
 
-    private fun setPrivateField(fieldName: String, value: Any?) {
+    private fun setPrivateField(
+        fieldName: String,
+        value: Any?,
+    ) {
         val field = configurable.javaClass.getDeclaredField(fieldName)
         field.isAccessible = true
         field.set(configurable, value)
@@ -130,7 +142,10 @@ class LlmSettingsConfigurableTest : BasePlatformTestCase() {
         return field.get(configurable)
     }
 
-    private fun invokePrivateMethod(methodName: String, vararg args: Any?) {
+    private fun invokePrivateMethod(
+        methodName: String,
+        vararg args: Any?,
+    ) {
         val method = configurable.javaClass.getDeclaredMethods().find { it.name == methodName }
         method?.let {
             it.isAccessible = true

@@ -1,6 +1,5 @@
 package com.github.strogolsky.autoissue.plugin.config
 
-
 import com.github.strogolsky.autoissue.core.agent.strategy.GoogleIssueStrategyFactory
 import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
 import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
@@ -12,10 +11,10 @@ import com.intellij.ide.passwordSafe.PasswordSafe
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.replaceService
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
 
 class LlmAgentConfigServiceTest : BasePlatformTestCase() {
-
     private lateinit var service: LlmAgentConfigService
     private lateinit var tokenKey: CredentialAttributes
     private lateinit var strategyRegistryMock: JiraStrategyRegistry
@@ -31,7 +30,7 @@ class LlmAgentConfigServiceTest : BasePlatformTestCase() {
         ApplicationManager.getApplication().replaceService(
             JiraStrategyRegistry::class.java,
             strategyRegistryMock,
-            testRootDisposable
+            testRootDisposable,
         )
     }
 
@@ -40,7 +39,7 @@ class LlmAgentConfigServiceTest : BasePlatformTestCase() {
         super.tearDown()
     }
 
-    fun testShould_ReturnFalse_When_ApiKeyIsMissing() {
+    fun testShouldReturnFalseWhenApiKeyIsMissing() {
         // 1. ACT
         val isReady = service.isReady()
 
@@ -48,7 +47,7 @@ class LlmAgentConfigServiceTest : BasePlatformTestCase() {
         assertFalse(isReady)
     }
 
-    fun testShould_ReturnTrue_When_ApiKeyIsPresent() {
+    fun testShouldReturnTrueWhenApiKeyIsPresent() {
         // 1. ARRANGE
         PasswordSafe.instance.setPassword(tokenKey, "sk-12345")
 
@@ -59,7 +58,7 @@ class LlmAgentConfigServiceTest : BasePlatformTestCase() {
         assertTrue(isReady)
     }
 
-    fun testShould_ThrowException_When_ApiKeyIsMissingInEffectiveConfig() {
+    fun testShouldThrowExceptionWhenApiKeyIsMissingInEffectiveConfig() {
         // 1. ACT & 2. ASSERT
         try {
             service.getEffectiveConfig()
@@ -69,15 +68,16 @@ class LlmAgentConfigServiceTest : BasePlatformTestCase() {
         }
     }
 
-    fun testShould_PopulateEmptyFields_When_ApplyDefaultsCalled() {
+    fun testShouldPopulateEmptyFieldsWhenApplyDefaultsCalled() {
         // 1. ARRANGE
-        val defaults = LlmDefaults(
-            provider = "google",
-            strategyId = "direct",
-            temperature = 0.7,
-            maxIterations = 3,
-            systemPrompt = "You are an agent."
-        )
+        val defaults =
+            LlmDefaults(
+                provider = "google",
+                strategyId = "direct",
+                temperature = 0.7,
+                maxIterations = 3,
+                systemPrompt = "You are an agent.",
+            )
         every { strategyRegistryMock.findFactory("google", "direct") } returns mockk()
 
         // 2. ACT
@@ -92,12 +92,14 @@ class LlmAgentConfigServiceTest : BasePlatformTestCase() {
         assertEquals("You are an agent.", state.systemPrompt)
     }
 
-    fun testShould_FallbackToAvailableStrategy_When_CurrentIsInvalid() {
+    fun testShouldFallbackToAvailableStrategyWhenCurrentIsInvalid() {
         // 1. ARRANGE
-        service.loadState(LlmAgentState().apply {
-            provider = "google"
-            strategyId = "invalid-strategy"
-        })
+        service.loadState(
+            LlmAgentState().apply {
+                provider = "google"
+                strategyId = "invalid-strategy"
+            },
+        )
 
         val fallbackFactory = mockk<GoogleIssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>>()
         every { fallbackFactory.id } returns "fallback-strategy"
@@ -106,13 +108,15 @@ class LlmAgentConfigServiceTest : BasePlatformTestCase() {
         every { strategyRegistryMock.strategiesFor("google") } returns listOf(fallbackFactory)
 
         // 2. ACT
-        service.applyDefaults(LlmDefaults(
-            provider = "google",
-            strategyId = "direct",
-            temperature = 0.7,
-            maxIterations = 3,
-            systemPrompt = "Default prompt"
-        ))
+        service.applyDefaults(
+            LlmDefaults(
+                provider = "google",
+                strategyId = "direct",
+                temperature = 0.7,
+                maxIterations = 3,
+                systemPrompt = "Default prompt",
+            ),
+        )
 
         // 3. ASSERT
         assertEquals("fallback-strategy", service.state.strategyId)
