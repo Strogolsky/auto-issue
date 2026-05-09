@@ -12,10 +12,34 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 
+/**
+ * Simple, single-step strategy for generating JIRA issues directly.
+ *
+ * The agent:
+ * 1. Prepares a prompt from the input context
+ * 2. Calls the LLM with structured output request
+ * 3. Processes and returns the structured result
+ *
+ * Fast and efficient, works well when the LLM can generate correct issues in one call.
+ * Does not use tool invocation or iterative refinement.
+ *
+ * Provider: Google (Gemini)
+ * ID: "jira-direct-strategy"
+ * Display Name: "Direct generation"
+ */
 class JiraDirectStrategyFactory : GoogleIssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>() {
     override val id = "jira-direct-strategy"
     override val displayName = "Direct generation"
 
+    /**
+     * Creates the agent strategy graph for direct issue generation.
+     *
+     * Graph structure:
+     * start → prepare_context → llm_structured_request → process_result → finish
+     *
+     * @param project The IntelliJ project context
+     * @return The configured strategy graph
+     */
     override fun createStrategy(project: Project): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
         val renderService = project.service<PromptRenderService>()
 

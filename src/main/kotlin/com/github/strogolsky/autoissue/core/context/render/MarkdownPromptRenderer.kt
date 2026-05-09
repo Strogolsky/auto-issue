@@ -7,6 +7,28 @@ import com.github.strogolsky.autoissue.core.context.components.FileContextCompon
 import com.github.strogolsky.autoissue.core.context.components.IssueInstruction
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
 
+/**
+ * Renders prompts as human-readable Markdown format.
+ *
+ * Formats the prompt with Markdown headers, lists, and code blocks:
+ * ```
+ * ## Instructions
+ * Create a JIRA issue...
+ *
+ * ## Context
+ * ### File.kt
+ * Class: MyClass
+ * - field1: String
+ * - field2: Int
+ *
+ * ```kotlin
+ * fun method() { ... }
+ * ```
+ * ```
+ *
+ * Markdown format is human-readable and easy for both LLMs and humans to understand.
+ * Good for debugging and understanding what's being sent to the AI.
+ */
 class MarkdownPromptRenderer : PromptRenderer {
     override fun rendererKey() = "MARKDOWN"
 

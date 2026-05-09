@@ -7,6 +7,30 @@ import com.github.strogolsky.autoissue.core.context.components.FileContextCompon
 import com.github.strogolsky.autoissue.core.context.components.IssueInstruction
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
 
+/**
+ * Renders prompts as structured XML.
+ *
+ * Formats the prompt with XML tags for clear structure:
+ * ```
+ * <prompt>
+ *   <instructions>...</instructions>
+ *   <context>
+ *     <file name="..." language="...">
+ *       <class name="...">
+ *         <fields>...</fields>
+ *       </class>
+ *       <method>...</method>
+ *     </file>
+ *     <jira project-key="...">
+ *       <issue-types>...</issue-types>
+ *       <priorities>...</priorities>
+ *     </jira>
+ *   </context>
+ * </prompt>
+ * ```
+ *
+ * XML format is well-structured and easy for LLMs to parse with high accuracy.
+ */
 class XmlPromptRenderer : PromptRenderer {
     override fun rendererKey() = "XML"
 

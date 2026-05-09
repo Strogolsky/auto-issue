@@ -6,10 +6,31 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 
+/**
+ * Manages user-facing notifications for the AutoIssue plugin.
+ *
+ * Provides notification methods for:
+ * - Configuration errors (with "Open Settings" action)
+ * - Success/failure results
+ * - General information messages
+ *
+ * All notifications are grouped under "AutoIssue Notifications" for
+ * easy filtering in the IDE's notification center.
+ */
 object AutoIssueNotifier {
     private const val GROUP_ID = "AutoIssue Notifications"
     private const val TITLE = "AutoIssue"
 
+    /**
+     * Shows an error notification with an "Open Settings" action.
+     *
+     * Used when configuration is missing or invalid. Clicking the action
+     * opens the specified settings dialog.
+     *
+     * @param project Current project (can be null for app-level notifications)
+     * @param content Error message to display
+     * @param configurableId ID of the settings configurable to open
+     */
     fun notifyMissingConfig(
         project: Project?,
         content: String,
@@ -26,6 +47,13 @@ object AutoIssueNotifier {
             .notify(project)
     }
 
+    /**
+     * Shows a notification with the specified type.
+     *
+     * @param project Current project (can be null for app-level notifications)
+     * @param content Message to display
+     * @param type Notification type (ERROR, WARNING, INFORMATION)
+     */
     fun notify(
         project: Project?,
         content: String,

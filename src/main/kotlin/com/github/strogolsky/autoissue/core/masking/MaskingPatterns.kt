@@ -1,7 +1,19 @@
 package com.github.strogolsky.autoissue.core.masking
 
+/**
+ * Pre-defined patterns for masking sensitive information in code context.
+ *
+ * When sharing code with the AI agent, sensitive data like API keys, passwords,
+ * and connection strings should be masked to prevent exposure. This object provides
+ * regex patterns to detect and mask common types of secrets.
+ *
+ * All patterns are applied in order during context masking.
+ */
 object MaskingPatterns {
-    // Authorization: Bearer <token>
+    /**
+     * HTTP Bearer token pattern.
+     * Matches: Authorization: Bearer <token> or Authorization = Bearer <token>
+     */
     val BEARER_TOKEN =
         MaskingPattern(
             regex =
@@ -10,58 +22,58 @@ object MaskingPatterns {
                 ),
         )
 
-    // jdbc:postgresql://user:pass@host/db
+    /** JDBC connection strings like jdbc:postgresql://user:pass@host/db */
     val JDBC_CONNECTION_STRING =
         MaskingPattern(
             regex = Regex("""(?i)(jdbc:[a-z0-9]+://[^\s"']{5,300})"""),
             replacement = "jdbc:<masked>",
         )
 
-    // mongodb://user:pass@host/db  or  mongodb+srv://...
+    /** MongoDB URIs like mongodb://user:pass@host/db or mongodb+srv://... */
     val MONGODB_URI =
         MaskingPattern(
             regex = Regex("""(?i)(mongodb(?:\+srv)?://[^\s"']{5,300})"""),
             replacement = "mongodb://<masked>",
         )
 
-    // redis://:password@host  or  redis://user:pass@host
+    /** Redis URIs like redis://:password@host or redis://user:pass@host */
     val REDIS_URI =
         MaskingPattern(
             regex = Regex("""(?i)(redis://[^\s"']{5,200})"""),
             replacement = "redis://<masked>",
         )
 
-    // private_key = "...", privateKey = "..."
+    /** Private key assignments like private_key = "..." or privateKey = "..." */
     val PRIVATE_KEY_ASSIGNMENT =
         MaskingPattern(
             regex = Regex("""(?i)private[_\-]?key\s*[=:]\s*["']([^"']{1,500})["']"""),
         )
 
-    // password = "...", PASSWORD = "...", pwd = "..."
+    /** Password assignments like password = "...", PASSWORD = "...", pwd = "..." */
     val PASSWORD_ASSIGNMENT =
         MaskingPattern(
             regex = Regex("""(?i)(?:password|passwd|pwd)\s*[=:]\s*["']([^"']{1,200})["']"""),
         )
 
-    // secret = "...", client_secret = "...", secret_key = "..."
+    /** Secret assignments like secret = "...", client_secret = "...", secret_key = "..." */
     val SECRET_ASSIGNMENT =
         MaskingPattern(
             regex = Regex("""(?i)(?:\w+[_\-])?secret(?:[_\-]\w+)?\s*[=:]\s*["']([^"']{1,200})["']"""),
         )
 
-    // apiKey = "...", api_key: "...", api-key = "..."
+    /** API key assignments like apiKey = "...", api_key: "...", api-key = "..." */
     val API_KEY_ASSIGNMENT =
         MaskingPattern(
             regex = Regex("""(?i)(?:api[_\-]?key|apikey)\s*[=:]\s*["']([^"']{1,200})["']"""),
         )
 
-    // token = "...", access_token = "...", refresh_token = "..."
+    /** Token assignments like token = "...", access_token = "...", refresh_token = "..." */
     val TOKEN_ASSIGNMENT =
         MaskingPattern(
             regex = Regex("""(?i)(?:\w+[_\-])?token\s*[=:]\s*["']([^"']{1,200})["']"""),
         )
 
-    // System.getenv("API_KEY"), ENV["SECRET_TOKEN"]
+    /** Environment variable lookups like System.getenv("API_KEY"), ENV["SECRET_TOKEN"] */
     val ENV_SECRET_LOOKUP =
         MaskingPattern(
             regex =
@@ -70,7 +82,12 @@ object MaskingPatterns {
                 ),
         )
 
-    /** All built-in patterns in recommended application order (most-specific first). */
+    /**
+     * All built-in patterns in recommended application order (most-specific first).
+     *
+     * Patterns should be applied in this order to avoid conflicts and ensure
+     * the most specific patterns are applied before more general ones.
+     */
     val ALL: List<MaskingPattern> =
         listOf(
             BEARER_TOKEN,

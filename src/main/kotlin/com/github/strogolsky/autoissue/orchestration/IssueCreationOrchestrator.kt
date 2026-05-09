@@ -27,36 +27,90 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * Orchestrates the complete workflow for creating a JIRA issue from IDE.
+ *
+ * This service manages the end-to-end process:
+ * 1. Validates configuration
+ * 2. Generates issue candidate using AI
+ * 3. Shows user dialog for review/editing
+ * 4. Creates issue in JIRA
+ * 5. Updates source code with issue key
+ * 6. Notifies user of result
+ *
+ * The orchestrator runs asynchronously using a supervised coroutine scope,
+ * ensuring that failures in one step don't crash other background tasks.
+ */
 @Service(Service.Level.PROJECT)
 class IssueCreationOrchestrator(private val project: Project) : Disposable {
     private val cs = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val jiraApiService by lazy { ApplicationManager.getApplication().service<JiraApiService>() }
     private val healthChecker by lazy { project.service<ConfigHealthChecker>() }
 
-    override fun dispose() = cs.cancel()
+    override fun dispose() {
+        cs.cancel()
+        thisLogger().debug("IssueCreationOrchestrator disposed")
+    }
 
+    /**
+     * Launches the issue creation workflow asynchronously.
+     *
+     * This method schedules the orchestration to run in the background.
+     * The workflow executes in the IO dispatcher to avoid blocking the UI.
+     *
+     * @param instructionText The user's instruction or issue description
+     * @param pointer PSI element pointer to the location in code where the TODO/issue was found
+     */
     fun launch(
         instructionText: String,
         pointer: SmartPsiElementPointer<out PsiElement>,
     ) {
+        thisLogger().debug("Launching issue creation workflow for: '$instructionText'")
         cs.launch { orchestrate(instructionText, pointer) }
     }
 
+    /**
+     * Executes the complete issue creation orchestration workflow.
+     *
+     * Steps:
+     * 1. Validate configuration health (JIRA, LLM settings)
+     * 2. Fetch JIRA configuration and project metadata
+     * 3. Generate issue candidate using AI agent with project context
+     * 4. Show user dialog for review and optional editing
+     * 5. Create the JIRA issue via REST API
+     * 6. Update source code with the new issue key
+     * 7. Notify user of success
+     *
+     * Error handling: AutoIssueExceptions are user-facing errors shown in notifications.
+     * Unexpected exceptions are logged with full stack trace and shown as generic errors.
+     *
+     * @param instructionText The issue description from the user
+     * @param pointer PSI element pointer to the code location
+     */
     private suspend fun orchestrate(
         instructionText: String,
         pointer: SmartPsiElementPointer<out PsiElement>,
     ) {
+        thisLogger().debug("Step 1: Validating configuration...")
         // 1. UX Validation: Pre-check configs
-        if (!healthChecker.validateAndNotify()) return
+        if (!healthChecker.validateAndNotify()) {
+            thisLogger().warn("Configuration validation failed. Aborting workflow.")
+            return
+        }
 
         try {
+            thisLogger().debug("Step 2: Fetching JIRA configuration...")
             // 2. Fetch Config
             val jiraConfig = ApplicationManager.getApplication().service<JiraConfigService>().getEffectiveConfig()
+            thisLogger().debug("Using JIRA project: ${jiraConfig.projectKey}")
 
+            thisLogger().debug("Step 3: Fetching JIRA metadata and generating issue with AI...")
             // 3. Fetch Jira metadata and run LLM
             val (metadata, candidate) =
                 withBackgroundProgress(project, "AutoIssue: Generating issue…") {
                     val meta = jiraApiService.getMetadata(jiraConfig.projectKey)
+                    thisLogger().debug("Fetched metadata: ${meta.issueTypes.size} issue types, ${meta.priorities.size} priorities")
+
                     val task =
                         project.service<JiraIssueGenerationService>().generateTask(
                             instruction = "Generate issue for: $instructionText",
@@ -65,21 +119,27 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
                     meta to task
                 }
 
+            thisLogger().debug("Step 4: Showing issue edit dialog to user...")
             // 4. User review
             val issueRequest: JiraIssueRequest =
                 withContext(Dispatchers.Main) {
                     IssueEditDialog(project, candidate, metadata).showAndGetResult()
                 } ?: return // user cancelled
 
+            thisLogger().debug("Step 5: Creating JIRA issue with title: '${issueRequest.title}'...")
             // 5. Create JIRA issue
             val issueKey: String =
                 withBackgroundProgress(project, "AutoIssue: Creating JIRA issue…", cancellable = false) {
                     jiraApiService.createIssue(issueRequest)
                 }
+            thisLogger().info("JIRA issue created successfully: $issueKey")
 
+            thisLogger().debug("Step 6: Updating source code with issue key: $issueKey...")
             // 6. Update source code
             project.service<TodoUpdaterService>().appendKeyToCode(pointer, issueKey)
+            thisLogger().debug("Source code updated successfully")
 
+            thisLogger().info("Issue creation workflow completed successfully: $issueKey")
             AutoIssueNotifier.notify(project, "Successfully created JIRA issue: $issueKey", NotificationType.INFORMATION)
         } catch (e: AutoIssueException) {
             thisLogger().warn("Operation interrupted: ${e.message}", e)
