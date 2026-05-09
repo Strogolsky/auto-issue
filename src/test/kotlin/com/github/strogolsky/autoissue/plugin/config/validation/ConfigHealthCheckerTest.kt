@@ -42,7 +42,7 @@ class ConfigHealthCheckerTest {
         val validator = JiraConfigValidator(jiraService)
 
         // 2. ACT & 3. ASSERT
-        assertEquals("Jira Base URL or credentials are missing.", validator.getErrorMessage())
+        assertEquals("JIRA Base URL or credentials are missing. Please configure JIRA settings.", validator.getErrorMessage())
     }
 
     @Test
@@ -74,6 +74,6 @@ class ConfigHealthCheckerTest {
         val validator = LlmConfigValidator(llmService)
 
         // 2. ACT & 3. ASSERT
-        assertEquals("LLM API key is missing.", validator.getErrorMessage())
+        assertEquals("LLM API key is missing. Please configure LLM settings.", validator.getErrorMessage())
     }
 }

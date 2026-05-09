@@ -6,7 +6,26 @@ import com.github.strogolsky.autoissue.core.context.components.FileContextCompon
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.components.service
 
+/**
+ * Context provider that extracts source code information from the file at the cursor position.
+ *
+ * Uses CodeAnalysisService to read the PSI tree and extract:
+ * - File name and language
+ * - Imports
+ * - Enclosing class (name, fields)
+ * - Enclosing method (signature, body)
+ * - Surrounding code context
+ *
+ * This information helps the AI understand the code context in which a TODO comment or issue
+ * has been created, allowing it to generate more contextually accurate issues.
+ */
 class FileContextComponentProvider : ContextComponentProvider {
+    /**
+     * Extracts detailed source code context from the file at the given pointer location.
+     *
+     * @param env The context environment containing the project and PSI element pointer
+     * @return FileContextComponent with extracted code information, or null if extraction fails
+     */
     override suspend fun provide(env: ContextEnvironment): ContextComponent? {
         val psiService = env.project.service<CodeAnalysisService>()
 

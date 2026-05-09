@@ -19,6 +19,19 @@ import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import javax.swing.DefaultComboBoxModel
 
+/**
+ * IDE settings panel for configuring LLM (Large Language Model) provider and strategy.
+ *
+ * Allows users to:
+ * - Select which LLM provider to use (e.g., OpenAI, Google, Claude)
+ * - Choose a specific generation strategy for that provider
+ * - Enter the provider's API key (stored securely)
+ *
+ * Dynamically loads available strategies when the provider selection changes.
+ * Settings are persisted in LlmAgentConfigService.
+ *
+ * The panel implements IntelliJ's Configurable interface for integration with IDE Settings.
+ */
 class LlmSettingsConfigurable : Configurable {
     private val configService = ApplicationManager.getApplication().service<LlmAgentConfigService>()
     private val providerRegistry = ApplicationManager.getApplication().service<LlmProviderRegistry>()
@@ -26,14 +39,30 @@ class LlmSettingsConfigurable : Configurable {
 
     private lateinit var settingsPanel: DialogPanel
 
+    // Configuration fields (mutable for IDE binding)
     private var llmProvider: String? = ""
     private var llmStrategy: String? = ""
     private var llmToken = ""
 
+    // Combo box model containing strategies available for the selected LLM provider
     private val strategiesModel = DefaultComboBoxModel<IssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>>()
 
+    /** Returns the display name shown in IDE Settings under Plugins/AutoIssue/LLM */
     override fun getDisplayName() = "LLM"
 
+    /**
+     * Creates the settings panel UI for LLM configuration.
+     *
+     * Layout:
+     * - Dropdown to select LLM provider (providers are discovered via extension points)
+     * - Dropdown to select generation strategy for the selected provider (populated dynamically)
+     * - Password field for the provider's API key
+     *
+     * When the provider selection changes, the strategy dropdown is repopulated with
+     * strategies specific to that provider.
+     *
+     * @return The DialogPanel containing provider, strategy, and API key UI elements
+     */
     override fun createComponent(): DialogPanel {
         settingsPanel =
             panel {
@@ -76,14 +105,27 @@ class LlmSettingsConfigurable : Configurable {
         return settingsPanel
     }
 
+    /**
+     * Loads all available strategies for the given LLM provider.
+     * Clears the existing strategies model and repopulates it with strategies
+     * specific to the provider (e.g., different reasoning or prompt strategies).
+     *
+     * @param provider The LLM provider identifier
+     */
     private fun loadStrategiesForProvider(provider: String?) {
         strategiesModel.removeAllElements()
         if (provider.isNullOrBlank()) return
         strategyRegistry.strategiesFor(provider).forEach { strategiesModel.addElement(it) }
     }
 
+    /** Checks if any settings have been modified since last apply() */
     override fun isModified(): Boolean = settingsPanel.isModified()
 
+    /**
+     * Persists the user's settings changes to the IDE's persistent state.
+     * Saves the provider name, strategy ID, and API key securely.
+     * Preserves other config values (system prompt, temperature, max iterations).
+     */
     override fun apply() {
         settingsPanel.apply()
 
@@ -99,6 +141,7 @@ class LlmSettingsConfigurable : Configurable {
         configService.updateSettings(newState, llmToken.takeIf { it.isNotBlank() })
     }
 
+    /** Reloads all fields from persistent state, discarding any unsaved changes */
     override fun reset() {
         val state = configService.getState()
 
@@ -112,5 +155,6 @@ class LlmSettingsConfigurable : Configurable {
         settingsPanel.reset()
     }
 
+    /** Helper to extract all elements from a combo box model as a list */
     private fun <T> DefaultComboBoxModel<T>.allElements(): List<T> = (0 until size).map { getElementAt(it) }
 }

@@ -8,33 +8,12 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 
-interface ConfigValidator {
-    val name: String
-    val configurableId: String
-
-    fun isReady(): Boolean
-
-    fun getErrorMessage(): String
-}
-
-class JiraConfigValidator(private val jiraService: JiraConfigService) : ConfigValidator {
-    override val name = "Jira"
-    override val configurableId = "com.github.strogolsky.autoissue.Jira"
-
-    override fun isReady(): Boolean = jiraService.isReady()
-
-    override fun getErrorMessage(): String = "Jira Base URL or credentials are missing."
-}
-
-class LlmConfigValidator(private val llmService: LlmAgentConfigService) : ConfigValidator {
-    override val name = "LLM"
-    override val configurableId = "com.github.strogolsky.autoissue.LLM"
-
-    override fun isReady(): Boolean = llmService.isReady()
-
-    override fun getErrorMessage(): String = "LLM API key is missing."
-}
-
+/**
+ * Checks the health of all plugin configurations.
+ *
+ * Validates all configuration subsystems (JIRA, LLM) and provides
+ * notifications when configuration is incomplete.
+ */
 @Service(Service.Level.PROJECT)
 class ConfigHealthChecker(private val project: Project) {
     private val validators: List<ConfigValidator> by lazy {
@@ -44,20 +23,34 @@ class ConfigHealthChecker(private val project: Project) {
         )
     }
 
+    /**
+     * Checks if all configurations are ready.
+     *
+     * @return true if all validators pass, false if any are missing
+     */
     fun isSystemReady(): Boolean = validators.all { it.isReady() }
 
+    /**
+     * Validates configurations and notifies user of any missing settings.
+     *
+     * Shows appropriate error message based on which configurations are missing.
+     *
+     * @return true if all configurations are valid, false otherwise
+     */
     fun validateAndNotify(): Boolean {
         val failed = validators.filter { !it.isReady() }
 
         if (failed.isEmpty()) return true
 
         if (failed.size > 1) {
+            // Multiple configurations missing - show general message with main settings link
             AutoIssueNotifier.notifyMissingConfig(
                 project,
-                "Multiple configurations are missing. Please configure the plugin.",
+                "Multiple configurations are missing. Please configure the plugin in settings.",
                 "com.github.strogolsky.autoissue.Main",
             )
         } else {
+            // Single configuration missing - show specific error and direct link
             val validator = failed.first()
             AutoIssueNotifier.notifyMissingConfig(
                 project,

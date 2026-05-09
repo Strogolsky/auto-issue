@@ -5,6 +5,29 @@ import com.github.strogolsky.autoissue.core.context.components.FileContextCompon
 import com.github.strogolsky.autoissue.core.context.components.IssueInstruction
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
 
+/**
+ * Renders prompts as simple plain text format.
+ *
+ * Uses ASCII separators and minimal markup for maximum compatibility:
+ * ```
+ * === INSTRUCTIONS ===
+ * Create a JIRA issue...
+ *
+ * === CONTEXT ===
+ * File: File.kt
+ * Class: MyClass
+ * - field1: String
+ * - field2: Int
+ *
+ * Target Method Context:
+ * ```kotlin
+ * fun method() { ... }
+ * ```
+ * ```
+ *
+ * Plain text format is simple, portable, and doesn't depend on any markdown parsing.
+ * Useful for basic LLMs or when maximum compatibility is needed.
+ */
 class PlainTextPromptRenderer : PromptRenderer {
     override fun rendererKey() = "SIMPLE"
 

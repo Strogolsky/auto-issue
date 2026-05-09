@@ -19,10 +19,50 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 
+/**
+ * Two-stage strategy for generating JIRA issues with reasoning and analysis.
+ *
+ * The strategy separates issue generation into two stages:
+ *
+ * Stage 1 - Analysis (Gemini 2.5 Flash):
+ * - Uses tool invocation to explore the codebase if needed
+ * - Produces a detailed technical analysis of the TODO and surrounding code
+ *
+ * Stage 2 - Structuring (Gemini 2.5 Flash Lite):
+ * - Uses the analysis as context to generate a final structured issue
+ * - Creates a JiraIssueCandidate with all required fields
+ *
+ * This approach produces higher-quality issues by separating analysis from structuring,
+ * allowing the LLM to thoroughly understand the context before generating the ticket.
+ *
+ * Provider: Google (Gemini)
+ * ID: "jira-reasoning-strategy"
+ * Display Name: "Reasoning (analysis + structuring)"
+ */
 class JiraReasoningStrategyFactory : GoogleIssueStrategyFactory<IssueGenerationInput, JiraIssueCandidate>() {
     override val id = "jira-reasoning-strategy"
     override val displayName = "Reasoning (analysis + structuring)"
 
+    /**
+     * Creates the agent strategy graph for reasoning-based issue generation.
+     *
+     * Graph structure:
+     * start → [Analysis Subgraph] → [Structuring Subgraph] → finish
+     *
+     * Analysis Subgraph:
+     * - Prepares analysis prompt from input
+     * - Calls LLM with tool invocation enabled
+     * - LLM can recursively call tools to explore the codebase
+     * - Extracts text analysis result
+     *
+     * Structuring Subgraph:
+     * - Builds structuring prompt using analysis + original input
+     * - Calls LLM with structured output to generate JiraIssueCandidate
+     * - Unwraps and returns the structured result
+     *
+     * @param project The IntelliJ project context
+     * @return The configured strategy graph with two subgraphs
+     */
     override fun createStrategy(project: Project): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
         val renderService = project.service<PromptRenderService>()
         var originalInput: IssueGenerationInput? = null

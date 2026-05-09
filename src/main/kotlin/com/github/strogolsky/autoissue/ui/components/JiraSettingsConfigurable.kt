@@ -24,28 +24,57 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.swing.DefaultComboBoxModel
 
+/**
+ * IDE settings panel for configuring JIRA Cloud integration.
+ *
+ * Provides UI for users to:
+ * - Enter JIRA base URL, username, and API key (credentials are stored securely)
+ * - Test the connection to verify credentials work
+ * - Select a default project for issue creation (loaded from JIRA with "Load Projects" button)
+ *
+ * Uses IDE's PasswordSafe for secure credential storage. Settings are persisted in
+ * JiraConfigService. The panel is async-aware and shows a loading icon during network calls.
+ *
+ * The panel implements IntelliJ's Configurable interface for integration with IDE Settings.
+ */
 class JiraSettingsConfigurable : Configurable {
     private val configService = ApplicationManager.getApplication().service<JiraConfigService>()
     private val apiService = ApplicationManager.getApplication().service<JiraApiService>()
 
+    // Coroutine scope for async operations (connection testing, project loading)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var settingsPanel: DialogPanel
 
+    // Configuration fields (mutable to support IDE's binding mechanism)
     private var jiraUrl = ""
     private var jiraUser = ""
     private var jiraToken = ""
     private var jiraProjectKey: String? = null
 
+    // Combo box model containing JIRA projects loaded from the instance
     private val projectsModel = DefaultComboBoxModel<ProjectItem>()
 
+    // Animated loading icon shown during async operations (connection test, project loading)
     private val loadingIcon =
         AsyncProcessIcon("JiraTestConnection").apply {
             isVisible = false
             suspend()
         }
 
+    /** Returns the display name shown in IDE Settings under Plugins/AutoIssue/Jira Integration */
     override fun getDisplayName() = "Jira Integration"
 
+    /**
+     * Creates the settings panel UI with fields for JIRA credentials and project selection.
+     *
+     * Layout:
+     * - Base URL, username, API key fields (with password masking)
+     * - "Test Connection" button to verify credentials work
+     * - "Load Projects" button to fetch projects from the JIRA instance
+     * - Dropdown to select the default project for issue creation
+     *
+     * @return The DialogPanel containing all configuration UI elements
+     */
     override fun createComponent(): DialogPanel {
         settingsPanel =
             panel {
@@ -95,6 +124,14 @@ class JiraSettingsConfigurable : Configurable {
         return settingsPanel
     }
 
+    /**
+     * Tests the JIRA connection with the current credentials.
+     *
+     * Validates that all required fields are filled, then makes an async call to JiraApiService
+     * to verify the credentials work. Updates the UI with a loading icon and status message.
+     *
+     * @param statusLabel Label to update with test result (success/failure)
+     */
     private fun testConnection(statusLabel: JBLabel) {
         if (jiraUrl.isBlank() || jiraUser.isBlank() || jiraToken.isBlank()) {
             statusLabel.icon = AllIcons.General.Warning
@@ -123,6 +160,15 @@ class JiraSettingsConfigurable : Configurable {
         }
     }
 
+    /**
+     * Fetches the list of accessible JIRA projects from the configured instance.
+     *
+     * Makes an async API call to retrieve projects, then updates the combo box model.
+     * If a preferred project key is provided, it will be selected; otherwise the first
+     * project is selected.
+     *
+     * @param keyToSelect Optional project key to pre-select in the dropdown
+     */
     private fun loadProjects(keyToSelect: String?) {
         if (jiraUrl.isBlank() || jiraUser.isBlank() || jiraToken.isBlank()) return
 
@@ -147,8 +193,13 @@ class JiraSettingsConfigurable : Configurable {
         }
     }
 
+    /** Checks if any settings have been modified since last apply() */
     override fun isModified(): Boolean = settingsPanel.isModified()
 
+    /**
+     * Persists the user's settings changes to the IDE's persistent state.
+     * Saves both non-sensitive fields (URL, username, project) and the API token securely.
+     */
     override fun apply() {
         settingsPanel.apply()
         val newState =
@@ -160,6 +211,7 @@ class JiraSettingsConfigurable : Configurable {
         configService.updateSettings(newState, jiraToken.takeIf { it.isNotBlank() })
     }
 
+    /** Reloads all fields from persistent state, discarding any unsaved changes */
     override fun reset() {
         val state = configService.getState()
         jiraUrl = state.baseUrl
@@ -174,9 +226,11 @@ class JiraSettingsConfigurable : Configurable {
         }
     }
 
+    /** Cleans up resources: cancels any pending async operations */
     override fun disposeUIResources() {
         scope.cancel()
     }
 
+    /** Data class for displaying project options in the combo box */
     private data class ProjectItem(val key: String, val displayText: String)
 }

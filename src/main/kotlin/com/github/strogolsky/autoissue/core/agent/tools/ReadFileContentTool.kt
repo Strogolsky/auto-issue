@@ -8,11 +8,30 @@ import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 
+/**
+ * Tool for AI agent to read source file content.
+ *
+ * Provides file content to the AI for analysis. Content is automatically masked
+ * to remove sensitive information (API keys, passwords, etc.) before being
+ * sent to the AI.
+ *
+ * Large files are truncated to avoid overwhelming the model.
+ */
 @LLMDescription("Tools for reading source file content.")
 class ReadFileContentTool(private val project: Project) : ToolSet {
     private val render = project.service<PromptRenderService>()
     private val codeAnalysisService = project.service<CodeAnalysisService>()
 
+    /**
+     * Reads the content of a source file.
+     *
+     * The file path must be project-relative (from the root directory).
+     * Content is automatically masked to remove sensitive data.
+     * If the file is too large, content is truncated.
+     *
+     * @param filePath Project-relative file path (e.g., 'src/main/kotlin/com/app/Foo.kt')
+     * @return File content response, or error if file not found or is binary
+     */
     @Tool
     @LLMDescription(
         "Reads the entire content of a source file. " +

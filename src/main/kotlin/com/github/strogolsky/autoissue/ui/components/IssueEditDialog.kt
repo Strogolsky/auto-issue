@@ -22,33 +22,50 @@ import javax.swing.JComponent
 import javax.swing.JSpinner
 import javax.swing.SpinnerDateModel
 
+/**
+ * Modal dialog for reviewing and editing AI-generated JIRA issues before creation.
+ *
+ * Displays the AI-generated issue candidate with editable fields, allowing the user to:
+ * - Review and modify the title and description
+ * - Select/change issue type, priority, and assignee from JIRA project metadata
+ * - Add labels with IDE autocomplete support
+ * - Link to a parent issue (for subtasks)
+ * - Set a due date
+ *
+ * Uses IntelliJ's UI DSL for consistent dialog layout. All fields are pre-populated with
+ * AI-generated values which can be edited before submission.
+ *
+ * The dialog blocks until the user clicks OK (create issue) or Cancel.
+ */
 class IssueEditDialog(
     project: Project,
     private val candidate: JiraIssueCandidate,
     private val metadata: JiraProjectMetadata,
 ) : DialogWrapper(project) {
-    // Base text fields
+    // Base text fields for issue title and description (main issue content)
     private val titleField = JBTextField(candidate.title, 40)
 
     private lateinit var descriptionArea: JBTextArea
 
-    // Dropdowns
+    // Dropdown for selecting from available JIRA issue types (e.g., Task, Bug, Story)
     private val issueTypeCombo =
         ComboBox(metadata.issueTypes.toTypedArray()).apply {
             renderer = SimpleListCellRenderer.create("") { it?.name ?: "" }
         }
 
+    // Dropdown for selecting issue priority (e.g., High, Medium, Low)
     private val priorityCombo =
         ComboBox(metadata.priorities.toTypedArray()).apply {
             renderer = SimpleListCellRenderer.create("") { it?.name ?: "" }
         }
 
+    // Dropdown for assigning the issue to a user (includes "None" option for unassigned)
     private val assigneeCombo =
         ComboBox((listOf(noneAssignee) + metadata.assignees).toTypedArray()).apply {
             renderer = SimpleListCellRenderer.create("") { it?.name ?: "None" }
         }
 
-    // Autocomplete fields
+    // Text field with IDE autocomplete for adding labels from the project's available labels
     private val labelsCompletionProvider =
         TextFieldWithAutoCompletion.StringsCompletionProvider(
             metadata.labels,
@@ -63,12 +80,13 @@ class IssueEditDialog(
             candidate.labels.joinToString(" "),
         )
 
+    // Optional field for linking this issue as a child of another issue (parent issue key, e.g., PROJ-123)
     private val parentField =
         JBTextField().apply {
             emptyText.text = "e.g. PROJ-123 (optional)"
         }
 
-    // Date picker
+    // Date picker for setting the issue due date (optional)
     private val dueDateModel = SpinnerDateModel()
     private val dueDatePicker =
         JSpinner(dueDateModel).apply {
@@ -120,6 +138,15 @@ class IssueEditDialog(
             }
         }
 
+    /**
+     * Displays the dialog modally and collects the user's edits into a JiraIssueRequest.
+     *
+     * Blocks until the user clicks OK (creates a request) or Cancel (returns null).
+     * Parses all form fields, trims whitespace, and converts selections to JIRA API format.
+     * Handles optional fields (assignee, parent issue, due date) gracefully.
+     *
+     * @return JiraIssueRequest with the user's edits, or null if the dialog was cancelled
+     */
     fun showAndGetResult(): JiraIssueRequest? {
         if (!showAndGet()) return null
 

@@ -64,6 +64,8 @@ class JiraIssueGenerationServiceTest {
             // 1. ARRANGE
             val mockComponent = mockk<ContextComponent>()
             every { agentConfigService.getEffectiveConfig() } returns config
+            every { config.provider } returns "claude"
+            every { config.strategyId } returns "default"
             coEvery { registry.gatherAll(env) } returns listOf(mockComponent)
             every { factory.createAgent(config) } returns agent
 
@@ -84,6 +86,8 @@ class JiraIssueGenerationServiceTest {
             // --- TEST FLOW ---
             // 1. ARRANGE
             every { agentConfigService.getEffectiveConfig() } returns config
+            every { config.provider } returns "claude"
+            every { config.strategyId } returns "default"
             coEvery { registry.gatherAll(env) } returns emptyList()
             every { factory.createAgent(config) } returns agent
 
@@ -104,6 +108,8 @@ class JiraIssueGenerationServiceTest {
             // --- TEST FLOW ---
             // 1. ARRANGE
             every { agentConfigService.getEffectiveConfig() } returns config
+            every { config.provider } returns "claude"
+            every { config.strategyId } returns "default"
             coEvery { registry.gatherAll(env) } returns emptyList()
             every { factory.createAgent(config) } returns agent
 
