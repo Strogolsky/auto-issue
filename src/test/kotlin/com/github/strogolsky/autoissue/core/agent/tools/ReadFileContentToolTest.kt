@@ -1,10 +1,8 @@
 package com.github.strogolsky.autoissue.core.agent.tools
 
-import com.github.strogolsky.autoissue.core.agent.tools.FileContentResponse
-import com.github.strogolsky.autoissue.core.agent.tools.ReadFileContentTool
-import com.github.strogolsky.autoissue.core.agent.tools.ToolErrorResponse
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
+import com.github.strogolsky.autoissue.integration.code.FileInfo
 import com.intellij.openapi.project.Project
 import io.mockk.every
 import io.mockk.mockk
@@ -43,7 +41,7 @@ class ReadFileContentToolTest {
         val maskedContent = "val secret = \"****\""
 
         every { codeService.isBinaryFile(path) } returns false
-        every { codeService.getWholeFileContent(path) } returns rawContent
+        every { codeService.getWholeFileContent(path) } returns FileInfo(rawContent, false, 20_000)
         every { renderService.mask(rawContent) } returns maskedContent
 
         // 2. ACT
@@ -86,5 +84,25 @@ class ReadFileContentToolTest {
         // 3. ASSERT
         assertTrue(response is ToolErrorResponse)
         assertTrue((response as ToolErrorResponse).errorDetails.contains("File not found"))
+    }
+
+    @Test
+    fun shouldAppendTruncationNoticeWhenContentIsTruncated() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        val path = "src/BigFile.kt"
+        val truncatedContent = "A".repeat(20_000)
+        val rawWithNotice = truncatedContent + "\n\n... [CONTENT TRUNCATED DUE TO SIZE LIMIT: 20000 CHARS] ..."
+
+        every { codeService.isBinaryFile(path) } returns false
+        every { codeService.getWholeFileContent(path) } returns FileInfo(truncatedContent, true, 20_000)
+        every { renderService.mask(rawWithNotice) } returns rawWithNotice
+
+        // 2. ACT
+        val response = tool.readFileContent(path)
+
+        // 3. ASSERT
+        assertTrue(response is FileContentResponse)
+        assertTrue((response as FileContentResponse).content.contains("CONTENT TRUNCATED"))
     }
 }

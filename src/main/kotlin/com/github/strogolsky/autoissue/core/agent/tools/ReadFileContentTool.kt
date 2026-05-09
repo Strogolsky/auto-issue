@@ -10,6 +10,10 @@ import com.intellij.openapi.project.Project
 
 @LLMDescription("Tools for reading source file content.")
 class ReadFileContentTool(private val project: Project) : ToolSet {
+
+    private val render = project.service<PromptRenderService>()
+    private val codeAnalysisService = project.service<CodeAnalysisService>()
+
     @Tool
     @LLMDescription(
         "Reads the entire content of a source file. " +
@@ -20,14 +24,20 @@ class ReadFileContentTool(private val project: Project) : ToolSet {
         @LLMDescription("Project-relative path to the file as returned by searchFiles, e.g. 'src/main/kotlin/com/app/Foo.kt'.")
         filePath: String,
     ): ToolResponse {
-        val service = project.service<CodeAnalysisService>()
-        if (service.isBinaryFile(filePath)) {
+
+        if (codeAnalysisService.isBinaryFile(filePath)) {
             return ToolErrorResponse(errorDetails = "Cannot read binary files.")
         }
-        val content =
-            service.getWholeFileContent(filePath)
+        val fileInfo =
+            codeAnalysisService.getWholeFileContent(filePath)
                 ?: return ToolErrorResponse(errorDetails = "File not found at path: $filePath")
-        val maskedContent = project.service<PromptRenderService>().mask(content)
+        val raw =
+            if (fileInfo.truncated) {
+                fileInfo.content + "\n\n... [CONTENT TRUNCATED DUE TO SIZE LIMIT: ${fileInfo.maxChars} CHARS] ..."
+            } else {
+                fileInfo.content
+            }
+        val maskedContent = render.mask(raw)
         return FileContentResponse(filePath = filePath, content = maskedContent)
     }
 }

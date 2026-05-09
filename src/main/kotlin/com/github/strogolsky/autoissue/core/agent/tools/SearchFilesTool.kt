@@ -9,6 +9,9 @@ import com.intellij.openapi.project.Project
 
 @LLMDescription("Tools for locating files within the project by name.")
 class SearchFilesTool(private val project: Project) : ToolSet {
+
+    private val codeAnalysisService = project.service<CodeAnalysisService>()
+
     @Tool
     @LLMDescription(
         "Searches for files in the project by partial name match (case-insensitive). " +
@@ -19,7 +22,7 @@ class SearchFilesTool(private val project: Project) : ToolSet {
         @LLMDescription("Part of the file name to search for, e.g. 'UserService' or 'OrderRepo'.")
         query: String,
     ): ToolResponse {
-        val matches = project.service<CodeAnalysisService>().searchFilesByName(query)
+        val matches = codeAnalysisService.searchFilesByName(query)
         return if (matches.isEmpty()) {
             ToolErrorResponse(errorDetails = "No files found matching: $query")
         } else {

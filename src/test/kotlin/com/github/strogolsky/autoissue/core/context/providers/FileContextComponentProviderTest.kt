@@ -2,10 +2,10 @@ package com.github.strogolsky.autoissue.core.context.providers
 
 import com.github.strogolsky.autoissue.core.context.ContextEnvironment
 import com.github.strogolsky.autoissue.core.context.components.FileContextComponent
-import com.github.strogolsky.autoissue.integration.code.ClassContext
+import com.github.strogolsky.autoissue.integration.code.ClassInfo
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
-import com.github.strogolsky.autoissue.integration.code.DetailedFileContext
-import com.github.strogolsky.autoissue.integration.code.MethodContext
+import com.github.strogolsky.autoissue.integration.code.DetailedFileInfo
+import com.github.strogolsky.autoissue.integration.code.MethodInfo
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer
@@ -46,26 +46,26 @@ class FileContextComponentProviderTest {
         runBlocking {
             // --- TEST FLOW ---
             // 1. ARRANGE
-            val classContext =
-                mockk<ClassContext> {
+            val classInfo =
+                mockk<ClassInfo> {
                     every { name } returns "UserService"
                     every { fields } returns listOf("private val repository")
                 }
-            val methodContext =
-                mockk<MethodContext> {
+            val methodInfo =
+                mockk<MethodInfo> {
                     every { signature } returns "fun getUser()"
                     every { body } returns "return repository.getUser()"
                 }
-            val detailedContext =
-                mockk<DetailedFileContext> {
+            val detailedInfo =
+                mockk<DetailedFileInfo> {
                     every { fileName } returns "UserService.kt"
                     every { language } returns "Kotlin"
                     every { imports } returns listOf("import java.util.*")
-                    every { enclosingClass } returns classContext
-                    every { enclosingMethod } returns methodContext
+                    every { enclosingClass } returns classInfo
+                    every { enclosingMethod } returns methodInfo
                 }
 
-            every { codeAnalysisService.extractDetailedContext(pointer) } returns detailedContext
+            every { codeAnalysisService.extractDetailedContext(pointer) } returns detailedInfo
 
             // 2. ACT
             val result = provider.provide(env) as? FileContextComponent
@@ -85,8 +85,8 @@ class FileContextComponentProviderTest {
         runBlocking {
             // --- TEST FLOW ---
             // 1. ARRANGE
-            val detailedContext =
-                mockk<DetailedFileContext> {
+            val detailedInfo =
+                mockk<DetailedFileInfo> {
                     every { fileName } returns "script.kts"
                     every { language } returns "Kotlin"
                     every { imports } returns emptyList()
@@ -95,7 +95,7 @@ class FileContextComponentProviderTest {
                     every { surroundingText } returns "println(\"Hello\")"
                 }
 
-            every { codeAnalysisService.extractDetailedContext(pointer) } returns detailedContext
+            every { codeAnalysisService.extractDetailedContext(pointer) } returns detailedInfo
 
             // 2. ACT
             val result = provider.provide(env) as? FileContextComponent

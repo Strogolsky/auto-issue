@@ -5,8 +5,10 @@ import ai.koog.prompt.executor.model.PromptExecutor
 import ai.koog.prompt.llm.LLModel
 import com.github.strogolsky.autoissue.core.agent.strategy.IssueStrategyFactory
 import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
+import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
+import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfig
 import com.github.strogolsky.autoissue.plugin.startup.LangfuseConfigLoader
 import com.intellij.openapi.application.Application
@@ -65,6 +67,9 @@ class JiraIssueAgentFactoryTest {
 
         every { application.getService(LlmProviderRegistry::class.java) } returns providerRegistry
         every { application.getService(JiraStrategyRegistry::class.java) } returns strategyRegistry
+
+        every { project.getService(CodeAnalysisService::class.java) } returns mockk(relaxed = true)
+        every { project.getService(PromptRenderService::class.java) } returns mockk(relaxed = true)
 
         every { LangfuseConfigLoader.load() } returns null
 

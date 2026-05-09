@@ -18,11 +18,6 @@ import kotlin.math.min
 
 @Service(Service.Level.PROJECT)
 class CodeAnalysisService(private val project: Project) {
-    companion object {
-        private const val MAX_CONTENT_CHARS = 20_000
-        private const val TRUNCATION_NOTICE = "\n\n... [CONTENT TRUNCATED DUE TO SIZE LIMIT: $MAX_CONTENT_CHARS CHARS] ..."
-    }
-
     fun isBinaryFile(filePath: String): Boolean =
         ReadAction.compute<Boolean, Throwable> {
             val virtualFile =
@@ -50,8 +45,8 @@ class CodeAnalysisService(private val project: Project) {
             results
         }
 
-    fun getWholeFileContent(filePath: String): String? =
-        ReadAction.compute<String?, Throwable> {
+    fun getWholeFileContent(filePath: String, maxChars: Int = 20_000): FileInfo? =
+        ReadAction.compute<FileInfo?, Throwable> {
             val virtualFile =
                 project.guessProjectDir()?.findFileByRelativePath(filePath)
                     ?: return@compute null
@@ -61,22 +56,22 @@ class CodeAnalysisService(private val project: Project) {
                     ?: return@compute null
 
             val text = psiFile.text
-            if (text.length > MAX_CONTENT_CHARS) text.take(MAX_CONTENT_CHARS) + TRUNCATION_NOTICE else text
+            FileInfo(content = text.take(maxChars), truncated = text.length > maxChars, maxChars = maxChars)
         }
 
-    fun extractDetailedContext(pointer: SmartPsiElementPointer<out PsiElement>?): DetailedFileContext? {
+    fun extractDetailedContext(pointer: SmartPsiElementPointer<out PsiElement>?): DetailedFileInfo? {
         if (pointer == null) return null
 
-        return ReadAction.compute<DetailedFileContext?, Throwable> {
+        return ReadAction.compute<DetailedFileInfo?, Throwable> {
             val targetElement = pointer.element ?: return@compute null
             val file = targetElement.containingFile ?: return@compute null
 
-            DetailedFileContext(
+            DetailedFileInfo(
                 fileName = file.name,
                 language = file.language.id,
                 imports = extractImports(file),
-                enclosingClass = extractClassContext(targetElement),
-                enclosingMethod = extractMethodContext(targetElement),
+                enclosingClass = extractClassInfo(targetElement),
+                enclosingMethod = extractMethodInfo(targetElement),
                 surroundingText = extractSurroundingLines(targetElement, lines = 5),
             )
         }
@@ -92,28 +87,28 @@ class CodeAnalysisService(private val project: Project) {
             }
         }
 
-    private fun extractClassContext(element: PsiElement): ClassContext? {
+    private fun extractClassInfo(element: PsiElement): ClassInfo? {
         var current: PsiElement? = element
 
         while (current != null) {
             val typeName = current.javaClass.simpleName
             if ((typeName.contains("Class") || typeName.contains("Object")) && !typeName.contains("Reference")) {
                 val className = (current as? PsiNamedElement)?.name ?: "UnknownClass"
-                return ClassContext(className, emptyList())
+                return ClassInfo(className, emptyList())
             }
             current = current.parent
         }
         return null
     }
 
-    private fun extractMethodContext(element: PsiElement): MethodContext? {
+    private fun extractMethodInfo(element: PsiElement): MethodInfo? {
         var current: PsiElement? = element
 
         while (current != null) {
             val typeName = current.javaClass.simpleName
             if (typeName.contains("Method") || typeName.contains("Function")) {
                 val methodName = (current as? PsiNamedElement)?.name ?: "UnknownMethod"
-                return MethodContext(
+                return MethodInfo(
                     name = methodName,
                     signature = methodName,
                     body = current.text,
