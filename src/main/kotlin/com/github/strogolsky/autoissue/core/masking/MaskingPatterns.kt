@@ -66,7 +66,7 @@ object MaskingPatterns {
         MaskingPattern(
             regex =
                 Regex(
-                    """(?i)(?:getenv|ENV)\s*[\[("']+([A-Z_]{3,50}(?:KEY|TOKEN|SECRET|PASSWORD|PASS|PWD)[A-Z_]*)[\])"']+""",
+                    """(?i)(?:getenv|ENV)\s*[\[("']+([A-Z_]{3,50}(?:KEY|TOKEN|SECRET|PASSWORD|PASS|PWD)[A-Z_]*)[])"']+""",
                 ),
         )
 

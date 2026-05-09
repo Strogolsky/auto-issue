@@ -5,7 +5,6 @@ import com.github.strogolsky.autoissue.plugin.config.DevConfig
 import com.github.strogolsky.autoissue.plugin.config.LlmDefaults
 import com.github.strogolsky.autoissue.plugin.config.PluginConfig
 import org.w3c.dom.Element
-import org.w3c.dom.NodeList
 import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -84,6 +83,4 @@ object PluginConfigLoader {
     }
 
     private fun Element.text(tag: String): String = getElementsByTagName(tag).item(0).textContent.trim()
-
-    private fun NodeList.toList() = (0 until length).map { item(it) }
 }
