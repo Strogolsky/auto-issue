@@ -1,5 +1,8 @@
-package com.github.strogolsky.autoissue.integration.code.tools
+package com.github.strogolsky.autoissue.core.agent.tools
 
+import com.github.strogolsky.autoissue.core.agent.tools.FileContentResponse
+import com.github.strogolsky.autoissue.core.agent.tools.ReadFileContentTool
+import com.github.strogolsky.autoissue.core.agent.tools.ToolErrorResponse
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.project.Project

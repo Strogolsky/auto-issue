@@ -1,5 +1,8 @@
-package com.github.strogolsky.autoissue.integration.code.tools
+package com.github.strogolsky.autoissue.core.agent.tools
 
+import com.github.strogolsky.autoissue.core.agent.tools.FileSearchResponse
+import com.github.strogolsky.autoissue.core.agent.tools.SearchFilesTool
+import com.github.strogolsky.autoissue.core.agent.tools.ToolErrorResponse
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.project.Project
 import io.mockk.every

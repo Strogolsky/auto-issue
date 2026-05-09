@@ -10,7 +10,7 @@
   </llm>
 
   <rendering>
-    <format>SIMPLE</format> <!-- MARKDOWN | XML -->
+    <format>XML</format> <!-- MARKDOWN | XML -->
   </rendering>
   <dev>
     <!-- set enabled="false" to disable the mechanism entirely -->

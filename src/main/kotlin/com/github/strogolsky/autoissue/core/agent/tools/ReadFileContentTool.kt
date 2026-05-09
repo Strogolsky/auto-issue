@@ -1,4 +1,4 @@
-package com.github.strogolsky.autoissue.integration.code.tools
+package com.github.strogolsky.autoissue.core.agent.tools
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
