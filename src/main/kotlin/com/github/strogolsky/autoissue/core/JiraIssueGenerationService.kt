@@ -30,7 +30,7 @@ class JiraIssueGenerationService(private val project: Project) {
             try {
                 agentConfigService.getEffectiveConfig()
             } catch (e: IllegalArgumentException) {
-                thisLogger().error("Task generation aborted: ${e.message}")
+                thisLogger().warn("Task generation aborted: ${e.message}")
                 throw IssueGenerationException(e.message ?: "LLM configuration is missing")
             }
 
@@ -47,7 +47,7 @@ class JiraIssueGenerationService(private val project: Project) {
         val result =
             agent.generate(input)
                 ?: run {
-                    thisLogger().error("Task generation failed: AI Agent returned a null result.")
+                    thisLogger().warn("Task generation failed: AI Agent returned a null result.")
                     throw IssueGenerationException("The AI agent returned an empty response. Please check your prompt or API limits.")
                 }
 

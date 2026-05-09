@@ -7,7 +7,11 @@ class RegexContentMasker(private val patterns: List<MaskingPattern>) : ContentMa
             result =
                 pattern.regex.replace(result) { match ->
                     val group = match.groups[1] ?: return@replace match.value
-                    match.value.replace(group.value, pattern.replacement)
+
+                    val localStart = group.range.first - match.range.first
+                    val localEnd = group.range.last - match.range.first + 1
+
+                    match.value.replaceRange(localStart, localEnd, pattern.replacement)
                 }
         }
         return result

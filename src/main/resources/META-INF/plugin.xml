@@ -5,6 +5,7 @@
     <vendor>strogolsky</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
 
     <resource-bundle>messages.AutoIssueBundle</resource-bundle>
 
@@ -67,5 +68,9 @@
             implementation="com.github.strogolsky.autoissue.core.context.providers.JiraMetadataProvider"/>
         <promptRenderer
             implementation="com.github.strogolsky.autoissue.core.context.render.PlainTextPromptRenderer"/>
+        <promptRenderer
+            implementation="com.github.strogolsky.autoissue.core.context.render.MarkdownPromptRenderer"/>
+        <promptRenderer
+            implementation="com.github.strogolsky.autoissue.core.context.render.XmlPromptRenderer"/>
     </extensions>
 </idea-plugin>

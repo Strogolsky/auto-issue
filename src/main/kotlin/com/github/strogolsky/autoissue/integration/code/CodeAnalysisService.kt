@@ -5,7 +5,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -27,7 +26,7 @@ class CodeAnalysisService(private val project: Project) {
     fun isBinaryFile(filePath: String): Boolean =
         ReadAction.compute<Boolean, Throwable> {
             val virtualFile =
-                LocalFileSystem.getInstance().findFileByPath(filePath)
+                project.guessProjectDir()?.findFileByRelativePath(filePath)
                     ?: return@compute false
             virtualFile.fileType.isBinary
         }
@@ -53,14 +52,14 @@ class CodeAnalysisService(private val project: Project) {
 
     fun getWholeFileContent(filePath: String): String? =
         ReadAction.compute<String?, Throwable> {
-            val projectDir = project.guessProjectDir()?.path
             val virtualFile =
-                LocalFileSystem.getInstance().findFileByPath(filePath)
-                    ?: projectDir?.let { LocalFileSystem.getInstance().findFileByPath("$it/$filePath") }
+                project.guessProjectDir()?.findFileByRelativePath(filePath)
                     ?: return@compute null
+
             val psiFile =
                 PsiManager.getInstance(project).findFile(virtualFile)
                     ?: return@compute null
+
             val text = psiFile.text
             if (text.length > MAX_CONTENT_CHARS) text.take(MAX_CONTENT_CHARS) + TRUNCATION_NOTICE else text
         }
@@ -86,9 +85,8 @@ class CodeAnalysisService(private val project: Project) {
     private fun extractImports(file: PsiElement): List<String> =
         buildList {
             PsiTreeUtil.processElements(file) { element ->
-                val typeName = element.javaClass.simpleName
-                if (typeName.contains("ImportList") || typeName.contains("ImportDirective")) {
-                    add(element.text)
+                if (element.javaClass.simpleName.contains("ImportStatement")) {
+                    add(element.text.trim())
                 }
                 true
             }

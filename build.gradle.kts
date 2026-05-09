@@ -45,9 +45,16 @@ dependencies {
     implementation(libs.koog.agents.opentelemetry)
     compileOnly(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.core)
+
+    // Tests
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
+    testImplementation(libs.mockk)
+    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.koog.agents.test)
 
+    // Ktor
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.apache5)
 
@@ -56,6 +63,8 @@ dependencies {
     // IntelliJ Platform Gradle Plugin Dependencies Extension
     intellijPlatform {
         intellijIdea(providers.gradleProperty("platformVersion"))
+
+        bundledPlugins("com.intellij.java")
 
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
