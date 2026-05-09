@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project
 
 @LLMDescription("Tools for reading source file content.")
 class ReadFileContentTool(private val project: Project) : ToolSet {
-
     private val render = project.service<PromptRenderService>()
     private val codeAnalysisService = project.service<CodeAnalysisService>()
 
@@ -24,7 +23,6 @@ class ReadFileContentTool(private val project: Project) : ToolSet {
         @LLMDescription("Project-relative path to the file as returned by searchFiles, e.g. 'src/main/kotlin/com/app/Foo.kt'.")
         filePath: String,
     ): ToolResponse {
-
         if (codeAnalysisService.isBinaryFile(filePath)) {
             return ToolErrorResponse(errorDetails = "Cannot read binary files.")
         }

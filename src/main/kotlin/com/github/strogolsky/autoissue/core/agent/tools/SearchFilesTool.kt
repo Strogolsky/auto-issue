@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project
 
 @LLMDescription("Tools for locating files within the project by name.")
 class SearchFilesTool(private val project: Project) : ToolSet {
-
     private val codeAnalysisService = project.service<CodeAnalysisService>()
 
     @Tool

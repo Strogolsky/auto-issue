@@ -45,7 +45,10 @@ class CodeAnalysisService(private val project: Project) {
             results
         }
 
-    fun getWholeFileContent(filePath: String, maxChars: Int = 20_000): FileInfo? =
+    fun getWholeFileContent(
+        filePath: String,
+        maxChars: Int = 20_000,
+    ): FileInfo? =
         ReadAction.compute<FileInfo?, Throwable> {
             val virtualFile =
                 project.guessProjectDir()?.findFileByRelativePath(filePath)
