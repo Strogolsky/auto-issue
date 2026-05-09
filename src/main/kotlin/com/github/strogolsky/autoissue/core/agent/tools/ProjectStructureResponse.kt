@@ -4,8 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@SerialName("FileSearchResponse")
-data class FileSearchResponse(
-    val query: String,
-    val matchedPaths: List<String>,
+@SerialName("ProjectStructureResponse")
+data class ProjectStructureResponse(
+    val files: List<String>,
 ) : ToolResponse

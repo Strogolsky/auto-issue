@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
@@ -12,6 +13,7 @@ import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.PsiShortNamesCache
 import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.max
 import kotlin.math.min
@@ -43,6 +45,60 @@ class CodeAnalysisService(private val project: Project) {
                 }
             }
             results
+        }
+
+    fun listAllClasses(): Map<String, String> =
+        ReadAction.compute<Map<String, String>, Throwable> {
+            val projectDir = project.guessProjectDir()?.path ?: return@compute emptyMap()
+            val scope = GlobalSearchScope.projectScope(project)
+            val result = mutableMapOf<String, String>()
+            for (name in FilenameIndex.getAllFilenames(project)) {
+                if (!name.endsWith(".java")) continue
+                for (vFile in FilenameIndex.getVirtualFilesByName(name, scope)) {
+                    val psiFile = PsiManager.getInstance(project).findFile(vFile) ?: continue
+                    val relativePath = vFile.path.removePrefix("$projectDir/")
+                    PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java).forEach { psiClass ->
+                        psiClass.name?.let { result[it] = relativePath }
+                    }
+                }
+            }
+            result
+        }
+
+    fun searchSymbol(query: String): List<String> =
+        ReadAction.compute<List<String>, Throwable> {
+            val projectDir = project.guessProjectDir()?.path ?: return@compute emptyList()
+            val scope = GlobalSearchScope.projectScope(project)
+            val cache = PsiShortNamesCache.getInstance(project)
+            val results = mutableListOf<String>()
+            for (className in cache.getAllClassNames()) {
+                if (!className.contains(query, ignoreCase = true)) continue
+                for (psiClass in cache.getClassesByName(className, scope)) {
+                    val vFile = psiClass.containingFile?.virtualFile ?: continue
+                    val relativePath = vFile.path.removePrefix("$projectDir/")
+                    results.add("${psiClass.name} → $relativePath")
+                }
+            }
+            results
+        }
+
+    fun listAllSourceFiles(extensions: List<String> = listOf("java")): List<String> =
+        ReadAction.compute<List<String>, Throwable> {
+            val projectDir = project.guessProjectDir() ?: return@compute emptyList()
+            val projectDirPath = projectDir.path
+            val scope = GlobalSearchScope.projectScope(project)
+            val excludedDirs = setOf("build", "generated", ".gradle", "out")
+            val results = mutableListOf<String>()
+            for (name in FilenameIndex.getAllFilenames(project)) {
+                val ext = name.substringAfterLast('.', "")
+                if (ext !in extensions) continue
+                for (vFile in FilenameIndex.getVirtualFilesByName(name, scope)) {
+                    val relativePath = vFile.path.removePrefix("$projectDirPath/")
+                    if (relativePath.split("/").any { it in excludedDirs }) continue
+                    results.add(relativePath)
+                }
+            }
+            results.sorted()
         }
 
     fun getWholeFileContent(

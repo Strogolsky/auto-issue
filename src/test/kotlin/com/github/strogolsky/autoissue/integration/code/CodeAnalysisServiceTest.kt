@@ -42,6 +42,50 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         assertTrue("truncated flag should be true", fileInfo.truncated)
     }
 
+    fun testShouldReturnAllClassesWithFilePaths() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        myFixture.addFileToProject("src/main/UserService.java", "class UserService {}")
+        myFixture.addFileToProject("src/main/Validators.java", "class UserValidator {} class OrderValidator {}")
+
+        // 2. ACT
+        val result = service.listAllClasses()
+
+        // 3. ASSERT
+        assertTrue(result.containsKey("UserService"))
+        assertTrue(result.containsKey("UserValidator"))
+        assertTrue(result.containsKey("OrderValidator"))
+        assertTrue(result["UserValidator"]!!.contains("Validators.java"))
+    }
+
+    fun testShouldReturnAllSourceFilePaths() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        myFixture.addFileToProject("src/main/UserService.java", "class UserService {}")
+        myFixture.addFileToProject("src/main/OrderRepo.java", "class OrderRepo {}")
+
+        // 2. ACT
+        val result = service.listAllSourceFiles()
+
+        // 3. ASSERT
+        assertTrue(result.any { it.contains("UserService.java") })
+        assertTrue(result.any { it.contains("OrderRepo.java") })
+        assertEquals(result.sorted(), result)
+    }
+
+    fun testShouldFindClassBySymbolSearch() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        myFixture.addFileToProject("src/main/Validators.java", "class UserValidator {}")
+
+        // 2. ACT
+        val result = service.searchSymbol("UserValidator")
+
+        // 3. ASSERT
+        assertTrue(result.isNotEmpty())
+        assertTrue(result.any { it.contains("UserValidator") && it.contains("Validators.java") })
+    }
+
     fun testShouldExtractFullContextWhenCaretIsInsideMethod() {
         // --- TEST FLOW ---
         // 1. ARRANGE
