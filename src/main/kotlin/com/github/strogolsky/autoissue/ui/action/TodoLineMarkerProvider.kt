@@ -14,9 +14,8 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPointerManager
 
 class TodoLineMarkerProvider : LineMarkerProvider {
-    companion object {
-        private val JIRA_ID_PATTERN = Regex("\\[[A-Z]+-\\d+]")
-    }
+
+    private val JIRA_ID_PATTERN = Regex("\\[[A-Z]+-\\d+]")
 
     override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
         if (element !is PsiComment) return null

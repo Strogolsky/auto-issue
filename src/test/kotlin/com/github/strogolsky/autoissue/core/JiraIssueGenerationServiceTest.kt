@@ -99,7 +99,7 @@ class JiraIssueGenerationServiceTest {
         }
 
     @Test
-    fun shouldThrowExceptionWhenAgentReturnsNull() =
+    fun shouldPropagateExceptionWhenAgentFails() =
         runTest {
             // --- TEST FLOW ---
             // 1. ARRANGE
@@ -107,17 +107,14 @@ class JiraIssueGenerationServiceTest {
             coEvery { registry.gatherAll(env) } returns emptyList()
             every { factory.createAgent(config) } returns agent
 
-            coEvery { agent.generate(any()) } returns null
+            coEvery { agent.generate(any()) } throws IssueGenerationException("Agent failed: network error")
 
             // 2. ACT & 3. ASSERT
             try {
                 service.generateTask("Instruction", env)
                 fail("Expected IssueGenerationException to be thrown")
             } catch (e: IssueGenerationException) {
-                assertEquals(
-                    "The AI agent returned an empty response. Please check your prompt or API limits.",
-                    e.message,
-                )
+                assertEquals("Agent failed: network error", e.message)
             }
         }
 
