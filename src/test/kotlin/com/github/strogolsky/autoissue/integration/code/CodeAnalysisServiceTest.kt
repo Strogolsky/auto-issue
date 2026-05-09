@@ -34,12 +34,56 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         myFixture.addFileToProject("GiantFile.txt", giantContent)
 
         // 2. ACT
-        val content = service.getWholeFileContent("GiantFile.txt")
+        val fileInfo = service.getWholeFileContent("GiantFile.txt")
 
         // 3. ASSERT
-        assertNotNull("Content should not be null", content)
-        assertTrue("Content should be truncated", content!!.length < 25_000)
-        assertTrue(content.contains("CONTENT TRUNCATED DUE TO SIZE LIMIT"))
+        assertNotNull("FileInfo should not be null", fileInfo)
+        assertTrue("Content should be truncated to maxChars", fileInfo!!.content.length == 20_000)
+        assertTrue("truncated flag should be true", fileInfo.truncated)
+    }
+
+    fun testShouldReturnAllClassesWithFilePaths() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        myFixture.addFileToProject("src/main/UserService.java", "class UserService {}")
+        myFixture.addFileToProject("src/main/Validators.java", "class UserValidator {} class OrderValidator {}")
+
+        // 2. ACT
+        val result = service.listAllClasses()
+
+        // 3. ASSERT
+        assertTrue(result.containsKey("UserService"))
+        assertTrue(result.containsKey("UserValidator"))
+        assertTrue(result.containsKey("OrderValidator"))
+        assertTrue(result["UserValidator"]!!.contains("Validators.java"))
+    }
+
+    fun testShouldReturnAllSourceFilePaths() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        myFixture.addFileToProject("src/main/UserService.java", "class UserService {}")
+        myFixture.addFileToProject("src/main/OrderRepo.java", "class OrderRepo {}")
+
+        // 2. ACT
+        val result = service.listAllSourceFiles()
+
+        // 3. ASSERT
+        assertTrue(result.any { it.contains("UserService.java") })
+        assertTrue(result.any { it.contains("OrderRepo.java") })
+        assertEquals(result.sorted(), result)
+    }
+
+    fun testShouldFindClassBySymbolSearch() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        myFixture.addFileToProject("src/main/Validators.java", "class UserValidator {}")
+
+        // 2. ACT
+        val result = service.searchSymbol("UserValidator")
+
+        // 3. ASSERT
+        assertTrue(result.isNotEmpty())
+        assertTrue(result.any { it.contains("UserValidator") && it.contains("Validators.java") })
     }
 
     fun testShouldExtractFullContextWhenCaretIsInsideMethod() {
@@ -63,17 +107,17 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         val pointer = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(elementAtCaret!!)
 
         // 2. ACT
-        val context = service.extractDetailedContext(pointer)
+        val info = service.extractDetailedContext(pointer)
 
         // 3. ASSERT
-        assertNotNull("Context should be extracted", context)
-        assertEquals("Auth.java", context!!.fileName)
+        assertNotNull("DetailedFileInfo should be extracted", info)
+        assertEquals("Auth.java", info!!.fileName)
 
-        assertEquals(2, context.imports.size)
-        assertTrue(context.imports.any { it.contains("java.util.Date") })
+        assertEquals(2, info.imports.size)
+        assertTrue(info.imports.any { it.contains("java.util.Date") })
 
-        assertEquals("AuthenticationManager", context.enclosingClass?.name)
-        assertEquals("loginUser", context.enclosingMethod?.name)
-        assertTrue(context.enclosingMethod!!.body.contains("System.out.println"))
+        assertEquals("AuthenticationManager", info.enclosingClass?.name)
+        assertEquals("loginUser", info.enclosingMethod?.name)
+        assertTrue(info.enclosingMethod!!.body.contains("System.out.println"))
     }
 }

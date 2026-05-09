@@ -4,10 +4,12 @@ import ai.koog.agents.core.agent.AIAgent
 import ai.koog.agents.core.tools.ToolRegistry
 import ai.koog.agents.features.opentelemetry.feature.OpenTelemetry
 import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
+import com.github.strogolsky.autoissue.core.agent.tools.ListAllClassesTool
+import com.github.strogolsky.autoissue.core.agent.tools.ListProjectFilesTool
+import com.github.strogolsky.autoissue.core.agent.tools.ReadFileContentTool
+import com.github.strogolsky.autoissue.core.agent.tools.SearchSymbolTool
 import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
-import com.github.strogolsky.autoissue.integration.code.tools.ReadFileContentTool
-import com.github.strogolsky.autoissue.integration.code.tools.SearchFilesTool
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfig
 import com.github.strogolsky.autoissue.plugin.startup.LangfuseConfigLoader
 import com.intellij.openapi.application.ApplicationManager
@@ -41,7 +43,9 @@ class JiraIssueAgentFactory(private val project: Project) :
 
         val toolRegistry =
             ToolRegistry {
-                tools(SearchFilesTool(project))
+                tools(ListAllClassesTool(project))
+                tools(SearchSymbolTool(project))
+                tools(ListProjectFilesTool(project))
                 tools(ReadFileContentTool(project))
             }
 

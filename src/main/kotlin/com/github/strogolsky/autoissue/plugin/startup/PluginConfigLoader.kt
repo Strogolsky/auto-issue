@@ -5,16 +5,18 @@ import com.github.strogolsky.autoissue.plugin.config.DevConfig
 import com.github.strogolsky.autoissue.plugin.config.LlmDefaults
 import com.github.strogolsky.autoissue.plugin.config.PluginConfig
 import org.w3c.dom.Element
-import org.w3c.dom.NodeList
 import java.io.File
+import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
 
 object PluginConfigLoader {
-    fun load(): PluginConfig {
-        val stream =
+    fun load(): PluginConfig =
+        load(
             PluginConfigLoader::class.java.getResourceAsStream("/PluginConfig.xml")
-                ?: error("PluginConfig.xml not found in resources")
+                ?: error("PluginConfig.xml not found in resources"),
+        )
 
+    fun load(stream: InputStream): PluginConfig {
         val doc =
             DocumentBuilderFactory.newInstance()
                 .newDocumentBuilder()
@@ -84,6 +86,4 @@ object PluginConfigLoader {
     }
 
     private fun Element.text(tag: String): String = getElementsByTagName(tag).item(0).textContent.trim()
-
-    private fun NodeList.toList() = (0 until length).map { item(it) }
 }

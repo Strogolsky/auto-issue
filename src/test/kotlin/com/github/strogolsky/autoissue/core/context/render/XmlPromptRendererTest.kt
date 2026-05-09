@@ -1,6 +1,7 @@
 package com.github.strogolsky.autoissue.core.context.render
 
 import com.github.strogolsky.autoissue.core.context.components.FileContextComponent
+import com.github.strogolsky.autoissue.core.context.components.IssueInstruction
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -50,5 +51,33 @@ class XmlPromptRendererTest {
         // 3. ASSERT: Verify context block is skipped entirely.
         assertFalse("Should not contain empty context tag", result.contains("<context>"))
         assertTrue("Should contain instructions tag", result.contains("<instructions>"))
+    }
+
+    @Test // UC-R12
+    fun should_RenderInstructionTag_When_ComponentIsIssueInstruction() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        val instruction = IssueInstruction("Fix the memory leak")
+
+        // 2. ACT
+        val result = renderer.renderComponent(instruction)
+
+        // 3. ASSERT
+        assertTrue("Should contain instruction tag", result.contains("<instruction>"))
+        assertTrue("Should contain instruction text", result.contains("Fix the memory leak"))
+    }
+
+    @Test // UC-R13
+    fun should_RenderSectionWithNameAttribute_When_BuildPromptHasSection() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE & 2. ACT
+        val result =
+            renderer.buildPrompt {
+                section("Examples", "Example issue content")
+            }
+
+        // 3. ASSERT
+        assertTrue("Should contain section tag with name attribute", result.contains("<section name=\"Examples\">"))
+        assertTrue("Should contain section content", result.contains("Example issue content"))
     }
 }

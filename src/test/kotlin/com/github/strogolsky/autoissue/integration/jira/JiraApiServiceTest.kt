@@ -167,4 +167,122 @@ class JiraApiServiceTest {
             // 3. ASSERT
             assertEquals("Basic YWRtaW46cEBzc3dvcmQ=", capturedHeader)
         }
+
+    @Test
+    fun shouldReturnProjectListWhenGetProjectsSucceeds() =
+        runBlocking {
+            // --- TEST FLOW ---
+            // 1. ARRANGE
+            val service =
+                createService {
+                    respond(
+                        content = """[{"key":"PROJ","name":"My Project"},{"key":"TEST","name":"Test Project"}]""",
+                        status = HttpStatusCode.OK,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
+                }
+
+            // 2. ACT
+            val projects = service.getProjects("https://test.atlassian.net", "admin", "token")
+
+            // 3. ASSERT
+            assertEquals(2, projects.size)
+            assertEquals("PROJ", projects[0].key)
+            assertEquals("My Project", projects[0].name)
+        }
+
+    @Test
+    fun shouldReturnEmptyListWhenGetProjectsFails() =
+        runBlocking {
+            // --- TEST FLOW ---
+            // 1. ARRANGE: engine always fails with a network-level exception
+            val mockEngine = MockEngine { throw RuntimeException("Network error") }
+            val mockClient =
+                HttpClient(mockEngine) {
+                    install(ContentNegotiation) { json() }
+                }
+            val service = JiraApiService(mockClient, mockConfigService)
+
+            // 2. ACT
+            val projects = service.getProjects("https://test.atlassian.net", "admin", "token")
+
+            // 3. ASSERT
+            assertTrue("Should return empty list on failure", projects.isEmpty())
+        }
+
+    @Test
+    fun shouldReturnEmptyAssigneesWhenAssigneesEndpointFails() =
+        runBlocking {
+            // --- TEST FLOW ---
+            // 1. ARRANGE: assignees endpoint returns 403, rest succeed
+            val service =
+                createService { request ->
+                    when {
+                        request.url.encodedPath.contains("/user/assignable/search") ->
+                            respond("Forbidden", HttpStatusCode.Forbidden)
+                        request.url.encodedPath.contains("/project/PROJ") ->
+                            respond(
+                                """{"id":"1","issueTypes":[],"components":[]}""",
+                                HttpStatusCode.OK,
+                                headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                        request.url.encodedPath.contains("/priority") ->
+                            respond(
+                                "[]",
+                                HttpStatusCode.OK,
+                                headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                        else ->
+                            respond(
+                                """{"values":[]}""",
+                                HttpStatusCode.OK,
+                                headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                    }
+                }
+
+            // 2. ACT
+            val metadata = service.getMetadata("PROJ")
+
+            // 3. ASSERT
+            assertTrue("Assignees should be empty when endpoint fails", metadata.assignees.isEmpty())
+        }
+
+    @Test
+    fun shouldReturnEmptyLabelsWhenLabelsEndpointFails() =
+        runBlocking {
+            // --- TEST FLOW ---
+            // 1. ARRANGE: labels endpoint returns 500, rest succeed
+            val service =
+                createService { request ->
+                    when {
+                        request.url.encodedPath.contains("/label") ->
+                            respond("Internal Server Error", HttpStatusCode.InternalServerError)
+                        request.url.encodedPath.contains("/project/PROJ") ->
+                            respond(
+                                """{"id":"1","issueTypes":[],"components":[]}""",
+                                HttpStatusCode.OK,
+                                headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                        request.url.encodedPath.contains("/priority") ->
+                            respond(
+                                "[]",
+                                HttpStatusCode.OK,
+                                headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                        else ->
+                            respond(
+                                "[]",
+                                HttpStatusCode.OK,
+                                headersOf(HttpHeaders.ContentType, "application/json"),
+                            )
+                    }
+                }
+
+            // 2. ACT
+            val metadata = service.getMetadata("PROJ")
+
+            // 3. ASSERT
+            assertTrue("Labels should be empty when endpoint fails", metadata.labels.isEmpty())
+        }
 }

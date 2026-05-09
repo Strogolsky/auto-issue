@@ -1,6 +1,7 @@
 package com.github.strogolsky.autoissue.integration.code
 
-data class ClassContext(
+data class MethodInfo(
     val name: String,
-    val fields: List<String>,
+    val signature: String,
+    val body: String,
 )

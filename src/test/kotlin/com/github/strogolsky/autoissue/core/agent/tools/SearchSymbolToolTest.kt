@@ -1,4 +1,4 @@
-package com.github.strogolsky.autoissue.integration.code.tools
+package com.github.strogolsky.autoissue.core.agent.tools
 
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.project.Project
@@ -11,15 +11,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class SearchFilesToolTest {
+class SearchSymbolToolTest {
     private val project = mockk<Project>()
     private val codeService = mockk<CodeAnalysisService>()
-    private lateinit var tool: SearchFilesTool
+    private lateinit var tool: SearchSymbolTool
 
     @Before
     fun setUp() {
         every { project.getService(CodeAnalysisService::class.java) } returns codeService
-        tool = SearchFilesTool(project)
+        tool = SearchSymbolTool(project)
     }
 
     @After
@@ -28,35 +28,35 @@ class SearchFilesToolTest {
     }
 
     @Test
-    fun should_ReturnPaths_When_FilesAreFound() {
+    fun should_ReturnResults_When_SymbolIsFound() {
         // --- TEST FLOW ---
         // 1. ARRANGE
-        val query = "Service"
-        val results = listOf("UserService.kt", "AuthService.kt")
-        every { codeService.searchFilesByName(query) } returns results
+        val query = "UserValidator"
+        val results = listOf("UserValidator → src/Validators.kt")
+        every { codeService.searchSymbol(query) } returns results
 
         // 2. ACT
-        val response = tool.searchFiles(query)
+        val response = tool.searchSymbol(query)
 
         // 3. ASSERT
-        assertTrue(response is FileSearchResponse)
-        val success = response as FileSearchResponse
+        assertTrue(response is SymbolSearchResponse)
+        val success = response as SymbolSearchResponse
         assertEquals(query, success.query)
-        assertEquals(results, success.matchedPaths)
+        assertEquals(results, success.results)
     }
 
     @Test
-    fun should_ReturnError_When_NoFilesMatchQuery() {
+    fun should_ReturnError_When_SymbolNotFound() {
         // --- TEST FLOW ---
         // 1. ARRANGE
-        val query = "Unknown"
-        every { codeService.searchFilesByName(query) } returns emptyList()
+        val query = "NonExistent"
+        every { codeService.searchSymbol(query) } returns emptyList()
 
         // 2. ACT
-        val response = tool.searchFiles(query)
+        val response = tool.searchSymbol(query)
 
         // 3. ASSERT
         assertTrue(response is ToolErrorResponse)
-        assertTrue((response as ToolErrorResponse).errorDetails.contains("No files found"))
+        assertTrue((response as ToolErrorResponse).errorDetails.contains("No symbols found"))
     }
 }

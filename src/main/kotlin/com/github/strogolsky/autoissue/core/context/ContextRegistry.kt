@@ -26,11 +26,6 @@ class ContextRegistry {
         providers.addAll(testProviders)
     }
 
-    fun register(provider: ContextComponentProvider) {
-        providers.add(provider)
-        thisLogger().debug("Registered ContextComponentProvider: ${provider.javaClass.simpleName}")
-    }
-
     suspend fun gatherAll(env: ContextEnvironment): List<ContextComponent> {
         thisLogger().info("Starting to gather context from ${providers.size} providers...")
 
