@@ -16,6 +16,7 @@ import ai.koog.prompt.llm.LLModel
  */
 class GoogleLlmProvider : LlmProvider {
     override val providerKey = "GOOGLE"
+
     // Default to Gemini 2.5 Flash Lite for cost efficiency
     override val defaultModel: LLModel = GoogleModels.Gemini2_5FlashLite
 

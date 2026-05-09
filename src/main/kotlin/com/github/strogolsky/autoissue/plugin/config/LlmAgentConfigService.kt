@@ -120,7 +120,9 @@ class LlmAgentConfigService : PersistentStateComponent<LlmAgentState> {
         val apiKey = PasswordSafe.instance.getPassword(tokenKey)
         require(!apiKey.isNullOrBlank()) { "LLM API Key is missing in PasswordSafe" }
 
-        thisLogger().debug("LLM configuration resolved: provider=${state.provider}, strategy=${state.strategyId}, temperature=${state.temperature}")
+        thisLogger().debug(
+            "LLM configuration resolved: provider=${state.provider}, strategy=${state.strategyId}, temperature=${state.temperature}",
+        )
 
         return LlmAgentConfig(
             apiKey = apiKey,

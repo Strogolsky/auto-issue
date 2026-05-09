@@ -169,12 +169,13 @@ class JiraApiService(
                             }
                             applyAuth(config.username, config.apiToken)
                         }.body()
-                    val assigneeList = response.map {
-                        JiraField(
-                            id = it.jsonObject["accountId"]?.jsonPrimitive?.content ?: "",
-                            name = it.jsonObject["displayName"]?.jsonPrimitive?.content ?: "",
-                        )
-                    }
+                    val assigneeList =
+                        response.map {
+                            JiraField(
+                                id = it.jsonObject["accountId"]?.jsonPrimitive?.content ?: "",
+                                name = it.jsonObject["displayName"]?.jsonPrimitive?.content ?: "",
+                            )
+                        }
                     thisLogger().debug("Fetched ${assigneeList.size} assignees")
                     assigneeList
                 } catch (e: Exception) {
@@ -279,8 +280,9 @@ class JiraApiService(
                     setBody(payload)
                 }.body()
 
-            val issueKey = response["key"]?.jsonPrimitive?.content
-                ?: error("Key missing in Jira response")
+            val issueKey =
+                response["key"]?.jsonPrimitive?.content
+                    ?: error("Key missing in Jira response")
             thisLogger().info("Issue created successfully: $issueKey")
             issueKey
         } catch (e: ClientRequestException) {
@@ -377,12 +379,13 @@ class JiraApiService(
                     buildJiraUrl(baseUrl, "/rest/api/3/project")
                     applyAuth(username, apiToken)
                 }.body()
-            val projects = response.map {
-                JiraProjectSummary(
-                    key = it.jsonObject["key"]?.jsonPrimitive?.content ?: "",
-                    name = it.jsonObject["name"]?.jsonPrimitive?.content ?: "",
-                )
-            }
+            val projects =
+                response.map {
+                    JiraProjectSummary(
+                        key = it.jsonObject["key"]?.jsonPrimitive?.content ?: "",
+                        name = it.jsonObject["name"]?.jsonPrimitive?.content ?: "",
+                    )
+                }
             thisLogger().info("Fetched ${projects.size} JIRA projects")
             projects
         } catch (e: Exception) {
