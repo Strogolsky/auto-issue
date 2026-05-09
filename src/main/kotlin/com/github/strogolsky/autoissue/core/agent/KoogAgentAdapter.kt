@@ -14,7 +14,7 @@ class KoogAgentAdapter<I, O>(
             thisLogger().info("Generation process completed successfully.")
             result
         } catch (e: Exception) {
-            thisLogger().error("Critical failure during task generation: ${e.message}", e)
+            thisLogger().warn("Task generation failed: ${e.message}", e)
             throw IssueGenerationException("Agent failed: ${e.message}", e)
         }
     }

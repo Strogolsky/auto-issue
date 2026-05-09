@@ -1,6 +1,7 @@
 package com.github.strogolsky.autoissue.core.context.render
 
 import com.github.strogolsky.autoissue.core.context.components.FileContextComponent
+import com.github.strogolsky.autoissue.core.context.components.IssueInstruction
 import com.github.strogolsky.autoissue.core.context.components.JiraProjectMetadata
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -62,5 +63,46 @@ class MarkdownPromptRendererTest {
         assertTrue("Should contain project key", result.contains("Project Key: PROJ"))
         assertTrue("Should render first label as list item", result.contains("- bug"))
         assertTrue("Should render second label as list item", result.contains("- ui"))
+    }
+
+    @Test // UC-R9
+    fun should_FormatAsInlineText_When_RenderingIssueInstructionComponent() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        val instruction = IssueInstruction("Fix auth bug")
+
+        // 2. ACT
+        val result = renderer.renderComponent(instruction)
+
+        // 3. ASSERT
+        assertTrue("Should contain instruction description", result.contains("Fix auth bug"))
+    }
+
+    @Test // UC-R10
+    fun should_FormatInstructionHeader_When_BuildPromptHasInstruction() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE & 2. ACT
+        val result =
+            renderer.buildPrompt {
+                instruction("Create an issue for: bug in login")
+            }
+
+        // 3. ASSERT
+        assertTrue("Should contain instructions h2 header", result.contains("## Instructions"))
+        assertTrue("Should contain instruction text", result.contains("Create an issue for: bug in login"))
+    }
+
+    @Test // UC-R11
+    fun should_FormatSectionHeader_When_BuildPromptHasSection() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE & 2. ACT
+        val result =
+            renderer.buildPrompt {
+                section("Examples", "Here is an example issue")
+            }
+
+        // 3. ASSERT
+        assertTrue("Should contain section title as h2", result.contains("## Examples"))
+        assertTrue("Should contain section content", result.contains("Here is an example issue"))
     }
 }

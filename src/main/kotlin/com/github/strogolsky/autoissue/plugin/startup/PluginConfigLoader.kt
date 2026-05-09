@@ -6,14 +6,17 @@ import com.github.strogolsky.autoissue.plugin.config.LlmDefaults
 import com.github.strogolsky.autoissue.plugin.config.PluginConfig
 import org.w3c.dom.Element
 import java.io.File
+import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
 
 object PluginConfigLoader {
-    fun load(): PluginConfig {
-        val stream =
+    fun load(): PluginConfig =
+        load(
             PluginConfigLoader::class.java.getResourceAsStream("/PluginConfig.xml")
-                ?: error("PluginConfig.xml not found in resources")
+                ?: error("PluginConfig.xml not found in resources"),
+        )
 
+    fun load(stream: InputStream): PluginConfig {
         val doc =
             DocumentBuilderFactory.newInstance()
                 .newDocumentBuilder()
