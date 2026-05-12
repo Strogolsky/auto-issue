@@ -12,7 +12,11 @@ import com.intellij.openapi.project.Project
  * Provides a complete list of source files in the project, excluding build
  * and generated directories. Use when other symbol lookup methods fail.
  */
-@LLMDescription("Lists all source files in the project.")
+@LLMDescription(
+    "Provides a complete flat list of all source code files in the project. " +
+        "Includes only .kt and .java files from actual source directories. " +
+        "Use this when you need to browse all available files or when class-based lookup doesn't work.",
+)
 class ListProjectFilesTool(private val project: Project) : AgentTool {
     private val codeAnalysisService = project.service<CodeAnalysisService>()
 
@@ -29,8 +33,13 @@ class ListProjectFilesTool(private val project: Project) : AgentTool {
      */
     @Tool
     @LLMDescription(
-        "Returns a flat list of all source file paths (Kotlin and Java), excluding build directories. " +
-            "Use as a last resort when listAllClasses and searchSymbol both fail to find what you need.",
+        "Returns all project source files: {file path list}. " +
+            "Includes: Kotlin (.kt) and Java (.java) files from src/, test/, and similar directories. " +
+            "Excludes: build/, .gradle/, generated/, out/ directories and all compiled artifacts. " +
+            "When to use: " +
+            "1. Exploring project structure or modules " +
+            "2. When listAllClasses doesn't have the specific class you're looking for " +
+            "3. Finding related files in the same package/module",
     )
     fun listProjectFiles(): ToolResponse = ProjectStructureResponse(files = codeAnalysisService.listAllSourceFiles())
 }

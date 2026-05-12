@@ -16,7 +16,11 @@ import com.intellij.openapi.project.Project
  * 1. Call listAllClasses() to get a map of class names → file paths
  * 2. Use ReadFileContentTool to read the content of relevant files
  */
-@LLMDescription("Tools for getting a complete map of all classes in the project.")
+@LLMDescription(
+    "Returns a comprehensive map of all class names to their source file paths. " +
+        "Use this tool when you need to find where any class is defined in the project. " +
+        "This is the primary way to locate classes by name before examining their content.",
+)
 class ListAllClassesTool(private val project: Project) : AgentTool {
     private val codeAnalysisService = project.service<CodeAnalysisService>()
 
@@ -30,9 +34,10 @@ class ListAllClassesTool(private val project: Project) : AgentTool {
      */
     @Tool
     @LLMDescription(
-        "Returns a map of all class names to their source file paths in the project. " +
-            "Use this first to locate any class regardless of its file name. " +
-            "Then call readFileContent with the returned path.",
+        "Retrieves a complete name-to-path mapping of all classes in the project. " +
+            "Returns: { className -> filePath } pairs for every class found. " +
+            "Examples: 'JiraIssueGenerationService' -> 'src/main/kotlin/.../JiraIssueGenerationService.kt'. " +
+            "After finding a class, read file to examine its implementation.",
     )
     fun listAllClasses(): ToolResponse = ClassMapResponse(classes = codeAnalysisService.listAllClasses())
 }
