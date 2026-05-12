@@ -12,14 +12,14 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-import kotlin.math.max
-import kotlin.math.min
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.UFile
 import org.jetbrains.uast.UMethod
 import org.jetbrains.uast.getParentOfType
 import org.jetbrains.uast.toUElement
 import org.jetbrains.uast.toUElementOfType
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Service for analyzing and extracting information from project source code.

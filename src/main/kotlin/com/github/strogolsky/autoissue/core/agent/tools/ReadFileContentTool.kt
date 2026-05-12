@@ -49,7 +49,10 @@ class ReadFileContentTool(private val project: Project) : AgentTool {
             "4. Inspect configuration classes to understand how features are configured",
     )
     fun readFileContent(
-        @LLMDescription("Exact project-relative path from listAllClasses or listProjectFiles. Example: 'src/main/kotlin/com/github/strogolsky/autoissue/core/agent/tools/ListAllClassesTool.kt'")
+        @LLMDescription(
+            "Exact project-relative path from listAllClasses or listProjectFiles." +
+                "Example:'src/main/kotlin/com/github/strogolsky/autoissue/core/agent/tools/ListAllClassesTool.kt'",
+        )
         filePath: String,
     ): ToolResponse {
         if (codeAnalysisService.isBinaryFile(filePath)) {
