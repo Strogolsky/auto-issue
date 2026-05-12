@@ -85,49 +85,49 @@ private fun XmlContentBuilder.renderComponentInto(component: ContextComponent) {
     }
 }
 
-private fun XmlContentBuilder.renderFileContext(c: FileContextComponent) {
-    tag("file", linkedMapOf("name" to c.fileName, "language" to c.language)) {
-        if (c.className != null) {
-            tag("class", linkedMapOf("name" to c.className)) {
-                if (c.classFields.isNotEmpty()) {
+private fun XmlContentBuilder.renderFileContext(component: FileContextComponent) {
+    tag("file", linkedMapOf("name" to component.fileName, "language" to component.language)) {
+        if (component.className != null) {
+            tag("class", linkedMapOf("name" to component.className)) {
+                if (component.classFields.isNotEmpty()) {
                     tag("fields") {
-                        c.classFields.forEach { tag("field") { text(it) } }
+                        component.classFields.forEach { tag("field") { text(it) } }
                     }
                 }
             }
         }
-        tag("method") { cdata(c.methodBody) }
+        tag("method") { cdata(component.methodBody) }
     }
 }
 
-private fun XmlContentBuilder.renderJiraMetadata(m: JiraProjectMetadata) {
-    tag("jira", linkedMapOf("project-key" to m.projectKey)) {
-        if (m.issueTypes.isNotEmpty()) {
+private fun XmlContentBuilder.renderJiraMetadata(metadata: JiraProjectMetadata) {
+    tag("jira", linkedMapOf("project-key" to metadata.projectKey)) {
+        if (metadata.issueTypes.isNotEmpty()) {
             tag("issue-types") {
-                m.issueTypes.forEach { issueType ->
+                metadata.issueTypes.forEach { issueType ->
                     tag("type", linkedMapOf("id" to issueType.id, "subtask" to issueType.subtask.toString())) {
                         text(issueType.name)
                     }
                 }
             }
         }
-        if (m.priorities.isNotEmpty()) {
+        if (metadata.priorities.isNotEmpty()) {
             tag("priorities") {
-                m.priorities.forEach { priority ->
+                metadata.priorities.forEach { priority ->
                     tag("priority", linkedMapOf("id" to priority.id)) { text(priority.name) }
                 }
             }
         }
-        if (m.components.isNotEmpty()) {
+        if (metadata.components.isNotEmpty()) {
             tag("components") {
-                m.components.forEach { component ->
+                metadata.components.forEach { component ->
                     tag("component", linkedMapOf("id" to component.id)) { text(component.name) }
                 }
             }
         }
-        if (m.labels.isNotEmpty()) {
+        if (metadata.labels.isNotEmpty()) {
             tag("labels") {
-                m.labels.forEach { label -> tag("label") { text(label) } }
+                metadata.labels.forEach { label -> tag("label") { text(label) } }
             }
         }
     }

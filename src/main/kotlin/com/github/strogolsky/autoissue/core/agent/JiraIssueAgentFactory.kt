@@ -7,11 +7,9 @@ import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
 import com.github.strogolsky.autoissue.core.agent.tools.ListAllClassesTool
 import com.github.strogolsky.autoissue.core.agent.tools.ListProjectFilesTool
 import com.github.strogolsky.autoissue.core.agent.tools.ReadFileContentTool
-import com.github.strogolsky.autoissue.core.agent.tools.SearchSymbolTool
 import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfig
-import com.github.strogolsky.autoissue.plugin.startup.LangfuseConfigLoader
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -42,16 +40,17 @@ class JiraIssueAgentFactory(private val project: Project) :
      * 2. Create executor for the provider with API key
      * 3. Resolve generation strategy from registry
      * 4. Create tool registry with code analysis tools
-     * 5. Load optional Langfuse config for monitoring
-     * 6. Instantiate Koog AI agent with all components
-     * 7. Wrap with KoogAgentAdapter for type compatibility
+     * 5. Instantiate Koog AI agent with all components
+     * 6. Wrap with KoogAgentAdapter for type compatibility
      *
-     * @param config The LLM configuration with provider, strategy, and parameters
+     * Langfuse observability is enabled when [LlmAgentConfig.langfuseConfig] is non-null.
+     *
+     * @param config The LLM configuration with provider, strategy, parameters, and optional observability config
      * @return Configured agent ready for issue generation
-     * @throws IllegalArgumentException if strategy is not found for the provider
+     * @throws IllegalStateException if strategy is not found for the provider
      */
     @OptIn(ExperimentalTime::class)
-    override fun createAgent(config: LlmAgentConfig): KoogAgentAdapter<IssueGenerationInput, JiraIssueCandidate> {
+    override fun create(config: LlmAgentConfig): KoogAgentAdapter<IssueGenerationInput, JiraIssueCandidate> {
         thisLogger().info("Creating Jira Issue Agent with config: provider=${config.provider}, strategy=${config.strategyId}...")
 
         // Resolve LLM provider and create executor
@@ -68,7 +67,7 @@ class JiraIssueAgentFactory(private val project: Project) :
         val factory =
             strategyRegistry.findFactory(config.provider, config.strategyId)
                 ?: error("Strategy '${config.strategyId}' not found for provider '${config.provider}'")
-        val strategy = factory.createStrategy(project)
+        val strategy = factory.create(project)
         thisLogger().debug("Strategy resolved: ${strategy.javaClass.simpleName}")
 
         // Create tool registry for code analysis
@@ -76,15 +75,13 @@ class JiraIssueAgentFactory(private val project: Project) :
         val toolRegistry =
             ToolRegistry {
                 tools(ListAllClassesTool(project))
-                tools(SearchSymbolTool(project))
                 tools(ListProjectFilesTool(project))
                 tools(ReadFileContentTool(project))
             }
-        thisLogger().debug("Tool registry created with 4 tools")
+        thisLogger().debug("Tool registry created with 3 tools")
 
-        // Load optional observability configuration
-        thisLogger().debug("Loading Langfuse observability configuration...")
-        val langfuseConfig = LangfuseConfigLoader.load()
+        // Optional observability — provided by caller via config
+        val langfuseConfig = config.langfuseConfig
         if (langfuseConfig != null) {
             thisLogger().debug("Langfuse configured: ${langfuseConfig.url}")
         } else {

@@ -10,14 +10,12 @@ import com.github.strogolsky.autoissue.core.input.IssueGenerationInput
 import com.github.strogolsky.autoissue.core.output.JiraIssueCandidate
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfig
-import com.github.strogolsky.autoissue.plugin.startup.LangfuseConfigLoader
 import com.intellij.openapi.application.Application
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -61,7 +59,6 @@ class JiraIssueAgentFactoryTest {
         every { Logger.getInstance(any<String>()) } returns mockLogger
 
         mockkStatic(ApplicationManager::class)
-        mockkObject(LangfuseConfigLoader)
 
         every { ApplicationManager.getApplication() } returns application
 
@@ -70,8 +67,6 @@ class JiraIssueAgentFactoryTest {
 
         every { project.getService(CodeAnalysisService::class.java) } returns mockk(relaxed = true)
         every { project.getService(PromptRenderService::class.java) } returns mockk(relaxed = true)
-
-        every { LangfuseConfigLoader.load() } returns null
 
         factory = JiraIssueAgentFactory(project)
     }
@@ -90,10 +85,10 @@ class JiraIssueAgentFactoryTest {
         every { provider.defaultModel } returns llmModel
 
         every { strategyRegistry.findFactory(config.provider, config.strategyId) } returns strategyFactory
-        every { strategyFactory.createStrategy(project) } returns strategy
+        every { strategyFactory.create(project) } returns strategy
 
         // 2. ACT
-        val result = factory.createAgent(config)
+        val result = factory.create(config)
 
         // 3. ASSERT
         assertNotNull(result)
@@ -113,7 +108,7 @@ class JiraIssueAgentFactoryTest {
 
         // 2. ACT & 3. ASSERT
         assertThrows(IllegalStateException::class.java) {
-            factory.createAgent(config)
+            factory.create(config)
         }
     }
 }

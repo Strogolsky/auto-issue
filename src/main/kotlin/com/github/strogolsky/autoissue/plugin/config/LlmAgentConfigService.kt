@@ -1,6 +1,7 @@
 package com.github.strogolsky.autoissue.plugin.config
 
 import com.github.strogolsky.autoissue.core.agent.strategy.JiraStrategyRegistry
+import com.github.strogolsky.autoissue.plugin.startup.LangfuseConfigLoader
 import com.github.strogolsky.autoissue.plugin.state.LlmAgentState
 import com.intellij.credentialStore.CredentialAttributes
 import com.intellij.credentialStore.generateServiceName
@@ -111,9 +112,10 @@ class LlmAgentConfigService : PersistentStateComponent<LlmAgentState> {
     /**
      * Gets complete LLM agent configuration for AI agent creation.
      *
-     * Validates that API key is present.
+     * Validates that API key is present. Also loads optional Langfuse observability
+     * config from system properties and includes it in the returned config.
      *
-     * @return LlmAgentConfig with all fields populated (using defaults for missing values)
+     * @return LlmAgentConfig with all fields populated, including Langfuse config if available
      * @throws IllegalArgumentException if API key is missing
      */
     fun getEffectiveConfig(): LlmAgentConfig {
@@ -131,6 +133,7 @@ class LlmAgentConfigService : PersistentStateComponent<LlmAgentState> {
             temperature = state.temperature,
             maxIterations = state.maxIterations,
             strategyId = state.strategyId,
+            langfuseConfig = LangfuseConfigLoader.load(),
         )
     }
 

@@ -29,7 +29,7 @@ class FileContextComponentProvider : ContextComponentProvider {
     override suspend fun provide(env: ContextEnvironment): ContextComponent? {
         val psiService = env.project.service<CodeAnalysisService>()
 
-        val detailedData = psiService.extractDetailedContext(env.pointer) ?: return null
+        val detailedData = psiService.extractDetailedFileInfo(env.pointer) ?: return null
         return FileContextComponent(
             fileName = detailedData.fileName,
             language = detailedData.language,

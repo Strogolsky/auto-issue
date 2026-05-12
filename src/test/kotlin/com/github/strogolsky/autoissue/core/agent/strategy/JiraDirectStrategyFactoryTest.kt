@@ -94,7 +94,7 @@ class JiraDirectStrategyFactoryTest {
             every { promptRenderService.buildPrompt(any()) } returns renderedPrompt
 
             val mockLLMApi = createMockExecutor(createMockLLMResponse(expectedCandidate))
-            val strategy = factory.createStrategy(project)
+            val strategy = factory.create(project)
             val agentConfig = createAgentConfig()
 
             val agent =
@@ -144,7 +144,7 @@ class JiraDirectStrategyFactoryTest {
             every { promptRenderService.buildPrompt(any()) } returns renderedPrompt
 
             val mockLLMApi = createMockExecutor(createMockLLMResponse(expectedCandidate))
-            val strategy = factory.createStrategy(project)
+            val strategy = factory.create(project)
             val agentConfig = createAgentConfig()
 
             val agent =
@@ -193,7 +193,7 @@ class JiraDirectStrategyFactoryTest {
             every { promptRenderService.buildPrompt(any()) } returns renderedPrompt
 
             val mockLLMApi = createMockExecutor(createMockLLMResponse(expectedCandidate))
-            val strategy = factory.createStrategy(project)
+            val strategy = factory.create(project)
             val agentConfig = createAgentConfig()
 
             val agent =

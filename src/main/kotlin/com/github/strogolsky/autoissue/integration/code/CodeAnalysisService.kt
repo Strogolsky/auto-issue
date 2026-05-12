@@ -5,18 +5,21 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiClass
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiManager
-import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.SmartPsiElementPointer
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.search.PsiShortNamesCache
-import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.max
 import kotlin.math.min
+import org.jetbrains.uast.UClass
+import org.jetbrains.uast.UFile
+import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.getParentOfType
+import org.jetbrains.uast.toUElement
+import org.jetbrains.uast.toUElementOfType
 
 /**
  * Service for analyzing and extracting information from project source code.
@@ -72,54 +75,32 @@ class CodeAnalysisService(private val project: Project) {
         }
 
     /**
-     * Lists all Java classes in the project.
+     * Lists all classes in the project across JVM languages (Java, Kotlin, Groovy, Scala).
      *
      * Maps class names to their file paths for quick lookup.
-     * Only includes top-level classes, excludes inner classes.
+     * Only includes top-level classes, excludes inner/anonymous classes.
      *
      * @return Map of class name → relative file path
      */
     fun listAllClasses(): Map<String, String> =
         ReadAction.compute<Map<String, String>, Throwable> {
-            val projectDir = project.guessProjectDir()?.path ?: return@compute emptyMap()
+            val projectDirPath = project.guessProjectDir()?.path ?: return@compute emptyMap()
             val scope = GlobalSearchScope.projectScope(project)
             val result = mutableMapOf<String, String>()
+            val jvmExtensions = setOf("java", "kt", "groovy", "scala")
             for (name in FilenameIndex.getAllFilenames(project)) {
-                if (!name.endsWith(".java")) continue
+                val ext = name.substringAfterLast('.', "")
+                if (ext !in jvmExtensions) continue
                 for (vFile in FilenameIndex.getVirtualFilesByName(name, scope)) {
                     val psiFile = PsiManager.getInstance(project).findFile(vFile) ?: continue
-                    val relativePath = vFile.path.removePrefix("$projectDir/")
-                    PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java).forEach { psiClass ->
-                        psiClass.name?.let { result[it] = relativePath }
+                    val uFile = psiFile.toUElementOfType<UFile>() ?: continue
+                    val relativePath = vFile.relativePathIn(projectDirPath)
+                    uFile.classes.forEach { uClass ->
+                        uClass.name?.let { result[it] = relativePath }
                     }
                 }
             }
             result
-        }
-
-    /**
-     * Searches for a symbol (class name) in the project.
-     *
-     * Uses the PSI short names cache for fast lookups.
-     *
-     * @param query The symbol name or pattern to search for (case-insensitive)
-     * @return List of results formatted as "ClassName → file/path.java"
-     */
-    fun searchSymbol(query: String): List<String> =
-        ReadAction.compute<List<String>, Throwable> {
-            val projectDir = project.guessProjectDir()?.path ?: return@compute emptyList()
-            val scope = GlobalSearchScope.projectScope(project)
-            val cache = PsiShortNamesCache.getInstance(project)
-            val results = mutableListOf<String>()
-            for (className in cache.getAllClassNames()) {
-                if (!className.contains(query, ignoreCase = true)) continue
-                for (psiClass in cache.getClassesByName(className, scope)) {
-                    val vFile = psiClass.containingFile?.virtualFile ?: continue
-                    val relativePath = vFile.path.removePrefix("$projectDir/")
-                    results.add("${psiClass.name} → $relativePath")
-                }
-            }
-            results
         }
 
     /**
@@ -130,7 +111,7 @@ class CodeAnalysisService(private val project: Project) {
      * @param extensions File extensions to include (default: ["java"])
      * @return Sorted list of relative file paths
      */
-    fun listAllSourceFiles(extensions: List<String> = listOf("java")): List<String> =
+    fun listAllSourceFiles(extensions: List<String> = listOf("java", "kt")): List<String> =
         ReadAction.compute<List<String>, Throwable> {
             val projectDir = project.guessProjectDir() ?: return@compute emptyList()
             val projectDirPath = projectDir.path
@@ -141,7 +122,7 @@ class CodeAnalysisService(private val project: Project) {
                 val ext = name.substringAfterLast('.', "")
                 if (ext !in extensions) continue
                 for (vFile in FilenameIndex.getVirtualFilesByName(name, scope)) {
-                    val relativePath = vFile.path.removePrefix("$projectDirPath/")
+                    val relativePath = vFile.relativePathIn(projectDirPath)
                     if (relativePath.split("/").any { it in excludedDirs }) continue
                     results.add(relativePath)
                 }
@@ -191,7 +172,7 @@ class CodeAnalysisService(private val project: Project) {
      * @param pointer Smart pointer to the target code element
      * @return DetailedFileInfo with all context, or null if pointer is null
      */
-    fun extractDetailedContext(pointer: SmartPsiElementPointer<out PsiElement>?): DetailedFileInfo? {
+    fun extractDetailedFileInfo(pointer: SmartPsiElementPointer<out PsiElement>?): DetailedFileInfo? {
         if (pointer == null) return null
 
         return ReadAction.compute<DetailedFileInfo?, Throwable> {
@@ -210,63 +191,42 @@ class CodeAnalysisService(private val project: Project) {
     }
 
     /**
-     * Extracts all import statements from a file.
+     * Extracts all import statements from a file using UAST.
      *
      * @param file The PSI file element
      * @return List of import statement strings
      */
-    private fun extractImports(file: PsiElement): List<String> =
-        buildList {
-            PsiTreeUtil.processElements(file) { element ->
-                if (element.javaClass.simpleName.contains("ImportStatement")) {
-                    add(element.text.trim())
-                }
-                true
-            }
-        }
-
-    /**
-     * Finds the enclosing class of a code element by walking up the PSI tree.
-     *
-     * @param element The element to find the class for
-     * @return ClassInfo with class name, or null if not in a class
-     */
-    private fun extractClassInfo(element: PsiElement): ClassInfo? {
-        var current: PsiElement? = element
-
-        while (current != null) {
-            val typeName = current.javaClass.simpleName
-            if ((typeName.contains("Class") || typeName.contains("Object")) && !typeName.contains("Reference")) {
-                val className = (current as? PsiNamedElement)?.name ?: "UnknownClass"
-                return ClassInfo(className, emptyList())
-            }
-            current = current.parent
-        }
-        return null
+    private fun extractImports(file: PsiElement): List<String> {
+        val uFile = file.toUElementOfType<UFile>() ?: return emptyList()
+        return uFile.imports.map { it.asSourceString() }
     }
 
     /**
-     * Finds the enclosing method of a code element by walking up the PSI tree.
+     * Finds the enclosing class of a code element using UAST.
+     *
+     * @param element The element to find the class for
+     * @return ClassInfo with class name and fields, or null if not in a class
+     */
+    private fun extractClassInfo(element: PsiElement): ClassInfo? {
+        val uElement = element.toUElement() ?: return null
+        val uClass = uElement.getParentOfType<UClass>() ?: return null
+        return ClassInfo(name = uClass.name ?: "UnknownClass", fields = uClass.fields.mapNotNull { it.name })
+    }
+
+    /**
+     * Finds the enclosing method of a code element using UAST.
      *
      * @param element The element to find the method for
      * @return MethodInfo with method name and body, or null if not in a method
      */
     private fun extractMethodInfo(element: PsiElement): MethodInfo? {
-        var current: PsiElement? = element
-
-        while (current != null) {
-            val typeName = current.javaClass.simpleName
-            if (typeName.contains("Method") || typeName.contains("Function")) {
-                val methodName = (current as? PsiNamedElement)?.name ?: "UnknownMethod"
-                return MethodInfo(
-                    name = methodName,
-                    signature = methodName,
-                    body = current.text,
-                )
-            }
-            current = current.parent
-        }
-        return null
+        val uElement = element.toUElement() ?: return null
+        val uMethod = uElement.getParentOfType<UMethod>() ?: return null
+        return MethodInfo(
+            name = uMethod.name,
+            signature = uMethod.name,
+            body = uMethod.sourcePsi?.text ?: uMethod.asSourceString(),
+        )
     }
 
     /**
@@ -296,4 +256,6 @@ class CodeAnalysisService(private val project: Project) {
             ),
         )
     }
+
+    private fun VirtualFile.relativePathIn(projectDirPath: String): String = path.removePrefix("$projectDirPath/")
 }

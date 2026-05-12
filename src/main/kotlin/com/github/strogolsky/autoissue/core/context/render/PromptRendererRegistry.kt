@@ -27,8 +27,12 @@ class PromptRendererRegistry {
     }
 
     init {
-        // Load all registered renderers from the extension point at startup
-        EP_NAME.extensionList.forEach { renderers[it.rendererKey()] = it }
+        // Load all registered renderers from the extension point at startup.
+        // EP may be absent in lightweight test environments where the plugin descriptor isn't loaded.
+        try {
+            EP_NAME.extensionList.forEach { renderers[it.rendererKey()] = it }
+        } catch (_: IllegalArgumentException) {
+        }
     }
 
     /**

@@ -2,7 +2,6 @@ package com.github.strogolsky.autoissue.core.agent.tools
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
-import ai.koog.agents.core.tools.reflect.ToolSet
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -13,8 +12,8 @@ import com.intellij.openapi.project.Project
  * Provides a complete list of source files in the project, excluding build
  * and generated directories. Use when other symbol lookup methods fail.
  */
-@LLMDescription("Tools for listing all source files in the project.")
-class ListProjectFilesTool(private val project: Project) : ToolSet {
+@LLMDescription("Lists all source files in the project.")
+class ListProjectFilesTool(private val project: Project) : AgentTool {
     private val codeAnalysisService = project.service<CodeAnalysisService>()
 
     /**

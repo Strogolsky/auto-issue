@@ -63,7 +63,7 @@ class JiraReasoningStrategyFactory : GoogleIssueStrategyFactory<IssueGenerationI
      * @param project The IntelliJ project context
      * @return The configured strategy graph with two subgraphs
      */
-    override fun createStrategy(project: Project): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
+    override fun create(project: Project): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
         val renderService = project.service<PromptRenderService>()
         var originalInput: IssueGenerationInput? = null
 

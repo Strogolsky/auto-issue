@@ -14,6 +14,7 @@ package com.github.strogolsky.autoissue.plugin.config
  *                    Higher values (e.g., 0.8) for more creative output
  * @param maxIterations Maximum number of iterations for the agentic loop
  * @param strategyId The generation strategy to use (e.g., "DIRECT", "REASONING")
+ * @param langfuseConfig Optional Langfuse observability config; null disables monitoring
  */
 data class LlmAgentConfig(
     val apiKey: String,
@@ -22,4 +23,5 @@ data class LlmAgentConfig(
     val temperature: Double,
     val maxIterations: Int,
     val strategyId: String,
+    val langfuseConfig: LangfuseConfig? = null,
 )

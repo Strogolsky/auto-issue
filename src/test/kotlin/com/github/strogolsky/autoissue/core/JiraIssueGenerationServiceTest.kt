@@ -67,13 +67,13 @@ class JiraIssueGenerationServiceTest {
             every { config.provider } returns "claude"
             every { config.strategyId } returns "default"
             coEvery { registry.gatherAll(env) } returns listOf(mockComponent)
-            every { factory.createAgent(config) } returns agent
+            every { factory.create(config) } returns agent
 
             val expectedCandidate = JiraIssueCandidate("Fix Auth", "Description")
             coEvery { agent.generate(any()) } returns expectedCandidate
 
             // 2. ACT
-            val result = service.generateTask("Fix auth system", env)
+            val result = service.generate("Fix auth system", env)
 
             // 3. ASSERT
             assertEquals(expectedCandidate, result)
@@ -89,13 +89,13 @@ class JiraIssueGenerationServiceTest {
             every { config.provider } returns "claude"
             every { config.strategyId } returns "default"
             coEvery { registry.gatherAll(env) } returns emptyList()
-            every { factory.createAgent(config) } returns agent
+            every { factory.create(config) } returns agent
 
             val expectedCandidate = JiraIssueCandidate("Title", "Desc")
             coEvery { agent.generate(any()) } returns expectedCandidate
 
             // 2. ACT
-            val result = service.generateTask("Instruction", env)
+            val result = service.generate("Instruction", env)
 
             // 3. ASSERT
             assertEquals("Title", result.title)
@@ -111,13 +111,13 @@ class JiraIssueGenerationServiceTest {
             every { config.provider } returns "claude"
             every { config.strategyId } returns "default"
             coEvery { registry.gatherAll(env) } returns emptyList()
-            every { factory.createAgent(config) } returns agent
+            every { factory.create(config) } returns agent
 
             coEvery { agent.generate(any()) } throws IssueGenerationException("Agent failed: network error")
 
             // 2. ACT & 3. ASSERT
             try {
-                service.generateTask("Instruction", env)
+                service.generate("Instruction", env)
                 fail("Expected IssueGenerationException to be thrown")
             } catch (e: IssueGenerationException) {
                 assertEquals("Agent failed: network error", e.message)
@@ -133,7 +133,7 @@ class JiraIssueGenerationServiceTest {
 
             // 2. ACT & 3. ASSERT
             try {
-                service.generateTask("Instruction", env)
+                service.generate("Instruction", env)
                 fail("Expected IssueGenerationException to be thrown")
             } catch (e: IssueGenerationException) {
                 assertEquals("Invalid API Key", e.message)

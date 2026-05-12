@@ -2,7 +2,6 @@ package com.github.strogolsky.autoissue.core.agent.tools
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
-import ai.koog.agents.core.tools.reflect.ToolSet
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.components.service
@@ -18,7 +17,7 @@ import com.intellij.openapi.project.Project
  * Large files are truncated to avoid overwhelming the model.
  */
 @LLMDescription("Tools for reading source file content.")
-class ReadFileContentTool(private val project: Project) : ToolSet {
+class ReadFileContentTool(private val project: Project) : AgentTool {
     private val render = project.service<PromptRenderService>()
     private val codeAnalysisService = project.service<CodeAnalysisService>()
 

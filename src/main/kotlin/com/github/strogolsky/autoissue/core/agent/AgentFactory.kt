@@ -17,5 +17,5 @@ interface AgentFactory<T> {
      * @param config The LLM agent configuration containing provider, strategy, and parameters
      * @return A new agent instance configured and ready for use
      */
-    fun createAgent(config: LlmAgentConfig): T
+    fun create(config: LlmAgentConfig): T
 }
