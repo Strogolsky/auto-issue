@@ -6,6 +6,7 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
+    <depends>org.jetbrains.kotlin</depends>
 
     <resource-bundle>messages.AutoIssueBundle</resource-bundle>
 
@@ -28,6 +29,10 @@
             dynamic="true"/>
     </extensionPoints>
 
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK2="true"/>
+    </extensions>
+
     <extensions defaultExtensionNs="com.intellij">
 
         <postStartupActivity implementation="com.github.strogolsky.autoissue.plugin.startup.PluginStartupActivity" />
@@ -35,6 +40,9 @@
 
         <codeInsight.lineMarkerProvider
                 language="JAVA"
+                implementationClass="com.github.strogolsky.autoissue.ui.action.TodoLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider
+                language="kotlin"
                 implementationClass="com.github.strogolsky.autoissue.ui.action.TodoLineMarkerProvider"/>
 
         <notificationGroup id="AutoIssue Notifications" displayType="BALLOON"/>

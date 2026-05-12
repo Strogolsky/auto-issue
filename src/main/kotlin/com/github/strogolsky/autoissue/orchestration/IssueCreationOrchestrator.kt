@@ -43,12 +43,12 @@ import kotlinx.coroutines.withContext
  */
 @Service(Service.Level.PROJECT)
 class IssueCreationOrchestrator(private val project: Project) : Disposable {
-    private val cs = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val jiraApiService by lazy { ApplicationManager.getApplication().service<JiraApiService>() }
     private val healthChecker by lazy { project.service<ConfigHealthChecker>() }
 
     override fun dispose() {
-        cs.cancel()
+        coroutineScope.cancel()
         thisLogger().debug("IssueCreationOrchestrator disposed")
     }
 
@@ -66,7 +66,7 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
         pointer: SmartPsiElementPointer<out PsiElement>,
     ) {
         thisLogger().debug("Launching issue creation workflow for: '$instructionText'")
-        cs.launch { orchestrate(instructionText, pointer) }
+        coroutineScope.launch { orchestrate(instructionText, pointer) }
     }
 
     /**
@@ -112,7 +112,7 @@ class IssueCreationOrchestrator(private val project: Project) : Disposable {
                     thisLogger().debug("Fetched metadata: ${meta.issueTypes.size} issue types, ${meta.priorities.size} priorities")
 
                     val task =
-                        project.service<JiraIssueGenerationService>().generateTask(
+                        project.service<JiraIssueGenerationService>().generate(
                             instruction = "Generate issue for: $instructionText",
                             env = ContextEnvironment(project = project, pointer = pointer),
                         )

@@ -47,6 +47,7 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         // 1. ARRANGE
         myFixture.addFileToProject("src/main/UserService.java", "class UserService {}")
         myFixture.addFileToProject("src/main/Validators.java", "class UserValidator {} class OrderValidator {}")
+        myFixture.addFileToProject("src/main/PaymentService.kt", "class PaymentService")
 
         // 2. ACT
         val result = service.listAllClasses()
@@ -55,6 +56,7 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         assertTrue(result.containsKey("UserService"))
         assertTrue(result.containsKey("UserValidator"))
         assertTrue(result.containsKey("OrderValidator"))
+        assertTrue(result.containsKey("PaymentService"))
         assertTrue(result["UserValidator"]!!.contains("Validators.java"))
     }
 
@@ -71,19 +73,6 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         assertTrue(result.any { it.contains("UserService.java") })
         assertTrue(result.any { it.contains("OrderRepo.java") })
         assertEquals(result.sorted(), result)
-    }
-
-    fun testShouldFindClassBySymbolSearch() {
-        // --- TEST FLOW ---
-        // 1. ARRANGE
-        myFixture.addFileToProject("src/main/Validators.java", "class UserValidator {}")
-
-        // 2. ACT
-        val result = service.searchSymbol("UserValidator")
-
-        // 3. ASSERT
-        assertTrue(result.isNotEmpty())
-        assertTrue(result.any { it.contains("UserValidator") && it.contains("Validators.java") })
     }
 
     fun testShouldExtractFullContextWhenCaretIsInsideMethod() {
@@ -107,7 +96,7 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         val pointer = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(elementAtCaret!!)
 
         // 2. ACT
-        val info = service.extractDetailedContext(pointer)
+        val info = service.extractDetailedFileInfo(pointer)
 
         // 3. ASSERT
         assertNotNull("DetailedFileInfo should be extracted", info)
@@ -119,5 +108,51 @@ class CodeAnalysisServiceTest : BasePlatformTestCase() {
         assertEquals("AuthenticationManager", info.enclosingClass?.name)
         assertEquals("loginUser", info.enclosingMethod?.name)
         assertTrue(info.enclosingMethod!!.body.contains("System.out.println"))
+    }
+
+    fun testShouldExtractFullContextWhenCaretIsInsideKotlinMethod() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        val code =
+            """
+            import java.util.Date
+            import java.util.List
+
+            class AuthenticationManager {
+                fun loginUser() {
+                    // TODO: <caret>Add token validation here
+                    println("Logging in")
+                }
+            }
+            """.trimIndent()
+
+        val psiFile = myFixture.configureByText("Auth.kt", code)
+        val elementAtCaret = psiFile.findElementAt(myFixture.caretOffset)
+        val pointer = SmartPointerManager.getInstance(project).createSmartPsiElementPointer(elementAtCaret!!)
+
+        // 2. ACT
+        val info = service.extractDetailedFileInfo(pointer)
+
+        // 3. ASSERT
+        assertNotNull("DetailedFileInfo should be extracted for Kotlin", info)
+        assertEquals("Auth.kt", info!!.fileName)
+        assertEquals("kotlin", info.language)
+        assertEquals(2, info.imports.size)
+        assertTrue(info.imports.any { it.contains("java.util.Date") })
+        assertEquals("AuthenticationManager", info.enclosingClass?.name)
+        assertEquals("loginUser", info.enclosingMethod?.name)
+        assertTrue(info.enclosingMethod!!.body.contains("println"))
+    }
+
+    fun testShouldReturnKotlinFilesWhenListAllSourceFilesCalledWithDefaultExtensions() {
+        // --- TEST FLOW ---
+        // 1. ARRANGE
+        myFixture.addFileToProject("src/UserService.kt", "class UserService")
+
+        // 2. ACT
+        val result = service.listAllSourceFiles()
+
+        // 3. ASSERT
+        assertTrue("Kotlin files should be included by default", result.any { it.contains("UserService.kt") })
     }
 }

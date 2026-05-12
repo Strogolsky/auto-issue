@@ -40,7 +40,7 @@ class JiraDirectStrategyFactory : GoogleIssueStrategyFactory<IssueGenerationInpu
      * @param project The IntelliJ project context
      * @return The configured strategy graph
      */
-    override fun createStrategy(project: Project): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
+    override fun create(project: Project): AIAgentGraphStrategy<IssueGenerationInput, JiraIssueCandidate> {
         val renderService = project.service<PromptRenderService>()
 
         return strategy("jira_issue_generation") {

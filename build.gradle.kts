@@ -65,6 +65,7 @@ dependencies {
         intellijIdea(providers.gradleProperty("platformVersion"))
 
         bundledPlugins("com.intellij.java")
+        bundledPlugins("org.jetbrains.kotlin")
 
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })

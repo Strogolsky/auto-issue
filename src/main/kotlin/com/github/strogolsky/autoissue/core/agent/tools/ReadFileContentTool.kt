@@ -2,7 +2,6 @@ package com.github.strogolsky.autoissue.core.agent.tools
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core.tools.annotations.Tool
-import ai.koog.agents.core.tools.reflect.ToolSet
 import com.github.strogolsky.autoissue.core.context.render.PromptRenderService
 import com.github.strogolsky.autoissue.integration.code.CodeAnalysisService
 import com.intellij.openapi.components.service
@@ -17,8 +16,12 @@ import com.intellij.openapi.project.Project
  *
  * Large files are truncated to avoid overwhelming the model.
  */
-@LLMDescription("Tools for reading source file content.")
-class ReadFileContentTool(private val project: Project) : ToolSet {
+@LLMDescription(
+    "Reads and displays the complete source code content of any file in the project. " +
+        "This is the primary tool for examining implementation details, understanding class structure, " +
+        "and analyzing code context. Use this after locating a file via class/file listing tools.",
+)
+class ReadFileContentTool(private val project: Project) : AgentTool {
     private val render = project.service<PromptRenderService>()
     private val codeAnalysisService = project.service<CodeAnalysisService>()
 
@@ -34,12 +37,22 @@ class ReadFileContentTool(private val project: Project) : ToolSet {
      */
     @Tool
     @LLMDescription(
-        "Reads the entire content of a source file. " +
-            "Requires the exact project-relative path returned by searchFiles. " +
-            "Cannot read binary files (images, jars, compiled artifacts).",
+        "Reads and returns the complete source code of a file. " +
+            "Input: exact project-relative path (e.g., 'src/main/kotlin/com/app/Foo.kt'). " +
+            "Output: full file content with syntax structure visible. " +
+            "Limitations: cannot read binaries (jars, images); large files are truncated. " +
+            "Sensitive data (API keys, tokens) is automatically masked. " +
+            "Usage tips: " +
+            "1. Read a class file to see its imports, methods, and fields " +
+            "2. Examine related files in the same directory to understand context " +
+            "3. Read test files to understand expected behavior " +
+            "4. Inspect configuration classes to understand how features are configured",
     )
     fun readFileContent(
-        @LLMDescription("Project-relative path to the file as returned by searchFiles, e.g. 'src/main/kotlin/com/app/Foo.kt'.")
+        @LLMDescription(
+            "Exact project-relative path from listAllClasses or listProjectFiles." +
+                "Example:'src/main/kotlin/com/github/strogolsky/autoissue/core/agent/tools/ListAllClassesTool.kt'",
+        )
         filePath: String,
     ): ToolResponse {
         if (codeAnalysisService.isBinaryFile(filePath)) {

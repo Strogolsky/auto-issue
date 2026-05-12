@@ -36,7 +36,12 @@
       "Bash(xargs ls *)",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(v.get\\('group',''\\),v.get\\('module',''\\),v.get\\('version',''\\)\\) for v in d.get\\('variants',[]\\)[0].get\\('dependencies',[]\\)]\")",
       "Bash(./gradlew koverHtmlReport --no-daemon)",
-      "Bash(./gradlew test *)"
+      "Bash(./gradlew test *)",
+      "mcp__9d4e7cc6-cb90-4344-857f-9188a64e5d47__read_me",
+      "mcp__9d4e7cc6-cb90-4344-857f-9188a64e5d47__create_view",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Project\\\\auto-issue\" -Directory | Where-Object { $_.Name -in @\\(\"UI\", \"Core\", \"Orchestration\", \"Integration\", \"Plugin\"\\) } | ForEach-Object { Write-Host \"=== $\\($_.Name\\) ===\" -ForegroundColor Green; Get-ChildItem -Path $_.FullName -Recurse -File | Where-Object { $_.Extension -in @\\(\".kt\", \".java\", \".ts\", \".tsx\", \".kts\"\\) } | ForEach-Object { Write-Host $_.FullName.Replace\\(\"D:\\\\Project\\\\auto-issue\\\\\", \"\"\\) } })",
+      "Bash(Remove-Item \"D:\\\\Project\\\\auto-issue\\\\src\\\\main\\\\kotlin\\\\com\\\\github\\\\strogolsky\\\\autoissue\\\\core\\\\agent\\\\tools\\\\SearchSymbolTool.kt\")",
+      "Bash(Remove-Item \"D:\\\\Project\\\\auto-issue\\\\src\\\\test\\\\kotlin\\\\com\\\\github\\\\strogolsky\\\\autoissue\\\\core\\\\agent\\\\tools\\\\SearchSymbolToolTest.kt\")"
     ]
   }
 }

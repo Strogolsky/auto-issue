@@ -101,7 +101,7 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
         // --- PREPARE ---
         every { mockHealthChecker.validateAndNotify() } returns true
         coEvery { mockJiraApiService.getMetadata(any()) } returns mockk<JiraProjectMetadata>(relaxed = true)
-        coEvery { mockIssueGenerationService.generateTask(any(), any()) } returns mockk<JiraIssueCandidate>(relaxed = true)
+        coEvery { mockIssueGenerationService.generate(any(), any()) } returns mockk<JiraIssueCandidate>(relaxed = true)
         every { anyConstructed<IssueEditDialog>().showAndGetResult() } returns mockk<JiraIssueRequest>(relaxed = true)
         coEvery { mockJiraApiService.createIssue(any()) } returns "PROJ-123"
 
@@ -125,7 +125,7 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
         // --- PREPARE ---
         every { mockHealthChecker.validateAndNotify() } returns true
         coEvery { mockJiraApiService.getMetadata(any()) } returns mockk(relaxed = true)
-        coEvery { mockIssueGenerationService.generateTask(any(), any()) } returns mockk(relaxed = true)
+        coEvery { mockIssueGenerationService.generate(any(), any()) } returns mockk(relaxed = true)
 
         var didReachDialog = false
         every { anyConstructed<IssueEditDialog>().showAndGetResult() } answers {
@@ -153,7 +153,7 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
         every { mockHealthChecker.validateAndNotify() } returns true
 
         coEvery {
-            mockIssueGenerationService.generateTask(any(), any())
+            mockIssueGenerationService.generate(any(), any())
         } throws object : AutoIssueException("LLM Agent failed to respond") {}
 
         // --- ACT ---
@@ -173,7 +173,7 @@ class IssueCreationOrchestratorTest : BasePlatformTestCase() {
     }
 
     fun testShouldCancelCoroutinesWhenDisposed() {
-        val scopeField = orchestrator.javaClass.getDeclaredField("cs")
+        val scopeField = orchestrator.javaClass.getDeclaredField("coroutineScope")
         scopeField.isAccessible = true
         val scope = scopeField.get(orchestrator) as CoroutineScope
 

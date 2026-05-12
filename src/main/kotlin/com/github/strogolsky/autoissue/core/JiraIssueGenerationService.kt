@@ -47,7 +47,7 @@ class JiraIssueGenerationService(private val project: Project) {
      * @return A JiraIssueCandidate with generated title, description, and other fields
      * @throws IssueGenerationException if LLM configuration is missing or invalid
      */
-    suspend fun generateTask(
+    suspend fun generate(
         instruction: String,
         env: ContextEnvironment,
     ): JiraIssueCandidate {
@@ -66,7 +66,7 @@ class JiraIssueGenerationService(private val project: Project) {
         thisLogger().debug("Gathered ${contextComponents.size} context components")
 
         thisLogger().debug("Creating AI agent with provider: ${config.provider}, strategy: ${config.strategyId}")
-        val agent = factory.createAgent(config)
+        val agent = factory.create(config)
 
         val taskInstruction = IssueInstruction(instruction)
         val input = IssueGenerationInput(listOf(taskInstruction) + contextComponents)
@@ -74,7 +74,7 @@ class JiraIssueGenerationService(private val project: Project) {
         thisLogger().info("Sending prompt to AI agent. Waiting for response...")
         val result = agent.generate(input)
 
-        thisLogger().info("Successfully generated task candidate: title='${result.title}', issueTypeId=${result.description}")
+        thisLogger().info("Successfully generated task candidate: title='${result.title}', description='${result.description}'")
         return result
     }
 }

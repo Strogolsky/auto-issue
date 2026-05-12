@@ -7,6 +7,7 @@ import com.github.strogolsky.autoissue.core.masking.MaskingPatterns
 import com.github.strogolsky.autoissue.core.masking.RegexContentMasker
 import com.github.strogolsky.autoissue.plugin.config.JiraConfigService
 import com.github.strogolsky.autoissue.plugin.config.LlmAgentConfigService
+import com.github.strogolsky.autoissue.plugin.config.PluginConfig
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -60,7 +61,7 @@ class AutoIssueSetupTool(private val project: Project) {
      *
      * @param config The loaded plugin configuration
      */
-    private fun initRendering(config: com.github.strogolsky.autoissue.plugin.config.PluginConfig) {
+    private fun initRendering(config: PluginConfig) {
         val masker: ContentMasker =
             if (!config.masking.enabled) {
                 ContentMasker { it }

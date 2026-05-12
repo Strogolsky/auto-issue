@@ -107,7 +107,7 @@ class JiraReasoningStrategyFactoryTest {
             setupPromptRenderService(analysisPrompt, structuringPrompt)
 
             val mockLLMApi = createMockExecutor(analysisPrompt, structuringPrompt, expectedCandidate)
-            val strategy = factory.createStrategy(project)
+            val strategy = factory.create(project)
             val agentConfig = createAgentConfig()
 
             val agent =
@@ -192,7 +192,7 @@ class JiraReasoningStrategyFactoryTest {
             setupPromptRenderService(analysisPrompt, structuringPrompt)
 
             val mockLLMApi = createMockExecutor(analysisPrompt, structuringPrompt, expectedCandidate, analysisResponse)
-            val strategy = factory.createStrategy(project)
+            val strategy = factory.create(project)
             val agentConfig = createAgentConfig()
 
             val agent =
@@ -274,7 +274,7 @@ class JiraReasoningStrategyFactoryTest {
             setupPromptRenderService(analysisPrompt, structuringPrompt)
 
             val mockLLMApi = createMockExecutor(analysisPrompt, structuringPrompt, expectedCandidate)
-            val strategy = factory.createStrategy(project)
+            val strategy = factory.create(project)
             val agentConfig = createAgentConfig()
 
             val agent =

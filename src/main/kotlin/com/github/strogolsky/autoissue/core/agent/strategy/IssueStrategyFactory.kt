@@ -38,5 +38,5 @@ interface IssueStrategyFactory<I, O> {
      * @param project The IntelliJ project context
      * @return A configured AI agent graph strategy
      */
-    fun createStrategy(project: Project): AIAgentGraphStrategy<I, O>
+    fun create(project: Project): AIAgentGraphStrategy<I, O>
 }

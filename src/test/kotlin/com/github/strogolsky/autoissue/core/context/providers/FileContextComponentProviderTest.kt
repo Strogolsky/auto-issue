@@ -65,7 +65,7 @@ class FileContextComponentProviderTest {
                     every { enclosingMethod } returns methodInfo
                 }
 
-            every { codeAnalysisService.extractDetailedContext(pointer) } returns detailedInfo
+            every { codeAnalysisService.extractDetailedFileInfo(pointer) } returns detailedInfo
 
             // 2. ACT
             val result = provider.provide(env) as? FileContextComponent
@@ -95,7 +95,7 @@ class FileContextComponentProviderTest {
                     every { surroundingText } returns "println(\"Hello\")"
                 }
 
-            every { codeAnalysisService.extractDetailedContext(pointer) } returns detailedInfo
+            every { codeAnalysisService.extractDetailedFileInfo(pointer) } returns detailedInfo
 
             // 2. ACT
             val result = provider.provide(env) as? FileContextComponent
@@ -112,7 +112,7 @@ class FileContextComponentProviderTest {
         runBlocking {
             // --- TEST FLOW ---
             // 1. ARRANGE
-            every { codeAnalysisService.extractDetailedContext(pointer) } returns null
+            every { codeAnalysisService.extractDetailedFileInfo(pointer) } returns null
 
             // 2. ACT
             val result = provider.provide(env)
