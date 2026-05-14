@@ -56,7 +56,7 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
         assertEquals("testuser", service.state.username)
     }
 
-    fun testShouldNotOverwritePasswordSafeWhenUpdateSettingsWithoutToken() {
+    fun testShouldClearPasswordSafeWhenUpdateSettingsWithNullToken() {
         // 1. ARRANGE
         PasswordSafe.instance.setPassword(tokenKey, "old-token")
         val newState = JiraState().apply { username = "testuser" }
@@ -66,7 +66,7 @@ class JiraConfigServiceTest : BasePlatformTestCase() {
 
         // 3. ASSERT
         val savedPassword = PasswordSafe.instance.getPassword(tokenKey)
-        assertEquals("old-token", savedPassword)
+        assertNull(savedPassword)
         assertEquals("testuser", service.state.username)
     }
 
