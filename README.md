@@ -97,6 +97,11 @@ To keep everything working, do not remove `<!-- ... -->` sections.
   Download the [latest release](https://github.com/Strogolsky/auto-issue/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
+## License
+
+Copyright (c) 2026 Sergei Iarylkin.
+
+This project is licensed under the Apache License, Version 2.0 — see the [LICENSE](LICENSE) file for details.
 
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
