@@ -55,15 +55,17 @@ class JiraConfigService : PersistentStateComponent<JiraState> {
      * Updates JIRA configuration settings and optionally updates the API token.
      *
      * @param newState The new configuration state (URL, username, project key)
-     * @param newKey Optional new API token to store
+     * @param newKey Optional new API token to store. If null or blank, the stored token is deleted.
      */
     fun updateSettings(
         newState: JiraState,
         newKey: String?,
     ) {
         state = newState
-        newKey?.let {
-            PasswordSafe.instance[tokenKey] = Credentials(state.username, it)
+        if (newKey?.isNotBlank() == true) {
+            PasswordSafe.instance[tokenKey] = Credentials(state.username, newKey)
+        } else {
+            PasswordSafe.instance.setPassword(tokenKey, null)
         }
     }
 

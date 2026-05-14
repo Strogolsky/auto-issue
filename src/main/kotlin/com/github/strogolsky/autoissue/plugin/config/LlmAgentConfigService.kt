@@ -48,7 +48,7 @@ class LlmAgentConfigService : PersistentStateComponent<LlmAgentState> {
      * Ensures the strategy is valid for the selected provider.
      *
      * @param newState The new configuration state (provider, strategy, temperature, etc.)
-     * @param newKey Optional new API key to store
+     * @param newKey Optional new API key to store. If null or blank, the stored key is deleted.
      */
     fun updateSettings(
         newState: LlmAgentState,
@@ -57,7 +57,11 @@ class LlmAgentConfigService : PersistentStateComponent<LlmAgentState> {
         thisLogger().info("Updating LLM Agent settings. Provider: ${newState.provider}, Strategy: ${newState.strategyId}")
 
         state = newState
-        newKey?.let { PasswordSafe.instance.setPassword(tokenKey, it) }
+        if (newKey?.isNotBlank() == true) {
+            PasswordSafe.instance.setPassword(tokenKey, newKey)
+        } else {
+            PasswordSafe.instance.setPassword(tokenKey, null)
+        }
         ensureStrategyValid()
     }
 
